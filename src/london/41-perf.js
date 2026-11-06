@@ -6,7 +6,7 @@
    2. lightsNear(src,eye): the shader takes 8 point lights. The hub has dozens; each frame the nearest 8 (by distance minus reach)
       are sent, and the ones near the cut-off fade out as the next one comes in, so nothing pops.
    3. renderLDN(): the engine's renderScene plus frustum and fog-distance culling (London never culled before; the street was small). */
-const CHUNK=24, BAKED=N(null), BIDX=new Map(); /* baked chunks live outside the scene tree, found by a grid index */
+const CHUNK=48, BAKED=N(null), BIDX=new Map(); /* baked chunks live outside the scene tree, found by a grid index */
 /* shared emitter: baked nodes and the hub kit both write straight into chunk buckets; emitFlush() turns them into meshes */
 const EMIT={buckets:new Map(),mid:new Map(),verts:0};
 function emitBucket(m,x,z,nv){ EMIT.by=EMIT.by||new Map(); EMIT.by.set(m,(EMIT.by.get(m)||0)+nv); if(!EMIT.mid.has(m)) EMIT.mid.set(m,EMIT.mid.size); const cx=Math.floor(x/CHUNK),cz=Math.floor(z/CHUNK),k=EMIT.mid.get(m)+'|'+cx+'|'+cz;

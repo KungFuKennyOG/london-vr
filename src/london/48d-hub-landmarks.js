@@ -68,7 +68,7 @@ function pathStrip(x0,z0,x1,z1,w,m=mPath){ const L_=Math.hypot(x1-x0,z1-z0), U=[
 function parkLamp(x,z){ eBoxF(x-.06,z-.06,x+.06,z+.06,PAVE_Y,PAVE_Y+4.2,{n:mPole,s:mPole,e:mPole,w:mPole}); eBox(x-.2,z-.2,x+.2,z+.2,PAVE_Y+4.2,PAVE_Y+4.55,mLampHead);
   eGrid(mGlow,[x-.7,PAVE_Y+3.7,z],X_,Y_,1.4,1.4,1.4,1.4); eGrid(mGlow,[x,PAVE_Y+3.7,z-.7],Z_,Y_,1.4,1.4,1.4,1.4); const L_=[[x,PAVE_Y+4.2,z],[1.7,1.5,1.1],11]; STREET_LIGHT.pl.push(L_); LAMPS.push(L_); }
 /* a named entrance sign on a wall (council style) */
-const councilSign=(name,sub,c,U,w=2.4,h=.5)=>eSign(atlasSign('#1c2f5a','#f4f2ea',name,sub,{face:'grot',subC:'#c8d4ec'}),c,U,w,h);
+const councilSign=(name,sub,c,U,w=2.4,h=.5)=>eSign(atlasSign('#1c2f5a','#f4f2ea',name,null,{face:'grot'}),c,U,w,h*.75);
 /* the tall bits that should read over the rooftops from far off: drawn without fog, dark with lit windows (the clock lifts them by day) */
 const FARM=[]; function farMat(t,o){ const m=MM(t,Object.assign({nofog:true},o)); FARM.push([m,m.color.slice()]); return m; }
 const FAR=N(world);
@@ -130,15 +130,15 @@ LM.bramley=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facad
 };
 /* a parked car (static): body, cabin, wheels, lights */
 const CARC=[0x1a1a1c,0xb8bcc0,0x2a3a5a,0x6a1a1a,0xd8d8d0,0x3a4a3a,0x5a5a5e,0x8a6a2a];
-function carPark(x,z,i,yaw=0){ const c=col(CARC[i%CARC.length]), gl_=col(0x0c1014), tail=nightM(null,{color:0x8a1010,unlit:true},.3);
-  eBoxR(x,z,1.8,4.2,PAVE_Y+.28,PAVE_Y+.95,yaw,{f:c,b:c,l:c,r:c,t:c}); eBoxR(x,z+.2,1.6,2.2,PAVE_Y+.95,PAVE_Y+1.45,yaw,{f:gl_,b:gl_,l:gl_,r:gl_,t:c});
-  for(const [wx,wz] of [[-.8,1.3],[.8,1.3],[-.8,-1.3],[.8,-1.3]]){ const c_=Math.cos(yaw),s_=Math.sin(yaw); eBoxR(x+c_*wx+s_*wz,z-s_*wx+c_*wz,.24,.62,PAVE_Y,PAVE_Y+.62,yaw,{f:mDark,b:mDark,l:mDark,r:mDark}); }
-  solR(x,z,1.8,4.2,PAVE_Y+1.45,yaw); }
+function carPark(x,z,i,yaw=0,y0=PAVE_Y){ const c=col(CARC[i%CARC.length]), gl_=col(0x0c1014);
+  eBoxR(x,z,1.8,4.2,y0+.28,y0+.95,yaw,{f:c,b:c,l:c,r:c,t:c}); eBoxR(x,z+.2,1.6,2.2,y0+.95,y0+1.45,yaw,{f:gl_,b:gl_,l:gl_,r:gl_,t:c});
+  for(const [wx,wz] of [[-.8,1.3],[.8,1.3],[-.8,-1.3],[.8,-1.3]]){ const c_=Math.cos(yaw),s_=Math.sin(yaw); eBoxR(x+c_*wx+s_*wz,z-s_*wx+c_*wz,.24,.62,y0,y0+.62,yaw,{f:mDark,b:mDark,l:mDark,r:mDark}); }
+  solR(x,z,1.8,4.2,y0+1.45,yaw); }
 
 /* THE DECKS: three deck-access slabs, five storeys, with walkways and stair towers you can climb */
-LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facade('estbrick','estate',2), r=hr(6401);
+LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const r=hr(6401);
   const slabs=[[-160,-72,-312],[-150,-62,-272],[-160,-72,-232]];
-  slabs.forEach(([a,b,zc],si)=>{ const zn=zc-5, zs=zc+5, H=5;
+  slabs.forEach(([a,b,zc],si)=>{ const zn=zc-5, zs=zc+5, H=5, F=facade(['estbrick','estate','estbrick'][si],'estate',si+3);
     eFacade(a,zn,b,zs,PAVE_Y,PAVE_Y+H*3,F,'nsew'); eFlat(a,zn,b,zs,PAVE_Y+H*3+.01,mFelt,4,0); eBoxF(a-.1,zn-.1,b+.1,zs+.1,PAVE_Y+H*3,PAVE_Y+H*3+.4,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mConcW},{tu:2.5,tv:.4}); hsol(a,zn,b,zs,PAVE_Y+H*3+.4);
     for(let f=1;f<H;f++){ const y=PAVE_Y+f*3; eBoxF(a,zs,b,zs+1.8,y-.28,y,{s:mConcW,t:mConcW,e:mConcW,w:mConcW},{tu:2.5,tv:.3}); eBoxF(a,zs+1.6,b,zs+1.8,y,y+1.05,{s:mConcW,n:mConcW,t:mConcW},{tu:2.5,tv:1.05});
       hsol(a,zs,b,zs+1.8,y,y-.3); hsol(a,zs+1.6,b,zs+1.8,y+1.05,y); }
@@ -164,7 +164,7 @@ LM.boundary=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2; eFlat(x0,z0,x1,
     eBoxR(bx,bz,w+.06,d+.06,PAVE_Y,H,yaw,{f:FF.mLit,b:FF.mLit},{tu:FF.bays*HUB.BAY,tv:FF.floors*HUB.FLOOR}); eBoxR(bx,bz,w+.3,d+.3,H,H+.5,yaw,{f:mCope,b:mCope,l:mCope,r:mCope,t:mCope});
     solR(bx,bz,w,d,H+.5,yaw); }
   for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2)*26,cz+Math.sin(k/6*Math.PI*2)*26);
-  BANDSTAND.push([cx,top,cz]);
+  STREET_LIGHT.pl.push([[cx,top+2.4,cz],[1.6,1.2,.8],12]); BANDSTAND.push([cx,top,cz]);
 };
 const BANDSTAND=[];
 
@@ -204,7 +204,7 @@ function tubeEntrance(x,z,ax){ const w=3.2,l=7; const x0=x-w/2,x1=x+w/2,z0=z-l/2
   STREET_LIGHT.pl.push([[x,PAVE_Y+2.5,z0-1],[1.1,1.2,1.3],7]); TUBES.push([x,z0-1]); }
 const TUBES=[]; let _mTile=null; function mTile(){ return _mTile||(_mTile=nightM(P2(32,32,(g,w,h)=>{ R(g,'#e8e4d8',0,0,w,h); for(let i=0;i<w;i+=8) R(g,'#c8c4b8',i,0,1,h); for(let i=0;i<h;i+=8) R(g,'#c8c4b8',0,i,w,1); R(g,'#1a2a6a',0,12,w,4); },0,1),{unlit:true},.4)); }
 
-function churchFacade(){ if(LM._ch) return LM._ch; const w=5*PXM, h=12*PXM, B=BRICKS.cream, r=hr(6901), draw=(g,lit)=>{ if(!lit) paintWall(g,B,w,h,r); else g.clearRect(0,0,w,h);
+function churchFacade(){ if(LM._ch) return LM._ch; const w=5*PXM, h=12*PXM, B=BRICKS.cream, r=hr(6901), draw=(g,lit)=>{ if(!lit){ paintWall(g,B,w,h,r); for(let i=0;i<10;i++){ const x=r()*w|0; vfill(g,x,h*.1,3+(r()*6|0),h*.8,[[0,'rgba(40,36,30,.35)'],[1,'rgba(40,36,30,0)']]); } R(g,'rgba(30,26,20,.28)',0,h-26,w,26); } else g.clearRect(0,0,w,h);
     const ww=1.6*PXM, wh=6.2*PXM, x=(w-ww)/2, y=h-(1.6*PXM+wh);
     g.save(); g.beginPath(); g.moveTo(x,y+wh); g.lineTo(x,y+ww/2); g.arc(x+ww/2,y+ww/2,ww/2,Math.PI,0); g.lineTo(x+ww,y+wh); g.closePath();
     if(lit){ g.clip(); vfill(g,x,y,ww,wh,[[0,'#ffe0a8'],[1,'#e8a050']]); for(let k=1;k<6;k++) R(g,'rgba(60,40,20,.8)',x,y+k*wh/6,ww,2); R(g,'rgba(60,40,20,.8)',x+ww/2-1,y,2,wh); }
@@ -224,7 +224,7 @@ LM.church=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mGrass,2,6); railRect(x0+.
   for(const [U,o] of [[X_,[cx-1.6,PAVE_Y+22,tz+3.42]],[NX,[cx+1.6,PAVE_Y+22,tz-3.42]],[Z_,[cx-3.42,PAVE_Y+22,tz-1.6]],[NZ,[cx+3.42,PAVE_Y+22,tz+1.6]]]){ const g=new Geo(); const n=[U[1]*0-U[2],0,U[0]]; for(const [s_,t] of [[0,0],[1,0],[1,1],[0,1]]) g.v([o[0]+U[0]*3.2*s_,o[1]+3.2*t,o[2]+U[2]*3.2*s_],n,[s_,t]); g.I.push(0,1,2,0,2,3); g.noDist=true; mk(g,clock,FAR); }
   const cup=new Geo(); { const t=cyl(1.6,.15,3.2,8); cup.P=t.P; cup.Nm=t.Nm; cup.T=t.T; cup.I=t.I; cup.groups=t.groups; } cup.noDist=true; mk(cup,sB,FAR,cx,PAVE_Y+32.6,tz); hsol(cx-4,tz-4,cx+4,tz+4,PAVE_Y+31);
   const r=hr(6803); for(let i=0;i<40;i++){ const gx=x0+4+r()*(x1-x0-8), gz=z0+4+r()*(z1-z0-8); if(Math.abs(gx-cx)<18&&gz>z0+14) continue; eBox(gx-.35,gz-.08,gx+.35,gz+.08,PAVE_Y,PAVE_Y+.7+r()*.5,stone); }
-  for(let i=0;i<10;i++) tree(x0+6+r()*(x1-x0-12),z0+5+r()*12,1.2); parkLamp(cx+3,z1-6); parkLamp(x0+8,z1-12);
+  for(let i=0;i<10;i++) tree(x0+6+r()*(x1-x0-12),z0+5+r()*12,1.2); parkLamp(x0+8,z1-12); parkLamp(x1-8,z1-12);
   tubeEntrance(x1-6,z1-6,'z');
 };
 

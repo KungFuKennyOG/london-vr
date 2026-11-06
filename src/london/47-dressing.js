@@ -21,7 +21,7 @@ for(const side of [-1,1]) for(let k=0;k<6;k++){ const x=side<0?ZX0-1.0-k*1.05:ZX
   const t2=hiP2(128,24,(g,w,h)=>{ g.clearRect(0,0,w,h); g.fillStyle='#e4e0d6'; g.font=`bold 20px ${SANS}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText('LOOK LEFT',w/2,h/2+1); });
   mk(plane(2.0,.38),M(t2,{cut:true}),D,(ZX0+ZX1)/2,.006,ROAD_Z1-.5,-Math.PI/2); }
 const tPole=P2(4,32,(g,w,h)=>{ for(let i=0;i<8;i++) R(g,i%2?'#141414':'#e8e6e0',0,i*4,w,4); },0,1);
-const beaconM=M(null,{color:0xffa020,emissive:0xff8a10}), beaconOff=[.25,.12,.04], beaconOn=[2.2,1.15,.3];
+const beaconM=M(null,{color:0xffa020,emissive:0xff8a10}), beaconOff=[.25,.12,.04], beaconOn=[1.25,.62,.12];
 const BEACONS=[[ZX0-.3,KERB_Z-.3],[ZX1+.3,ROAD_Z1+.3]];
 for(const [x,z] of BEACONS){ const y0=z>ROAD_Z1?PAVE_Y:PAVE_Y; mk(cyl(.05,.05,2.4,8),MM(tPole,{repeat:[1,1]}),D,x,y0+1.2,z); mk(cyl(.17,.17,.32,12),beaconM,D,x,y0+2.56,z); mk(cyl(.07,.07,.06,8),col(0x141414),D,x,y0+2.75,z); }
 /* ---------- Degsy's motor, hazards going; a black cab across the road ---------- */

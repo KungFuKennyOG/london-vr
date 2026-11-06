@@ -99,7 +99,7 @@ function shutterTex(seed){ return P2(128,128,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#72
 const tShutterL=shutterTex(1423);
 const tWinLit=P2(32,32,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#ffd9a0'],[1,'#ffb866']]); R(g,'rgba(110,40,30,.55)',0,0,6,h); R(g,'rgba(110,40,30,.55)',w-6,0,6,h); R(g,'#4a4038',0,15,w,2); R(g,'#4a4038',15,0,2,h); ell(g,20,24,4,6,'rgba(60,30,20,.5)'); },0,1425);
 const tWinDark=P2(32,32,(g,w,h)=>{ R(g,'#0d1014',0,0,w,h); R(g,'rgba(120,130,150,.16)',3,3,10,8); R(g,'#b9b2a5',0,15,w,2); R(g,'#b9b2a5',15,0,2,h); R(g,'#b9b2a5',0,0,w,2); R(g,'#b9b2a5',0,h-2,w,2); R(g,'#b9b2a5',0,0,2,h); R(g,'#b9b2a5',w-2,0,2,h); },0,1426);
-const tSky=P2(4,64,(g,w,h)=>vfill(g,0,0,w,h,[[0,'#08080c'],[.5,'#221a1a'],[.8,'#4a3022'],[1,'#6a4226']]),0,1); /* low cloud lit sodium-orange from below */
+const tSky=P2(4,64,(g,w,h)=>vfill(g,0,0,w,h,[[0,'#16161e'],[.45,'#2e2428'],[.78,'#5a3a2a'],[1,'#8a5a34']]),0,1); /* low cloud lit sodium-orange from below */
 const tGlowSodium=P2(32,32,(g,w,h)=>{ g.clearRect(0,0,w,h); radial(g,16,16,16,[[0,'rgba(255,220,160,1)'],[.45,'rgba(255,165,70,.95)'],[.62,'rgba(255,140,40,0)']]); },0,1427);
 
 /* ---------- ground ---------- */

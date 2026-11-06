@@ -55,7 +55,7 @@ const BRICKS={
   grey:{base:'#8a8c88',dark:'#6e706c',light:'#9c9e9a',mortar:null,soot:.3},
   estate:{base:'#9a968a',dark:'#7e7a70',light:'#b0aca0',mortar:null,soot:.25,panel:true},
   estbrick:{base:'#6a4a34',dark:'#4e3626',light:'#7c5a40',mortar:'#3a2a20',soot:.2},
-  cream:{base:'#d8ccb0',dark:'#b8ac90',light:'#e8dcc0',mortar:null,soot:.15},
+  cream:{base:'#b8b4a8',dark:'#98948a',light:'#c8c4b8',mortar:null,soot:.32},
 };
 function paintWall(g,B,w,h,r){ R(g,B.base,0,0,w,h);
   if(B.mortar){ for(let y=0;y<h;y+=3){ const off=(y/3%2)*4; for(let x=-8+off;x<w;x+=8){ const v=r(); g.fillStyle=v<.15?B.dark:v>.88?B.light:B.base; g.fillRect(x,y,7,2); } g.fillStyle=B.mortar; g.fillRect(0,y+2,w,1); } }
@@ -187,6 +187,6 @@ function tree(x,z,s=1,y0=PAVE_Y){ const h=3.2*s, tw=.14*s; eBoxF(x-tw,z-tw,x+tw,
   eGrid(mTree,[x-cw/2,cy,z],X_,Y_,cw,ch,cw,ch); eGrid(mTree,[x,cy,z-cw/2],Z_,Y_,cw,ch,cw,ch); hsol(x-.18,z-.18,x+.18,z+.18,y0+h); }
 /* railings: a top rail, posts, bars (one cut texture) */
 const tRailing=P2(32,32,(g,w,h)=>{ g.clearRect(0,0,w,h); R(g,'#121314',0,0,w,3); R(g,'#121314',0,h-4,w,4); for(let x=1;x<w;x+=6) R(g,'#121314',x,0,2,h); for(let x=1;x<w;x+=6){ R(g,'#121314',x-1,0,4,2); } },0,1);
-const mRailing=(()=>{ const m=M(tRailing,{double:true,cut:true}); return m; })();
+tRailing.nomip=true; const mRailing=(()=>{ const m=M(tRailing,{double:true,cut:true}); return m; })();
 function railing(x0,z0,x1,z1,h=1.1,y0=PAVE_Y,solid=true){ const L_=Math.hypot(x1-x0,z1-z0),U=[(x1-x0)/L_,0,(z1-z0)/L_]; eGrid(mRailing,[x0,y0,z0],U,Y_,L_,h,.62,h);
   if(solid) hsol(x0-.05,z0-.05,x1+.05,z1+.05,y0+h); }

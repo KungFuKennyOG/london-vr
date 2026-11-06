@@ -96,5 +96,5 @@ function jobsTick(dt){ const G=GG(); if(!G.on) return; if(!beatsMade){ makeBeats
   const T=curTarget(); const key=T?(Math.round(Math.hypot(T[0]-GP().x,T[1]-GP().z)/5)+'|'+Math.round((Math.atan2(T[0]-GP().x,T[1]-GP().z)-GP().yaw)*6)):'';
   if(key!==navLast||JOBS.gig||JOBS.run){ navLast=key; GAME.phoneDirty(); }
   if(!navEl){ navEl=document.createElement('div'); navEl.className='ldnNav'; document.body.append(navEl); }
-  if(T&&!G.xr){ const dx=T[0]-GP().x, dz=T[1]-GP().z, a=Math.atan2(dx,dz)-GP().yaw; navEl.hidden=false; navEl.innerHTML='<i style="transform:rotate('+(-a)+'rad)">▲</i> '+T[2]+' · '+Math.round(Math.hypot(dx,dz))+' m'+(JOBS.gig?' · '+Math.ceil(Math.max(0,JOBS.gig.t-JOBS.gig.t0))+' s':'')+(JOBS.run?' · '+JOBS.run.t.toFixed(1)+' s':''); } else navEl.hidden=true;
+  if(T&&!G.xr&&!window.__CAPTURE){ const dx=T[0]-GP().x, dz=T[1]-GP().z, a=Math.atan2(dx,dz)-GP().yaw; navEl.hidden=false; navEl.innerHTML='<i style="transform:rotate('+(-a)+'rad)">▲</i> '+T[2]+' · '+Math.round(Math.hypot(dx,dz))+' m'+(JOBS.gig?' · '+Math.ceil(Math.max(0,JOBS.gig.t-JOBS.gig.t0))+' s':'')+(JOBS.run?' · '+JOBS.run.t.toFixed(1)+' s':''); } else navEl.hidden=true;
   if(toastEl&&toastT>0){ toastT-=dt; if(toastT<=0) toastEl.hidden=true; } }

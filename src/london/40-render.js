@@ -27,12 +27,12 @@ void main(){
     float hivis = step(c.b * 2.0, c.g) * step(c.r * 0.7, c.g) * step(c.r, c.g * 1.15);
     float sig = smoothstep(0.35, 0.6, s) * clamp(red + amber + blue + hivis, 0.0, 1.0);
     float skin = step(c.b, c.g) * step(c.g, c.r) * smoothstep(0.1, 0.2, s) * (1.0 - smoothstep(0.55, 0.75, s)) * (1.0 - red);
-    float sat = mix(mix(mix(0.74, 0.92, skin), 1.12, sig), mix(0.9, 1.0, skin), uDay*.6);
+    float sat = mix(mix(mix(0.74, 0.92, skin), 1.12, sig), mix(mix(0.66, 0.9, skin), 1.05, sig), uDay);
     sat = mix(sat, mix(0.12, 1.0, sig * red), uFreeze);
     vec3 g = mix(vec3(l), c, sat);
     g = mix(g, g * g * (3.0 - 2.0 * g), 0.22 + 0.3 * uFreeze);                       /* contrast, harder on a freeze */
     float sh = 1.0 - smoothstep(0.0, 0.28, l);
-    g = g * mix(vec3(1.0), vec3(0.9, 1.0, 0.97), sh*(1.0-uDay)) + vec3(0.012, 0.02, 0.018) * sh * (1.0-uDay);  /* green-grey night floor */
+    g = g * mix(vec3(1.0), vec3(0.9, 1.0, 0.97), sh*(1.0-uDay*.5)) + vec3(0.02, 0.03, 0.026) * sh * (1.0-uDay*.4);  /* green-grey night floor */
     g *= mix(vec3(1.0), mix(vec3(1.06, 1.0, 0.86), vec3(0.98, 1.0, 1.03), uDay), smoothstep(0.5, 1.0, l));  /* sodium in the highlights at night, a cool London grey by day */
     c = g;
   }

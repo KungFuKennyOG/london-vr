@@ -66,6 +66,11 @@ function kiosk(x,z){ const w=.95,h=2.5; eBoxF(x-w/2,z-w/2,x+w/2,z+w/2,PAVE_Y,PAV
           else if(k<.83&&busRoads.has(id)) kiosk(ax==='x'?X:back-side*.8,ax==='x'?back-side*.8:Z);
           else bollard(X,Z); } } } } }
 
+/* parked cars: one kerb of every one-way street, both kerbs of the wide roads */
+{ const r=hr(8901), wide=new Set(['hackney','camheath','mileend']);
+  STREETS.forEach((S,si)=>{ const [id,ax,c,a,b,rw]=S, L=LANES[si]; if(!(L.oneway||wide.has(id))) return; const sides=L.oneway?[1]:[-1,1];
+    for(const side of sides) for(const [p,q] of openSpans(S)){ for(let s=p+4;s<q-4;s+=5.6){ if(r()>.62) continue; const off=c+side*(rw/2-1.0), x=ax==='x'?s:off, z=ax==='x'?off:s;
+        if(inCore(x,z,4)||BUS_STOPS.some(b_=>Math.hypot(b_[0]-x,b_[1]-z)<6)) continue; carPark(x,z,(si*7+Math.round(s))%8,ax==='x'?Math.PI/2:0,0); } } }); }
 /* the night-only chunks (pools, streaks, glows) go away in daylight */
-let DAYNODES=null; function dayHideTick(){ if(!DAYNODES) DAYNODES=BAKED.kids.filter(n=>n.mesh&&DAYHIDE.includes(n.mesh.mats[0])); const v=TOD.night>.35; for(const n of DAYNODES) n.vis=v; mBeaconH.emis=(Math.floor(LIFE.t/.75)%2)?[2.2,1.15,.3]:[.25,.12,.04]; }
+let DAYNODES=null; function dayHideTick(){ if(!DAYNODES) DAYNODES=BAKED.kids.filter(n=>n.mesh&&DAYHIDE.includes(n.mesh.mats[0])); const v=TOD.night>.35; for(const n of DAYNODES) n.vis=v; mBeaconH.emis=(Math.floor(LIFE.t/.75)%2)?[1.25,.62,.12]:[.25,.12,.04]; }
 buildNav();
