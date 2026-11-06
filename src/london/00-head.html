@@ -1,0 +1,154 @@
+<meta charset="utf-8">
+<title>Bethnal Green Road</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Layout: a full-bleed 3D view. A case-file label top-left, look switches top-right, the cast file bottom-left.
+   London VR's own kit: Anton for names (the freeze-frame type), Courier Prime for everything else, like a typed
+   police file. Wet black, sodium amber, chicken-shop red; nothing borrowed from Stairwell. */
+:root{
+  --ink:#ece6da; --ink2:#bdb6a8; --muted:#8c857a; --bg:#090a0b; --paper:rgba(14,15,15,.88); --rule:#33302b;
+  --amber:#f0a23e; --red:#c8261c; --met:#3a5ab8;
+  --name:'Anton','Impact','Arial Narrow',sans-serif;
+  --type:'Courier Prime','Courier New',ui-monospace,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 var(--type);overflow:hidden}
+#view{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none}
+#view:active{cursor:grabbing}
+.hud{position:fixed;inset:0;pointer-events:none;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;
+  padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud>*{pointer-events:auto;box-sizing:border-box}
+.label{grid-column:1;grid-row:1;align-self:start;justify-self:start;display:grid;gap:2px;min-width:0}
+.label .file{margin:0;font:700 12px/1.2 var(--type);color:var(--amber);letter-spacing:.04em}
+.label h1{margin:0;font:400 clamp(34px,5.6vw,60px)/.92 var(--name);letter-spacing:.005em;text-transform:uppercase;text-shadow:3px 3px 0 #000}
+.label .links{display:flex;gap:14px;margin-top:6px;font-size:12.5px}
+.label a{color:var(--ink2);text-underline-offset:3px}
+.look{grid-column:2;grid-row:1;align-self:start;background:var(--paper);border-left:3px solid var(--amber);padding:10px 14px;display:grid;gap:7px;font-size:13px}
+.look label{display:flex;gap:9px;align-items:center;cursor:pointer}
+.look input{accent-color:var(--amber);width:15px;height:15px;margin:0}
+#clock{grid-column:2;grid-row:2;align-self:start;justify-self:end;text-align:right;color:var(--ink2);font-size:12.5px;text-shadow:0 0 8px #000}
+#clock b{display:block;font:400 40px/1 var(--name);color:var(--ink);letter-spacing:.02em}
+.card{grid-column:1;grid-row:3;align-self:end;justify-self:start;width:min(460px,100%);max-height:54vh;overflow:auto;background:var(--paper);border-left:3px solid var(--amber);padding:14px 16px 10px;display:grid;gap:10px}
+.card .sub{margin:0;font-weight:700;font-size:12px;color:var(--amber)}
+.card h2{margin:0;font:400 30px/1 var(--name);text-transform:uppercase;letter-spacing:.01em}
+.card .body{margin:0;color:var(--ink2);font-size:13.5px;max-width:60ch}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch}
+.btn,.seg button{font:700 13px/1 var(--type);color:var(--ink);background:none;border:1px solid var(--rule);padding:9px 11px;cursor:pointer;min-height:36px}
+.btn:hover,.seg button:hover{border-color:var(--amber)}
+.btn[aria-pressed="true"],.seg button[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#160f06}
+.seg{display:flex;flex-wrap:wrap;gap:0}
+.seg button{margin-right:-1px}
+.seg-label{margin:0 0 5px;font-size:12px;color:var(--muted)}
+.card ul.list{list-style:none;margin:0;padding:0;display:grid}
+.list li button{display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-top:1px dashed var(--rule);color:var(--ink);font:inherit;padding:8px 2px;cursor:pointer}
+.list li .dot{width:10px;height:10px;align-self:center}
+.list li b{font-weight:700}
+.list li .who{color:var(--muted);font-size:12.5px;margin-left:6px}
+.list li small{display:none;color:var(--ink2);font-size:12.5px;line-height:1.5;margin-top:3px}
+.list li button[aria-pressed="true"] b{color:var(--amber)}
+.list li button[aria-pressed="true"] small{display:block}
+.tag{font-size:11px;font-weight:700;padding:1px 5px;margin-right:6px;border:1px solid var(--rule);color:var(--ink2)}
+.tag.you{background:var(--amber);border-color:var(--amber);color:#160f06}
+.tag.crew{border-color:var(--red);color:#f0928a}
+.tag.law{border-color:var(--met);color:#a8baf0}
+.note{margin:0;padding:8px 10px;border-left:2px solid var(--red);background:rgba(200,38,28,.07);font-size:13px;color:var(--ink2)}
+.note b{color:var(--ink)}
+.hint{grid-column:2;grid-row:3;align-self:end;justify-self:end;margin:0;font-size:12px;color:var(--muted);text-align:right;text-shadow:0 0 6px #000}
+a:focus-visible,button:focus-visible,#view:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+#err{position:fixed;inset:auto 16px 16px;padding:12px 14px;background:var(--paper);border-left:3px solid var(--red);font-size:13px}
+#loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--ink2);background:var(--bg)}
+body.capture .hud,body.capture #loading{display:none!important}
+body.frozen .card,body.frozen .label,body.frozen #clock,body.frozen .hint{opacity:.12;transition:opacity .25s}
+@media (max-width:760px){
+  .hud{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto}
+  .look{grid-column:1;grid-row:2;justify-self:start;grid-auto-flow:column}
+  #clock{grid-column:1;grid-row:3}
+  .card{grid-row:4;max-height:44vh;width:100%}
+  .hint{display:none}
+}
+/* the job: start screen, in-game HUD, end card */
+.start{position:fixed;inset:0;display:grid;align-content:end;justify-items:start;gap:14px;padding-block:24px max(28px,env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));
+  background:linear-gradient(0deg,rgba(6,6,7,.94) 0%,rgba(6,6,7,.7) 45%,rgba(6,6,7,0) 80%);z-index:5}
+.start .file{margin:0;font:700 12px/1.2 var(--type);color:var(--amber);letter-spacing:.06em}
+.start h2{margin:0;font:400 clamp(52px,10vw,120px)/.86 var(--name);text-transform:uppercase;text-shadow:4px 4px 0 #000}
+.start h2 span{color:var(--red)}
+.start .pitch{margin:0;max-width:56ch;color:var(--ink2);font-size:15px}
+.start .ctl{margin:0;color:var(--muted);font-size:12.5px;max-width:70ch}
+.start .row button{font:400 22px/1 var(--name);letter-spacing:.04em;text-transform:uppercase;padding:13px 22px;border:0;cursor:pointer;background:var(--ink);color:#0b0b0b;min-height:48px}
+.start .row button.vr{background:var(--red);color:var(--ink)}
+.start .row button.ghost{background:none;color:var(--ink2);border:1px solid var(--rule);font:700 13px/1 var(--type);text-transform:none;letter-spacing:0}
+.ghud{position:fixed;inset:0;pointer-events:none;display:none;z-index:4}
+body.playing .ghud{display:block}
+body.playing .hud{display:none}
+body.playing #view{cursor:crosshair}
+#gObj{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));margin:0;max-width:min(520px,70vw);padding:8px 12px;background:var(--paper);border-left:3px solid var(--amber);font:700 14px/1.4 var(--type)}
+#gStars{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));margin:0;font:400 44px/1 var(--name);color:#ffd040;text-shadow:3px 3px 0 #000;letter-spacing:.08em}
+#gStars[data-n="2"]{color:#ff5a3a}
+#gCash{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(62px + env(safe-area-inset-top,0px));margin:0;padding:3px 8px;background:var(--paper);color:#7ad87a;font:700 13px/1.3 var(--type)}
+#gSub{position:absolute;left:50%;bottom:calc(34px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);margin:0;max-width:min(760px,90vw);padding:8px 14px;background:rgba(6,6,6,.92);font:700 17px/1.45 var(--type);text-align:center}
+#gSub b{color:var(--amber);margin-right:6px}
+.gEnd{position:fixed;inset:auto 0 0 0;z-index:6;display:grid;gap:10px;justify-items:start;padding-block:22px max(26px,env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));background:linear-gradient(0deg,rgba(5,5,5,.96),rgba(5,5,5,.75) 70%,rgba(5,5,5,0))}
+.gEnd h2{margin:0;font:400 clamp(56px,11vw,130px)/.86 var(--name);color:#f5d02e;text-shadow:4px 4px 0 #000}
+.gEnd[data-kind="nicked"] h2{color:var(--red)}
+.gEnd p{margin:0;max-width:60ch;color:var(--ink);font-size:15px}
+.gEnd button{font:400 20px/1 var(--name);text-transform:uppercase;letter-spacing:.04em;padding:12px 20px;border:0;background:var(--ink);color:#0b0b0b;cursor:pointer;pointer-events:auto}
+/* phone controls */
+.touch-ui{display:none}
+body.playing.touch .touch-ui{display:block}
+#tStick{position:fixed;left:max(22px,env(safe-area-inset-left,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));width:132px;height:132px;border-radius:50%;background:rgba(236,230,218,.08);border:2px solid rgba(236,230,218,.35);touch-action:none;z-index:7}
+#tKnob{position:absolute;left:41px;top:41px;width:50px;height:50px;border-radius:50%;background:rgba(240,162,62,.85);box-shadow:0 0 0 3px rgba(0,0,0,.4);pointer-events:none}
+.tbtns{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;z-index:7}
+.tbtns button{width:84px;height:84px;border-radius:50%;border:2px solid rgba(236,230,218,.45);background:rgba(14,15,15,.6);color:var(--ink);font:400 18px/1 var(--name);letter-spacing:.04em;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none}
+.tbtns button[aria-pressed="true"]{background:var(--amber);color:#160f06;border-color:var(--amber)}
+#tGrab{background:rgba(200,38,28,.75)}
+#tJump[data-ready="1"]{background:var(--amber);color:#160f06;border-color:var(--amber)}
+#gAct{position:absolute;left:50%;top:58%;transform:translateX(-50%);margin:0;padding:6px 12px;background:rgba(6,6,6,.85);border:1px solid var(--amber);color:var(--amber);font:700 15px/1 var(--type);letter-spacing:.06em}
+body.playing.touch #gSub{bottom:calc(178px + env(safe-area-inset-bottom,0px))}
+body.playing.touch #gObj{font-size:12.5px;max-width:min(420px,62vw)}
+body.playing.touch .gEnd{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+body:not(.lookdev):not(.capture) .hud{display:none}
+@media (max-height:520px){ .start{gap:8px} .start h2{font-size:clamp(40px,12vh,72px)} .start .pitch{font-size:13px} .start .ctl{display:none} .start .row button{padding:10px 16px;font-size:18px;min-height:44px} }
+body.capture .start,body.capture .ghud,body.capture .gEnd{display:none!important}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+.ldnNav{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:6px 12px;background:rgba(10,10,12,.72);color:#ffd040;font:700 15px/1.2 'Courier New',monospace;letter-spacing:.04em;border-radius:4px;z-index:30;pointer-events:none;white-space:nowrap}
+.ldnNav i{display:inline-block;font-style:normal}
+.ldnToast{position:fixed;top:30%;left:50%;transform:translateX(-50%);padding:10px 18px;background:rgba(10,10,12,.82);color:#ffd040;font:700 20px/1.2 'Courier New',monospace;letter-spacing:.08em;border:1px solid #ffd040;z-index:31;pointer-events:none}
+body:not(.playing) .ldnNav,body:not(.playing) .ldnToast{display:none}
+</style>
+
+<canvas id="view" tabindex="0" aria-label="3D view of Bethnal Green Road at night with the cast. Drag to look around, scroll or pinch to zoom."></canvas>
+<div class="hud">
+  <header class="label">
+    <p class="file">London VR &middot; look-dev &middot; E2, 02:14</p>
+    <h1>Bethnal Green Road</h1>
+    <nav class="links" aria-label="Elsewhere"><a href="houses.html">House Calls</a></nav>
+  </header>
+  <fieldset class="look" style="margin:0">
+    <legend class="seg-label" style="padding:0">Look</legend>
+    <label><input type="checkbox" id="grade" checked> Night grade</label>
+    <label><input type="checkbox" id="ps1" checked> PS1</label>
+    <label><input type="checkbox" id="rain" checked> Rain</label>
+  </fieldset>
+  <p id="clock" aria-live="polite"></p>
+  <section class="card" id="card" aria-live="polite"></section>
+  <p class="hint">Drag to look &middot; scroll or pinch to zoom<br>Eye level: WASD or the wheel to walk</p>
+</div>
+<section class="start" id="gStart" aria-label="Start">
+  <p class="file">London VR &middot; the first job &middot; E2, 02:14</p>
+  <h2>The <span>Bag</span></h2>
+  <p class="pitch">Degsy's got a bag on the boot of his motor that needs to get to Arch 9, under the railway bridge. Two coppers are between you and it. Don't run. Don't let them see it.</p>
+  <div class="row"><button type="button" id="gVR" class="vr" hidden>Enter VR</button><button type="button" id="gPlay">Play</button><button type="button" id="gLook" class="ghost">Just look around</button></div>
+  <p class="ctl">Phone: thumbstick to walk, drag to look, RUN, GRAB and JUMP (landscape works best). Desktop: mouse to look, WASD to walk, Shift to run, E or click to grab, Space to vault or climb. Headset: left stick to walk (click it to run), right stick to turn, squeeze with a hand on the bag to grab it, A or X to vault or climb. Look at someone up close to meet them.</p>
+</section>
+<div class="ghud" aria-live="polite"><p id="gAct" hidden></p><p id="gObj"></p><p id="gStars" data-n="0"></p><p id="gCash" hidden></p><p id="gSub" hidden></p></div>
+<div class="touch-ui" aria-label="Touch controls"><div id="tStick" aria-label="Move"><div id="tKnob"></div></div><div class="tbtns"><button type="button" id="tJump">Jump</button><button type="button" id="tRun" aria-pressed="false">Run</button><button type="button" id="tGrab">Grab</button></div></div>
+<section class="gEnd" id="gEnd" hidden><h2 id="gEndH"></h2><p id="gEndP"></p><button type="button" id="gAgain">Run it again</button></section>
+<p id="err" hidden></p>
+<p id="loading">Putting the kettle on&hellip;</p>
+<script>
