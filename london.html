@@ -4655,7 +4655,7 @@ buildNav();
    as single cards, the lamps as glows, and the ground as one painted map of the hub. Chunked like the detail, so the
    frustum culls it; drawBaked() picks detail or stand-in per chunk by its nearest distance to the eye.
    ========================================================================================================== */
-const LOD={near:46, idx:new Map(), root:N(null), map:null, verts:0};
+const LOD={near:56, idx:new Map(), root:N(null), map:null, verts:0};
 const LCELL=64, LATW=1024, LCOLS=LATW/LCELL;
 function buildLOD(){ const t0=performance.now(), Fs=[...new Set(LOD_REC.fac.map(r=>r[6]))];
   /* the atlases: cell 0 roof felt, 1 a ground floor (dark shopfronts / lit shop glow), 2.. one per facade */
