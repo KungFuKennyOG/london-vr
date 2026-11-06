@@ -97,9 +97,9 @@ function dogTick(p,dt,moving){ const D=p.dog, sniff=p.sniff>0, walkDbg=!!p.walkD
   const want=mv?'walk':sniff?'sniff':D.still>2.2?'sit':'stand'; D.state=want;
   /* where the dog is: on the left, a little ahead; further ahead with its nose down when it sniffs */
   /* never in a wall, a bin or a parked car: if the left's blocked, the right, else tucked in behind (48f4) */
-  const wob=Math.sin(LIFE.t*1.7+p.ph)*.06; let tz=sniff?.9:mv?.55:.42; D.sideT=(D.sideT||0)-dt; const inNow=D.sideT>0&&!dogClear(p,D.n.p[0],D.n.p[2]);
-  if(D.sideT<=0||inNow){ D.sideT=.25; D.side=dogSide(p,tz); } const S_=DOG_SIDES[D.side||0], tx=S_[0]+wob*Math.sign(S_[0]); if(S_[1]!==1) tz=S_[1];
-  const kk=Math.min(1,dt*(inNow?14:3)); D.n.p[0]+=(tx-D.n.p[0])*kk; D.n.p[1]=0; D.n.p[2]+=(tz-D.n.p[2])*kk; D.n.r[1]+=((sniff&&!D.side?.5:mv?wob*.6:.25*Math.sign(S_[0]))-D.n.r[1])*Math.min(1,dt*3);
+  const wob=Math.sin(LIFE.t*1.7+p.ph)*.06; let tz=sniff?.9:mv?.55:.42; D.sideT=(D.sideT||0)-dt; const inNow=D.sideT>0&&!dogClear(p,D.n.p[0],D.n.p[2],D.n.r[1]);
+  if(D.sideT<=0||inNow){ D.sideT=.25; D.side=dogSide(p,tz,sniff,mv); } const k_=D.side||0, S_=DOG_SIDES[k_], tx=S_[0]+wob*Math.sign(S_[0]); if(S_[1]!==1) tz=S_[1];
+  const kk=Math.min(1,dt*(inNow?14:3)); D.n.p[0]+=(tx-D.n.p[0])*kk; D.n.p[1]=0; D.n.p[2]+=(tz-D.n.p[2])*kk; D.n.r[1]+=((mv&&!(sniff&&!k_)?wob*.6:dogRy(k_,sniff,mv))-D.n.r[1])*Math.min(1,dt*(inNow?14:3));
   /* skin near you every frame, further off less often */ const far=p.far||0; D.skinT-=dt; if(D.skinT>0&&far>8) return; D.skinT=far<16?.033:far<30?.08:.2; const adt=Math.max(dt,.033);
   const tgt=DOG_POSE[want==='walk'?'stand':want]||DOG_POSE.stand, k=Math.min(1,adt*5);
   DOG_B.forEach(([nm],i)=>{ const t=tgt[nm]||[0,0,0], r=D.rot[i]; r[0]+=(t[0]-r[0])*k; r[1]+=(t[1]-r[1])*k; r[2]+=(t[2]-r[2])*k; }); D.hy+=((tgt.hy||0)-D.hy)*k;

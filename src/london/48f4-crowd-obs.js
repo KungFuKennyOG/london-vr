@@ -97,11 +97,13 @@ function pedJoin(p,L,s,dir,strict){ const [lx,lz]=lineXZ(L,s), ok=pedPlan(p,lx,l
 function pedRejoin(p,dir){ const nl=nearestReach(p.x,p.z); if(!nl){ hide(p); return false; } return pedJoin(p,nl.L,nl.s,dir); }
 /* is a point clear to stand on (nudged along (ox,oz) up to n steps of 0.15 m if not); returns [x,z] or null */
 function pobFree(x,z,ox,oz,n,rad){ for(let k=0;k<=n;k++){ const X=x+ox*.15*k, Z=z+oz*.15*k; if(pobHit(X,Z,rad||.22)<0) return [X,Z]; } return null; }
-/* the dogs: on the owner's left, or the right, or tucked in behind, whichever is clear: [across, along (1: as asked)] */
-const DOG_SIDES=[[.62,1],[-.62,1],[.32,-.55],[-.32,-.55],[.22,.25]];
-function dogClear(p,lat,fwd){ const c=Math.cos(p.yaw), s=Math.sin(p.yaw), X=p.x+p.dodge[0], Z=p.z+p.dodge[1];
-  for(let e=-1;e<=1;e++){ const f=fwd+e*.34, wx=X+c*lat+s*f, wz=Z-s*lat+c*f; if(pobHit(wx,wz,.16)>=0) return false; } return true; }
-function dogSide(p,tz){ for(let k=0;k<DOG_SIDES.length;k++){ const S=DOG_SIDES[k]; if(dogClear(p,S[0],S[1]===1?tz:S[1])) return k; } return 4; }
+/* the dogs: on the owner's left, or the right, or tucked in ahead or behind, whichever is clear: [across, along (1: as asked)].
+   The check covers the dog's whole length (nose to tail) along the way it will face (ry: its turn from the owner's heading) */
+const DOG_SIDES=[[.62,1],[-.62,1],[.32,-.55],[-.32,-.55],[0,.62],[0,-.62],[.22,.25]];
+const dogRy=(k,sniff,mv)=>{ const S=DOG_SIDES[k]; return sniff&&k===0?.5:mv?0:S[0]?.25*Math.sign(S[0]):0; };
+function dogClear(p,lat,fwd,ry){ const c=Math.cos(p.yaw), s=Math.sin(p.yaw), X=p.x+p.dodge[0], Z=p.z+p.dodge[1], dl=Math.sin(ry||0), df=Math.cos(ry||0);
+  for(let e=-1;e<=1;e++){ const l=lat+e*.34*dl, f=fwd+e*.34*df, wx=X+c*l+s*f, wz=Z-s*l+c*f; if(pobHit(wx,wz,.16)>=0) return false; } return true; }
+function dogSide(p,tz,sniff,mv){ for(let k=0;k<DOG_SIDES.length;k++){ const S=DOG_SIDES[k]; if(dogClear(p,S[0],S[1]===1?tz:S[1],dogRy(k,sniff,mv))) return k; } return 6; }
 /* for the tools (tools/london_crowd_solids.py): the furniture footprints people walk round, shelter posts included */
 window.__crowd.furn=()=>{ const out=CROWD_FURN.map(f=>[f[0],f[1],f[2],f[3],f[4]||'furn']);
   for(const st of CROWD_SPOTS.stops){ const w=3.4,d=1.2, lx=(u,v)=>st.ax==='x'?[st.x+u,st.z+st.side*v]:[st.x+st.side*v,st.z+u];
