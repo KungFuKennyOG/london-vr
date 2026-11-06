@@ -249,8 +249,8 @@ function houseFrontH(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F,top,r){ const it=L.it, k
   eQK(Pu(du0),nOut,Y_,dd,ft*sy,stone); eQK(Pu(du0+dw,-dd),out,Y_,dd,ft*sy,stone); eQK(Pu(du0,-dd,PAVE_Y+ft*sy),U,out,dw,dd,mix(stone,'#000000',.3));
   lotBox(P0,U,out,du0-.1,du0+dw+.1,-dd,.32,PAVE_Y,PAVE_Y+.15,'#9e9a90','fst');
   /* the bay: its own front shows the painted window, a lead roof on top, a solid you can climb */
-  const lit=hr(L.door*31+7)()<.36;
-  if(lay.bay){ const [b0,b1,bh]=lay.bay, bo=.55, h=bh*sy, bu0=Math.min(wx(b0),wx(b1)), bw=(b1-b0)*sx; Q(b0,b1,0,bh,bo); lotBox(P0,U,out,bu0,bu0+bw,0,bo,PAVE_Y,PAVE_Y+h,stone,'s');
+  const lit=hr(L.door*31+7)()<.36; let bayU=null;
+  if(lay.bay){ const [b0,b1,bh]=lay.bay, bo=.55, h=bh*sy, bu0=Math.min(wx(b0),wx(b1)), bw=(b1-b0)*sx; bayU=[bu0-.05,bu0+bw+.05,bo+.07]; Q(b0,b1,0,bh,bo); lotBox(P0,U,out,bu0,bu0+bw,0,bo,PAVE_Y,PAVE_Y+h,stone,'s');
     lotBox(P0,U,out,bu0-.05,bu0+bw+.05,0,bo+.07,PAVE_Y+h,PAVE_Y+h+.14,'#3e4246','fst',PAVE_Y); if(lit) for(const [w0,w1,sl,tp] of lay.w) Q(w0,w1,sl,tp,bo+.02,KAL.m); }
   else for(const [w0,w1,sl,tp] of lay.w){ const a=Math.min(wx(w0),wx(w1)); lotBox(P0,U,out,a-.07,a+(w1-w0)*sx+.07,0,.09,PAVE_Y+sl*sy-.07,PAVE_Y+sl*sy,stone,'fstu'); if(lit) Q(w0,w1,sl,tp,.02,KAL.m); }
   /* a string course at first-floor level */ lotBox(P0,U,out,0,fw,0,.07,PAVE_Y+gH-.03,PAVE_Y+gH+.1,stone,'fstu');
@@ -258,7 +258,7 @@ function houseFrontH(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F,top,r){ const it=L.it, k
   /* door number for Ali's deliveries, the drainpipe, a bin, now and then a dish or a pot */
   const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), [hx,,hz]=Pu(du0+dw/2,.7); HOUSE_DOORS.push({x:hx,z:hz,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(k==='n'||k==='w'?1:0)});
   const pu=mir?.06:fw-.06; lotBox(P0,U,out,pu-.05,pu+.05,.02,.12,PAVE_Y,top,'#1e2022','fs');
-  if(r()<.5){ const bu=mir?.55:fw-.55, bc=['#1a1a1c','#2a4a2a','#2a3a6a','#5a3a2a','#1a1a1c'][L.door%5]; lotBox(P0,U,out,bu-.3,bu+.3,.12,.72,PAVE_Y,PAVE_Y+1.07,bc,'fbst',true); }
+  if(r()<.5){ const bu=mir?.55:fw-.55, bc=['#1a1a1c','#2a4a2a','#2a3a6a','#5a3a2a','#1a1a1c'][L.door%5]; const bo0=bayU&&bu+.3>bayU[0]&&bu-.3<bayU[1]?bayU[2]+.04:.12; /* never inside the bay: in front of it, the step up onto its roof */ lotBox(P0,U,out,bu-.3,bu+.3,bo0,bo0+.6,PAVE_Y,PAVE_Y+1.07,bc,'fbst',true); }
   if(r()<.2){ const [dx,,dz]=Pu(fw*(mir?.3:.7),.12); eGeo(swG(cyl(.32,.32,.05,8),'#c8c8c4'),KA.m,dx,PAVE_Y+gH+1.6,dz,Math.atan2(out[0],out[2]),Math.PI/2); }
   if(r()<.22){ const pu2=mir?du0-.35:du0+dw+.35; lotBox(P0,U,out,pu2-.16,pu2+.16,.1,.42,PAVE_Y,PAVE_Y+.32,'#8a5a3a','fbst'); lotBox(P0,U,out,pu2-.22,pu2+.22,.04,.48,PAVE_Y+.32,PAVE_Y+.72,'#2e4a24','fbst'); } }
 

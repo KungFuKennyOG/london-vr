@@ -53,7 +53,7 @@ function eRun(F,m,s,t0,t1,h,y0,tile){ const U=F.U, a=EP(F,s,U===NZ||U===NX?t1:t0
 function heras(F,s,t0,t1,o={}){ const y0=o.y0??PAVE_Y, n=Math.max(1,Math.round((t1-t0)/3.45)), pw=(t1-t0)/n;
   eRun(F,mHeras,s,t0,t1,2.0,y0+.12,pw);
   for(let i=0;i<=n;i++){ const p=EP(F,s,t0+i*pw); eBox(p[0]-.32,p[2]-.32,p[0]+.32,p[2]+.32,y0,y0+.14,mFoot); }
-  const a=F.R(s-.08,s+.08,t0,t1); hsol(a[0],a[1],a[2],a[3],y0+2.2); }
+  const a=F.R(s-.08,s+.08,t0,t1); hsol(a[0],a[1],a[2],a[3],y0+2.2).bar=true; } /* .bar: an edge barrier, never climbed or vaulted (48-game) */
 function cone(F,s,t,y=0){ const p=EP(F,s,t); eGeo(cyl(.03,.17,.72,8),mCone,p[0],y+.36,p[2]); eGeo(cyl(.075,.11,.12,8),mConeW,p[0],y+.47,p[2]); eBox(p[0]-.2,p[2]-.2,p[0]+.2,p[2]+.2,y,y+.03,mFoot); }
 function signPost(F,s,t,m,w=1.1,h=.55,y0=PAVE_Y){ const p=EP(F,s,t); eBox(p[0]-.03,p[2]-.03,p[0]+.03,p[2]+.03,y0,y0+1.7,mPole); eFace(F,m,s-.04,t,w,h,y0+1.55); }
 function chapter8(F,s,t0,t1,y0=0){ eRun(F,mChapter8,s,t0,t1,.15,y0+.85,1.6); eRun(F,mChapter8,s,t0,t1,.15,y0+.4,1.6);
@@ -66,15 +66,15 @@ function posters(F,s,t0,t1,y0,seed){ const r=hr(seed); for(let t=t0+.6;t<t1-.6;t
 function hoarding(F,s,t0,t1,print,seed){ const y0=PAVE_Y; eRun(F,mPly,s,t0,t1,2.5,0,1.2);
   const mid=(t0+t1)/2, pw=Math.min(9,t1-t0-1); eFace(F,HOARD[print],s-.03,mid,pw,pw/4,y0+.5);
   posters(F,s,t0,mid-pw/2,0,seed); posters(F,s,mid+pw/2,t1,0,seed+1);
-  const a=F.R(s-.1,s+.1,t0,t1); hsol(a[0],a[1],a[2],a[3],2.6); }
-function van(F,s,t,c=0xe8e8e4){ const r=F.R(s-2.5,s+2.5,t-1,t+1); eBox(r[0],r[1],r[2],r[3],.35,2.4,col(c)); eBox(r[0]+.1,r[1]+.1,r[2]-.1,r[3]-.1,.05,.4,mFoot); hsol(r[0],r[1],r[2],r[3],2.4);
+  const a=F.R(s-.1,s+.1,t0,t1); hsol(a[0],a[1],a[2],a[3],2.6).bar=true; }
+function van(F,s,t,c=0xe8e8e4){ const r=F.R(s-2.5,s+2.5,t-1,t+1); eBox(r[0],r[1],r[2],r[3],.35,2.4,col(c)); eBox(r[0]+.1,r[1]+.1,r[2]-.1,r[3]-.1,.05,.4,mFoot); hsol(r[0],r[1],r[2],r[3],2.4).bar=true;
   const st=F.R(s-2.5,s+2.5,t-1.01,t+1.01); eBoxF(st[0],st[1],st[2],st[3],1.1,1.35,{n:mCone,s:mCone,e:mCone,w:mCone}); }
 const tBus=P2(128,64,(g,w,h)=>{ R(g,'#c41a1a',0,0,w,h); for(let k=0;k<2;k++){ const y=k?40:10; for(let x=4;x<w-4;x+=20){ R(g,'#1a1c20',x,y,17,15); R(g,'rgba(255,220,160,.25)',x+1,y+1,15,5); } } R(g,'#8a1010',0,30,w,3); R(g,'#2a2a2a',0,h-4,w,4); },0,1);
 const mBusSide=MM(tBus), mBusEnd=MM(P2(32,64,(g,w,h)=>{ R(g,'#c41a1a',0,0,w,h); R(g,'#1a1c20',3,8,w-6,18); R(g,'#101010',3,4,w-6,4); g.fillStyle='#f0a020'; g.font='700 4px Arial'; g.fillText('NOT IN SERVICE',4,7); R(g,'#1a1c20',3,36,w-6,16); },0,1));
 function bus(F,s,t){ const a=F.R(s-5.6,s+5.6,t-1.27,t+1.27), ns=F===EDGEF.w||F===EDGEF.e; const side=mBusSide,end=mBusEnd;
   eBoxF(a[0],a[1],a[2],a[3],.3,4.4,ns?{n:side,s:side,t:col(0x9a1414)}:{e:side,w:side,t:col(0x9a1414)},{tu:ns?a[2]-a[0]:a[3]-a[1],tv:4.1});
   eBoxF(a[0],a[1],a[2],a[3],.3,4.4,ns?{e:end,w:end}:{n:end,s:end},{tu:2.54,tv:4.1}); eBox(a[0]+.2,a[1]+.2,a[2]-.2,a[3]-.2,0,.3,mFoot);
-  hsol(a[0],a[1],a[2],a[3],4.4); }
+  hsol(a[0],a[1],a[2],a[3],4.4).bar=true; }
 
 /* ---------------- the continuation: the street carries on past the barrier ---------------- */
 const EDGE_FAC=[['stock','sash'],['red','sash'],['soot','sash'],['stock','mansion'],['brown','sash'],['red','estate']].filter(f=>BRICKS[f[0]]);

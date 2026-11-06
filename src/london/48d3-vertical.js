@@ -75,7 +75,7 @@ function buildVertical(){ const t0=performance.now(), v0=EMIT.verts, LB=n=>LANDM
   /* THE PETROL STATION: ice chest and gas cage onto the kiosk, the jet-wash roof, then the canopy */
   { const B=LB('petrol'); if(B){ const [x0,z0,x1,z1]=B, fx0=x0+2,fx1=x1-2,fz0=z0+2, cX1=fx0+38, kx0=fx1-26, kz0=fz0, kz1=fz0+9;
       eBox(kx0+1,kz1+.2,kx0+2.4,kz1+1.1,PAVE_Y,PAVE_Y+1.0,col(0xe8eef2)); hsol(kx0+1,kz1+.2,kx0+2.4,kz1+1.1,PAVE_Y+1.0);
-      eBox(kx0-.2,kz1-1.6,kx0+.9,kz1+.2,PAVE_Y,PAVE_Y+2.0,mMesh); hsol(kx0-.2,kz1-1.6,kx0+.9,kz1+.2,PAVE_Y+2.0);
+      eBox(kx0-1.15,kz1-1.0,kx0-.05,kz1+.2,PAVE_Y,PAVE_Y+2.0,mMesh); hsol(kx0-1.15,kz1-1.0,kx0-.05,kz1+.2,PAVE_Y+2.0); /* against the kiosk's side, not through it */
       eBoxF(cX1+.2,kz0+1,kx0-.1,kz1-1,PAVE_Y+4.0,PAVE_Y+4.35,{n:mSteelV,s:mSteelV,e:mSteelV,w:mSteelV,t:col(0x5a6066)}); hsol(cX1+.2,kz0+1,kx0-.1,kz1-1,PAVE_Y+4.35,PAVE_Y+4.0);
       for(const px of [cX1+.4,kx0-.3]) for(const pz of [kz0+1.2,kz1-1.2]) eBox(px-.06,pz-.06,px+.06,pz+.06,PAVE_Y,PAVE_Y+4,mSteelV);
       roofKitV(kx0,kz0,fx1-2,kz1,PAVE_Y+3.6,9803); } }

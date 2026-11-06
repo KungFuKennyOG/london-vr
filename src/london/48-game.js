@@ -267,7 +267,7 @@ function tryGrab(handPos){ if(G.hasBag||G.result||G.phase==='meet'||G.phase==='b
    In the headset you can also climb with your hands: squeeze grip on a ledge and pull yourself up.
    The coppers can't do any of it. */
 const STEP=.36, EYE=1.65, BODY=1.7, GRAV=17, JUMPV=4.4, REACH_GROUND=2.65, REACH_AIR=2.1;
-const SOL=[]; const SOLH=RectHash(SOL,o=>o.r); const solNear=(x0,z0,x1,z1)=>SOLH.near(x0,z0,x1,z1); const sol=(x0,z0,x1,z1,y1,y0=0)=>{ const o={r:[x0,z0,x1,z1],y0,y1}; SOL.push(o); return o; };
+const SOL=[]; const SOLH=RectHash(SOL,o=>o.r); const solNear=(x0,z0,x1,z1)=>SOLH.near(x0,z0,x1,z1); const sol=(x0,z0,x1,z1,y1,y0=0)=>{ const o={r:[x0,z0,x1,z1],y0,y1}; if(window.__AUDIT) o.src=new Error().stack; SOL.push(o); return o; }; /* the parkour audit (tools/london_parkour_audit.py) tags each solid with who made it */
 for(const x of [-9.6,-5,0,5,9.8]) sol(x-.12,KERB_Z-.52,x+.12,KERB_Z-.28,PAVE_Y+.92);              /* bollards */
 sol(-4.86,KERB_Z-.86,-4.34,KERB_Z-.34,PAVE_Y+.95);                                                  /* litter bin */
 sol(-12.5,KERB_Z+.15,-7.9,KERB_Z+1.95,.93); sol(-11.53,KERB_Z+.28,-9.23,KERB_Z+1.82,1.42);          /* Degsy's motor: bonnet/boot, roof */
@@ -395,7 +395,7 @@ const WALKO=WALK.map(r=>({r})); const WALKH=RectHash(WALKO,o=>o.r); const addWal
 const inWalk=(x,z,rad)=>{ if(HUBX&&HUBX.walk(x,z,rad)) return true; for(const o of WALKH.near(x,z,x,z)) if(inR(o.r,x,z,rad)) return true; return false; };
 function solidHit(x,z,rad,feet,head){ for(const s of solNear(x-rad,z-rad,x+rad,z+rad)){ const r=s.r; if(x>r[0]-rad&&x<r[2]+rad&&z>r[1]-rad&&z<r[3]+rad&&s.y1>feet+STEP&&s.y0<head) return s; } return null; }
 function groundAt(x,z,feet){ let g=floorY(x,z); const k=P.r*.5; for(const s of solNear(x-k,z-k,x+k,z+k)){ const r=s.r; if(x>r[0]-k&&x<r[2]+k&&z>r[1]-k&&z<r[3]+k&&s.y1<=feet+STEP+.001&&s.y1>g) g=s.y1; } return g; }
-function free(x,z,feet){ return inWalk(x,z,P.r)&&!solidHit(x,z,P.r,feet,feet+BODY)&&!(feet<floorY(x,z)+1.2&&lifeBlocks(x,z,P.r)); }
+function free(x,z,feet){ return inWalk(x,z,P.r)&&!solidHit(x,z,P.r,feet,feet+BODY)&&!nearBar(x,z,feet)&&!(feet<floorY(x,z)+1.2&&lifeBlocks(x,z,P.r)); }
 function rayRect(x,z,fx,fz,r){ let t0=-1e9,t1=1e9; for(const [p,d,lo,hi] of [[x,fx,r[0],r[2]],[z,fz,r[1],r[3]]]){ if(Math.abs(d)<1e-9){ if(p<lo||p>hi) return null; continue; } let a=(lo-p)/d,b=(hi-p)/d; if(a>b){ const t=a; a=b; b=t; } t0=Math.max(t0,a); t1=Math.min(t1,b); } return t0<=t1?[t0,t1]:null; }
 P.y=PAVE_Y; P.vy=0; P.vx=0; P.vz=0; P.ground=true;
 const ACT={on:false,t:0,dur:0,kind:'',from:null,to:null,peakY:0};
@@ -403,19 +403,57 @@ function startAct(kind,to,peakY,dur){ Object.assign(ACT,{on:true,t:0,kind,from:[
 function actTick(dt){ ACT.t+=dt; const k=Math.min(1,ACT.t/ACT.dur),e=x=>x*x*(3-2*x),[x0,y0,z0]=ACT.from,[x1,y1,z1]=ACT.to;
   if(ACT.kind==='vault'){ const q=e(k); P.x=lerp(x0,x1,q); P.z=lerp(z0,z1,q); P.y=k<.5?lerp(y0,ACT.peakY,e(k/.5)):lerp(ACT.peakY,y1,e((k-.5)/.5)); }
   else { const up=.6,mx=lerp(x0,x1,.3),mz=lerp(z0,z1,.3); if(k<up){ const q=e(k/up); P.y=lerp(y0,y1+.06,q); P.x=lerp(x0,mx,q); P.z=lerp(z0,mz,q); } else { const q=e((k-up)/(1-up)); P.y=y1+.06*(1-q); P.x=lerp(mx,x1,q); P.z=lerp(mz,z1,q); } }
-  P.running=true; if(k>=1){ ACT.on=false; P.x=x1; P.y=y1; P.z=z1; P.ground=true; P.vy=0; P.vx=P.vz=0; } }
-/* the nearest solid straight ahead that you'd have to get over */
-function solidAhead(fx,fz,maxD){ let best=null; const e=maxD+P.r+.1; for(const s of solNear(P.x-e,P.z-e,P.x+e,P.z+e)){ if(s.y1<=P.y+STEP||s.y0>P.y+BODY+.9||s.y1>P.y+REACH_GROUND+.5) continue; /* overhead ledges in reach count too */ const r=[s.r[0]-P.r,s.r[1]-P.r,s.r[2]+P.r,s.r[3]+P.r],h=rayRect(P.x,P.z,fx,fz,r);
-  if(!h||h[1]<0||h[0]>maxD) continue; if(!best||h[0]<best.d) best={s,d:Math.max(0,h[0]),t1:h[1],thick:h[1]-h[0]-2*P.r}; } return best; }
-function pathClear(x1,z1,top,skip){ for(const s of solNear(Math.min(P.x,x1)-.3,Math.min(P.z,z1)-.3,Math.max(P.x,x1)+.3,Math.max(P.z,z1)+.3)){ if(s===skip||s.y1<=top-.02||s.y0>top+BODY) continue; const r=[s.r[0]-P.r*.6,s.r[1]-P.r*.6,s.r[2]+P.r*.6,s.r[3]+P.r*.6]; if(segHits(P.x,P.z,x1,z1,r)) return false; } return true; }
-function vaultLand(a,fx,fz){ for(const e of [.05,.35,.7]){ const x=P.x+fx*(a.t1+e),z=P.z+fz*(a.t1+e),g=groundAt(x,z,a.s.y1); if(g<=a.s.y1&&free(x,z,g)&&pathClear(x,z,a.s.y1+.14,a.s)) return [x,g,z]; } return null; }
-function mantleSpot(s,fx,fz){ const h=rayRect(P.x,P.z,fx,fz,s.r); const t0=h?Math.max(0,h[0]):0;
-  for(const e of [.32,.2,.45,.12]){ const x=h?P.x+fx*(t0+e):clamp(P.x,s.r[0]+.1,s.r[2]-.1),z=h?P.z+fz*(t0+e):clamp(P.z,s.r[1]+.1,s.r[3]-.1);
-    if(Math.abs(groundAt(x,z,s.y1)-s.y1)>.03||!inWalk(x,z,0)||solidHit(x,z,P.r*.5,s.y1,s.y1+BODY)) continue; return [x,s.y1,z]; } return null; }
-function jump(){ if(!G.on||G.result||ACT.on) return false; const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw), a=solidAhead(fx,fz,.8);
-  if(a){ const h=a.s.y1-P.y;
-    if(h<=1.3&&a.thick<=.95){ const land=vaultLand(a,fx,fz); if(land) return startAct('vault',land,a.s.y1+.14,.55); }
-    if(h<=(P.ground?REACH_GROUND:REACH_AIR)){ const sp=mantleSpot(a.s,fx,fz); if(sp) return startAct('mantle',sp,0,clamp(.38+h*.25,.42,1.05)); } }
+  P.running=true; if(k>=1){ ACT.on=false; P.x=x1; P.y=y1; P.z=z1; P.ground=!ACT.fall; P.vy=0; P.vx=P.vz=0; ACT.fall=false; } }
+/* the nearest solid straight ahead that you'd have to get over. Edge barriers (s.bar: Heras, hoardings, the stopped bus) are
+   never something you get onto or over, so they're skipped as targets but still stop a vault that would cross them. */
+function solidAhead(fx,fz,maxD){ let best=null; const e=maxD+P.r+.1; for(const s of solNear(P.x-e,P.z-e,P.x+e,P.z+e)){ if(s.y1<=P.y+STEP||s.y0>P.y+BODY+.9||s.y1>P.y+REACH_GROUND+.5) continue; /* overhead ledges in reach count too */
+  if(s.y0>P.y+BODY-.05&&s.y1>P.y+REACH_GROUND+.05) continue; /* over your head and out of reach (the flight above you): you go under it */ const r=[s.r[0]-P.r,s.r[1]-P.r,s.r[2]+P.r,s.r[3]+P.r],h=rayRect(P.x,P.z,fx,fz,r);
+  if(!h||h[1]<0||h[0]>maxD) continue; if(h[0]<-.01){ const hr=rayRect(P.x,P.z,fx,fz,s.r); if(!hr||hr[1]<0) continue; } /* brushing past it, or with your back to it: not ahead */
+  if(!best||h[0]<best.d) best={s,d:Math.max(0,h[0]),t1:h[1],thick:h[1]-h[0]-2*P.r}; } return best; }
+/* the obstacle as one thing. A wall with an extension behind it, a railing on a wall, a coping on a parapet, a car in pieces, a
+   run of stair treads: the nearest solid plus every solid along the way that touches it (a gap too narrow to stand in counts as
+   touching). Returns the pieces nearest first, the highest top, and where along the ray it ends. */
+const GAP=.4;
+function obstacleAhead(fx,fz,maxD){ const a=solidAhead(fx,fz,maxD); if(!a) return null;
+  const mem=[a], L=maxD+P.r+3, x1=P.x+fx*L, z1=P.z+fz*L, cand=solNear(Math.min(P.x,x1)-.6,Math.min(P.z,z1)-.6,Math.max(P.x,x1)+.6,Math.max(P.z,z1)+.6);
+  let end=a.t1, top=a.s.y1, grow=true;
+  while(grow){ grow=false;
+    for(const s of cand){ if(s.y1<=P.y+STEP||s.y0>Math.max(P.y+BODY+.9,top+.05)||s.y1>P.y+REACH_GROUND+.5||mem.some(m=>m.s===s)) continue;
+      const q=P.r-.03, h=rayRect(P.x,P.z,fx,fz,[s.r[0]-q,s.r[1]-q,s.r[2]+q,s.r[3]+q]); if(!h||h[1]<0||h[0]<-.02||h[0]>end-2*P.r+GAP) continue; /* not one you're already alongside */
+      mem.push({s,d:Math.max(0,h[0]),t1:h[1]}); if(h[1]>end) end=h[1]; if(s.y1>top) top=s.y1; grow=true; } }
+  mem.sort((p,q)=>p.d-q.d);
+  /* what a vault has to clear: the pieces that stand up from below your waist, and whatever is stacked on them (a railing on a
+     wall, a coping); a slab or deck overhead is head room, not obstacle */
+  const low=[]; let vtop=-1e9, more=true; while(more){ more=false; for(const m of mem){ if(low.includes(m)) continue; if(m.s.y0<=P.y+1.0||m.s.y0<=vtop+.05){ low.push(m); if(m.s.y1>vtop) vtop=m.s.y1; more=true; } } }
+  let vend=a.t1; for(const m of low) if(m.t1>vend) vend=m.t1;
+  return {a,mem,top,end,thick:end-a.d-2*P.r,bar:mem.some(m=>m.s.bar),low,vtop:low.length?vtop:top,vend,vthick:vend-a.d-2*P.r}; }
+/* a clear line from you to (x1,z1) at height top, for a body tucked to `room` (a vault goes over low, knees up) */
+function pathClear(x1,z1,top,skip,room=BODY){ for(const s of solNear(Math.min(P.x,x1)-.3,Math.min(P.z,z1)-.3,Math.max(P.x,x1)+.3,Math.max(P.z,z1)+.3)){ if((skip&&(skip===s||skip.has&&skip.has(s)))||s.y1<=top-.02||s.y0>top+room) continue; const r=[s.r[0]-P.r*.6,s.r[1]-P.r*.6,s.r[2]+P.r*.6,s.r[3]+P.r*.6]; if(segHits(P.x,P.z,x1,z1,r)) return false; } return true; }
+/* over the whole obstacle: land past its far side, at or below its top, with a clear line over it */
+function vaultLand(o,fx,fz){ const skip=new Set(o.low.map(m=>m.s)), top=o.vtop; for(const e of [.05,.35,.7]){ const x=P.x+fx*(o.vend+e),z=P.z+fz*(o.vend+e),g=groundAt(x,z,top); if(g<=top&&free(x,z,g)&&pathClear(x,z,top+.14,skip,1.15)) return [x,g,z]; } return null; }
+/* where to look for a foothold on top: a little way in along the ray, then shuffled up to half a metre either side (the clear
+   end of a bin store under a balcony, the bit of wall past a downpipe) */
+const MPROBE=[[.32,0],[.2,0],[.45,0],[.12,0]]; for(const l of [.25,-.25,.5,-.5]) for(const e of [.32,.2,.12]) MPROBE.push([e,l]);
+/* a spot on top of s, a little way in along the ray: you stand on it (or on a step up to STEP from it: the next tread, a coping),
+   inside the walkable world, with your head clear */
+function mantleSpot(s,fx,fz){ if(s.bar) return null; const h=rayRect(P.x,P.z,fx,fz,s.r); const t0=h?Math.max(0,h[0]):0;
+  for(const [e,l] of MPROBE){ const x=h?P.x+fx*(t0+e)-fz*l:clamp(P.x,s.r[0]+.1,s.r[2]-.1),z=h?P.z+fz*(t0+e)+fx*l:clamp(P.z,s.r[1]+.1,s.r[3]-.1); if(!h&&l) continue;
+    if(!inR([s.r[0]-P.r*.5,s.r[1]-P.r*.5,s.r[2]+P.r*.5,s.r[3]+P.r*.5],x,z,0)) continue;
+    const g=groundAt(x,z,s.y1); if(g<s.y1-.03||!inWalk(x,z,0)||solidHit(x,z,P.r*.5,g,g+BODY)) continue; if(nearBar(x,z,g)) continue; return [x,g,z]; } return null; }
+/* an edge barrier (Heras, a hoarding, the stopped bus) is never stood on or crossed over the top: you can't be over one unless
+   you're 3 m above it (dropping off a roof onto the Heras, walking off a garage along it) */
+function nearBar(x,z,feet){ for(const s of solNear(x-P.r,z-P.r,x+P.r,z+P.r)) if(s.bar&&feet<s.y1+3&&x>s.r[0]-P.r&&x<s.r[2]+P.r&&z>s.r[1]-P.r&&z<s.r[3]+P.r) return true; return false; }
+/* climb onto the obstacle: the nearest piece you can get on top of, else the next one along (the extension behind the garden
+   wall, the railing's wall, the higher tread), within reach */
+function mantleOnto(o,fx,fz,reach){ for(const m of o.mem){ const s=m.s; if(s.bar||s.y1-P.y>reach+.04||s.y1<=P.y+STEP) continue; const sp=mantleSpot(s,fx,fz); if(sp) return sp; } return null; }
+const VAULT_H=1.34, VAULT_T=1.1;
+/* what a jump right now would do: vault over, or climb onto, the obstacle ahead */
+function jumpPlan(fx,fz){ const o=obstacleAhead(fx,fz,.8); if(!o) return null;
+  if(!o.bar&&o.low.length&&o.vtop-P.y<=VAULT_H&&o.vthick<=VAULT_T){ const land=vaultLand(o,fx,fz); if(land){ if(land[1]<P.y-.7&&free(land[0],land[2],P.y-.3)) return {kind:'vault',to:[land[0],Math.max(land[1],P.y-.3),land[2]],peak:o.vtop+.14,dur:.5,fall:true}; /* over a balcony rail or a wall into a drop: clear it, then fall */
+    return {kind:'vault',to:land,peak:o.vtop+.14,dur:.55}; } }
+  const sp=mantleOnto(o,fx,fz,P.ground?REACH_GROUND:REACH_AIR); if(sp){ const h=sp[1]-P.y; return {kind:'mantle',to:sp,peak:0,dur:clamp(.38+h*.25,.42,1.05)}; } return null; }
+function jump(){ if(!G.on||G.result||ACT.on) return false; const pl=jumpPlan(Math.sin(P.yaw),Math.cos(P.yaw));
+  if(pl){ startAct(pl.kind,pl.to,pl.peak,pl.dur); ACT.fall=!!pl.fall; return true; }
   if(P.ground){ P.vy=JUMPV; P.ground=false; return true; } return false; }
 /* one step of the body. f, s: input forward / strafe (-1..1); yaw: which way forward is */
 function bodyTick(dt,f,s,yaw){
@@ -427,7 +465,7 @@ function bodyTick(dt,f,s,yaw){
   if(dx){ if(free(P.x+dx,P.z,P.y)) P.x+=dx; else hit=solidHit(P.x+dx,P.z,P.r,P.y,P.y+BODY)||hit; }
   if(dz){ if(free(P.x,P.z+dz,P.y)) P.z+=dz; else hit=solidHit(P.x,P.z+dz,P.r,P.y,P.y+BODY)||hit; }
   /* mid-air into a ledge you can reach: grab it */
-  if(!P.ground&&hit&&hit.y1-P.y<=REACH_AIR&&hit.y1>P.y+STEP){ const m=Math.hypot(P.vx,P.vz)||1,sp=mantleSpot(hit,P.vx/m,P.vz/m); if(sp){ startAct('mantle',sp,0,clamp(.35+(hit.y1-P.y)*.25,.38,.9)); return; } }
+  if(!P.ground&&hit&&!hit.bar&&hit.y1>P.y+STEP){ const m=Math.hypot(P.vx,P.vz)||1,o=obstacleAhead(P.vx/m,P.vz/m,.5),sp=o&&mantleOnto(o,P.vx/m,P.vz/m,REACH_AIR); if(sp){ startAct('mantle',sp,0,clamp(.35+(sp[1]-P.y)*.25,.38,.9)); return; } }
   /* standing: stick to the ground, step up kerbs, step down small drops; walk off anything bigger and fall */
   if(P.ground){ const g=groundAt(P.x,P.z,P.y); if(P.y-g>STEP+.02) P.ground=false; else { P.y=g; P.vy=0; } }
   if(!P.ground){ const prev=P.y; P.vy-=GRAV*dt; P.y+=P.vy*dt; if(P.vy>0&&solidHit(P.x,P.z,P.r*.6,P.y+BODY-.3,P.y+BODY)) P.vy=0; /* head on the shelter roof */
@@ -458,7 +496,7 @@ const TOUCH={stick:[0,0],sid:null,run:false,look:null};
   const lend=e=>{ if(TOUCH.look&&e.pointerId===TOUCH.look.id) TOUCH.look=null; }; cv.addEventListener('pointerup',lend); cv.addEventListener('pointercancel',lend);
   if(matchMedia('(pointer: coarse)').matches||'ontouchstart' in window) document.body.classList.add('touch'); }
 let promptK='';
-function promptTick(){ let k=''; if(G.on&&!ACT.on&&!G.result){ const a=solidAhead(Math.sin(P.yaw),Math.cos(P.yaw),.8); if(a){ const h=a.s.y1-P.y; if(h<=1.3&&a.thick<=.95&&vaultLand(a,Math.sin(P.yaw),Math.cos(P.yaw))) k='vault'; else if(h<=(P.ground?REACH_GROUND:REACH_AIR)&&mantleSpot(a.s,Math.sin(P.yaw),Math.cos(P.yaw))) k='climb'; } }
+function promptTick(){ let k=''; if(G.on&&!ACT.on&&!G.result){ const pl=jumpPlan(Math.sin(P.yaw),Math.cos(P.yaw)); if(pl) k=pl.kind==='vault'?'vault':'climb'; }
   if(k===promptK) return; promptK=k;
   const el=$g('gAct'); if(el){ el.hidden=!k; el.textContent=(document.body.classList.contains('touch')?'JUMP':G.xr?'A':'SPACE')+' · '+(k==='climb'?'CLIMB':'VAULT'); }
   const jb=$g('tJump'); if(jb) jb.dataset.ready=k?'1':''; phoneDirty=true; }
@@ -474,7 +512,7 @@ function deskTick(dt){
 const XR={session:null,space:null,origin:[0,0,0],yaw:0,btn:{},runToggle:false,snap:false,last:0,stick:null};
 /* hand climbing: squeeze on a ledge, pull down to go up; let go near the top and you're on it */
 const CLIMB={hand:null,anchor:null,s:null};
-function ledgeNear(p){ for(const s of solNear(p[0]-.2,p[2]-.2,p[0]+.2,p[2]+.2)){ if(s.y1<P.y+.3||s.y1>8) continue; const r=s.r; if(p[1]>s.y1-.2&&p[1]<s.y1+.14&&p[0]>r[0]-.14&&p[0]<r[2]+.14&&p[2]>r[1]-.14&&p[2]<r[3]+.14) return s; } return null; }
+function ledgeNear(p){ for(const s of solNear(p[0]-.2,p[2]-.2,p[0]+.2,p[2]+.2)){ if(s.bar||s.y1<P.y+.3||s.y1>8) continue; const r=s.r; if(p[1]>s.y1-.2&&p[1]<s.y1+.14&&p[0]>r[0]-.14&&p[0]<r[2]+.14&&p[2]>r[1]-.14&&p[2]<r[3]+.14) return s; } return null; }
 function climbPull(hp){ const d=v3.sub(CLIMB.anchor,hp); const ny=clamp(P.y+d[1],floorY(P.x,P.z),CLIMB.s.y1+.05), nx=P.x+d[0], nz=P.z+d[2];
   if(free(nx,nz,ny)||ny>=CLIMB.s.y1-STEP){ P.x=nx; P.z=nz; XR.origin[0]+=d[0]; XR.origin[2]+=d[2]; } P.y=ny; P.vy=0; P.ground=false;
   if(P.y>=CLIMB.s.y1-.05) climbRelease(); }
@@ -532,5 +570,5 @@ let stepWorld=()=>{};
 function tick(dt){ if(!G.on) return; if(!G.xr) deskTick(dt); promptTick();
   G.t+=dt; if(G.result){ G.endT+=dt; linesTick(dt); return; }
   for(const c of COPS) copTick(c,dt); jobTick(dt); linesTick(dt); }
-return {phoneDirty:()=>{ phoneDirty=true; },say,sayNow,setObj,setStars,LINES,makeCop,copTick,sol,G,P,COPS,ACT,SOL,WALK,CASH,BLOCK,LOCKUP,START,setInput:(f,s_,run)=>{ TOUCH.stick=[s_,-f]; TOUCH.run=!!run; },start,reset,tick,enterVR,tryGrab,jump,bodyTick,canSee,clearLine,setStepWorld:f=>{ stepWorld=f; },setResume:f=>{ resumeDesk=f; },labels,done,busted,standable};
+return {phoneDirty:()=>{ phoneDirty=true; },say,sayNow,setObj,setStars,LINES,makeCop,copTick,sol,G,P,COPS,ACT,SOL,WALK,CASH,BLOCK,LOCKUP,START,setInput:(f,s_,run)=>{ TOUCH.stick=[s_,-f]; TOUCH.run=!!run; },start,reset,tick,enterVR,tryGrab,jump,bodyTick,canSee,clearLine,setStepWorld:f=>{ stepWorld=f; },setResume:f=>{ resumeDesk=f; },labels,done,busted,standable,dbg:{free,groundAt,floorY,solidAhead,obstacleAhead,jumpPlan,mantleOnto,vaultLand,mantleSpot,inWalk,solidHit,pathClear,rayRect,STEP,BODY,REACH_GROUND,REACH_AIR}};
 })();
