@@ -6,7 +6,7 @@
    the game's SOL list; the ground is a set of rects (roads, pavements, grass) with a hash for floor height.
    ========================================================================================================== */
 var HUBX=null; /* set when the hub is built; the game's walk and floor queries look at it */
-const HUB={x0:-800,z0:-520,x1:800,z1:500, FLOOR:3.0, BAY:2.5};
+const HUB={x0:-370,z0:-250,x1:370,z1:240, FLOOR:3.0, BAY:2.5};
 /* the hand-built street around the start: the hub never builds or walks here, the old WALK rects do */
 const CORE=[[-16,-27,29,15],[29,-2.9,36,15]];
 const inCore=(x,z,m=0)=>CORE.some(r=>x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m);

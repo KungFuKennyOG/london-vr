@@ -12,7 +12,7 @@ try{ JOBS.best=+localStorage.getItem('ldn.roofrun')||null; }catch(e){}
 const GG=()=>GAME.G, GP=()=>GAME.P;
 Object.assign(GAME.LINES,{
   t1:['terry','Not here, son. Lenny wants it in his own hands.'],
-  t2:['terry','Boxing club. Under the arches on Cheshire Street, the far end, past Vallance Road. Go.'],
+  t2:['terry','Boxing club. Under the railway arches on Cheshire Street, down by Weavers Fields. Go.'],
   lenny:['lenny','Good lad. Degsy said you were quick. Tell him we\'re square.'],
   lennyNo:['lenny','Not with the filth on your heels. Lose them.'],
   aliGig:['ali','You want work? Wings for number {n}, {s}. Hot, mind. Go!'],
@@ -22,8 +22,8 @@ Object.assign(GAME.LINES,{
 });
 
 /* ---------- the boxing club: an open arch on the main line, lit, with Lenny outside ---------- */
-const BOXCLUB={x:-552,z:143.2};
-{ const x=BOXCLUB.x, zf=146-.02, warm=(()=>{ const m=nightM(P2(128,128,(g,w,h)=>{ g.clearRect(0,0,w,h); g.save(); g.beginPath(); g.moveTo(8,h); g.lineTo(8,58); g.arc(64,58,56,Math.PI,0); g.lineTo(120,h); g.clip();
+const BOXCLUB={x:-250,z:128.2};
+{ const x=BOXCLUB.x, zf=131-.02, warm=(()=>{ const m=nightM(P2(128,128,(g,w,h)=>{ g.clearRect(0,0,w,h); g.save(); g.beginPath(); g.moveTo(8,h); g.lineTo(8,58); g.arc(64,58,56,Math.PI,0); g.lineTo(120,h); g.clip();
       vfill(g,0,0,w,h,[[0,'#ffd8a0'],[1,'#c87838']]); R(g,'#3a1a10',0,h-18,w,18); R(g,'#c81a1a',20,72,88,4); R(g,'#e8e8e0',20,82,88,3); R(g,'#2a5ab8',20,92,88,3); for(const px of [20,108]) R(g,'#1a1a1a',px-2,68,4,42);
       for(const bx of [14,112]){ R(g,'#3a3a3a',bx,30,2,24); ell(g,bx+1,70,6,16,'#8a1a1a'); } R(g,'#2a1a10',52,64,24,46); R(g,'#ffcf8a',55,67,18,18); g.restore(); },0,1),{unlit:true,cut:true},0); return m; })();
   eGrid(warm,[x+2.4,0,zf-.01],NX,Y_,4.8,4.8,4.8,4.8); eSign(atlasSign('#141414','#f2c24a','EAST END ABC','BOXING · EST. 1884 · ALL WELCOME',{face:'anton',subC:'#e8e2d4'}),[x,5.2,zf-.05],NX,5,.9);
@@ -31,11 +31,11 @@ const BOXCLUB={x:-552,z:143.2};
 const LENNY_ID='ped9'; let LENNY=null;
 function makeLenny(){ const n=N(LIFE.root,BOXCLUB.x+1.4,PAVE_Y,BOXCLUB.z-.6); n.dyn=true; const C=makeChar(LENNY_ID,n,'cast'); applyPose(C,'watch'); n.r=[0,Math.PI,0]; skinUpdate(C); C.node=n; LENNY={C,n}; }
 function leg2Start(){ const G=GG(); G.phase='leg2'; G.queue.length=0; G.line=null; GAME.say('t1',2.6); GAME.say('t2',4.2);
-  G.goalText='Take the bag to Lenny at the boxing club, under the railway arches on Cheshire Street (west, past Vallance Road).'; GAME.setObj(G.goalText); JOBS.target=[BOXCLUB.x,BOXCLUB.z-1.5]; JOBS.label='LENNY'; }
+  G.goalText='Take the bag to Lenny at the boxing club, under the railway arches on Cheshire Street, by Weavers Fields.'; GAME.setObj(G.goalText); JOBS.target=[BOXCLUB.x,BOXCLUB.z-1.5]; JOBS.label='LENNY'; }
 
 /* ---------- more coppers on the beat ---------- */
-const BEATS=[['pcmale',[-200,-.4,Math.PI/2],[[-260,-.4],[-120,-.4]]],['pcfem',[-325.2,60,0],[[-325.2,20],[-325.2,125]]],['pcmale',[-755.2,0,0],[[-755.2,-70],[-755.2,70]]],
-  ['pcfem',[750,22,Math.PI],null],['pcmale',[-500,-325.2,Math.PI/2],[[-600,-325.2],[-400,-325.2]]]];
+const BEATS=[['pcmale',[-200,-.4,Math.PI/2],[[-260,-.4],[-120,-.4]]],['pcfem',[-324.7,60,0],[[-324.7,20],[-324.7,110]]],['pcmale',[-140,124.8,Math.PI/2],[[-200,124.8],[-60,124.8]]],
+  ['pcfem',[322.5,10,Math.PI],null],['pcmale',[-260,-105.2,Math.PI/2],[[-310,-105.2],[-190,-105.2]]]];
 let beatsMade=false;
 function makeBeats(){ beatsMade=true; BEATS.forEach(([id,post,patrol],i)=>{ const n=N(LIFE.root,post[0],PAVE_Y,post[1]); n.dyn=true; const C=makeChar(id,n,'cast'); applyPose(C,'idle'); C.node=n; const c=GAME.makeCop(id,post,patrol,C); c.hub=true; c.id=id; }); }
 
@@ -43,16 +43,14 @@ function makeBeats(){ beatsMade=true; BEATS.forEach(([id,post,patrol],i)=>{ cons
 function makeStashes(){ const r=hr(7701), picks=[];
   const pool=EXT_TOPS.filter(p=>!inCore(p[0],p[2],4)); for(let i=0;i<14&&pool.length;i++){ const k=(r()*pool.length)|0; picks.push(pool.splice(k,1)[0]); }
   picks.push(...BANDSTAND.map(b=>[b[0]+2,b[1]+.3,b[2]]));
-  for(const [x,z] of [[-110,-312],[-100,-272],[-110,-232]]) picks.push([x,PAVE_Y+15.4,z]);                       /* the deck roofs */
-  for(const f of [2,3,4]) picks.push([-130+f*8,PAVE_Y+f*3,-266.1]);                                               /* along the decks */
-  picks.push([px0Weavers()+15,PAVE_Y+1.8,200.1],[200,PAVE_Y+2.5,-229]);
+  picks.push(...DECK_SPOTS, ...GARAGE_TOPS.slice(0,2)); { const W_=LANDMARK_BLOCKS.find(q=>q[0]==='weavers'); picks.push([W_[3]-56+15,PAVE_Y+1.8,W_[2]+22]); }
   for(const p of picks.slice(0,25)){ const [x,y,z]=p; if(!isFinite(x)) continue; const n=N(STREET,x,y+.01,z); n.dyn=true; mk(box(.26,.16,.14,{tw:.8,td:.8}),col(0xe8e4dc),n,0,.08,0); mk(box(.2,.02,.12),col(0x9a7a4a),n,.02,.17,.02,0,.3,0);
     GAME.CASH.push({n,got:false,p:[x,y,z],hub:true}); JOBS.stashN++; } }
 function px0Weavers(){ const L_=LANDMARK_BLOCKS.find(q=>q[0]==='weavers'); return L_[3]-56; }
 
 /* ---------- Ali's deliveries ---------- */
 function gigOffer(){ const G=GG(), P=GP(), ali=CAST.ali.node.p; if(JOBS.gig||G.stars>0||G.phase==='meet'||G.phase==='brief') return;
-  if(Math.hypot(P.x-ali[0],P.z-ali[2])<2.4&&!JOBS.offerCool){ const doors=HOUSE_DOORS.filter(d=>{ const dd=Math.hypot(d.x-P.x,d.z-P.z); return dd>120&&dd<420; }); if(!doors.length) return;
+  if(Math.hypot(P.x-ali[0],P.z-ali[2])<2.4&&!JOBS.offerCool){ const doors=HOUSE_DOORS.filter(d=>{ const dd=Math.hypot(d.x-P.x,d.z-P.z); return dd>70&&dd<300; }); if(!doors.length) return;
     const d=doors[Math.random()*doors.length|0], dist=Math.hypot(d.x-P.x,d.z-P.z); JOBS.gig={d,t:Math.round(dist/2.6+25),t0:0}; JOBS.offerCool=true;
     GAME.LINES.aliGigX=['ali',GAME.LINES.aliGig[1].replace('{n}',d.no).replace('{s}',titleCase(d.street))]; GAME.say('aliGigX',4);
     gigMarker(d); } else if(Math.hypot(P.x-ali[0],P.z-ali[2])>5) JOBS.offerCool=false; }

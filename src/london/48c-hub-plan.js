@@ -7,50 +7,42 @@
    ========================================================================================================== */
 /* streets: [name, runs along ('x' = east-west), centre, from, to, road width, pavement width, frontage, sign] */
 const STREETS=[
-  ['hackney','x',-470,-790,790,11,4,'shops','HACKNEY ROAD'],
-  ['columbia','x',-330,-760,-22,7,2.6,'market','COLUMBIA ROAD'],
-  ['oldbg','x',-200,-760,760,7,2.6,'terrace','OLD BETHNAL GREEN ROAD'],
-  ['derby','x',-95,-760,-22,6.5,2.5,'terrace','DERBYSHIRE STREET'],
-  ['teesdale','x',-95,41,760,6.5,2.5,'terrace','TEESDALE STREET'],
-  ['bgr','x',6.5,-790,790,7.8,0,'shops','BETHNAL GREEN ROAD'],     /* pavements set by hand below (5.6 north, 3.0 south) */
-  ['hereford','x',72,-760,620,6.5,2.5,'terrace','HEREFORD STREET'],
-  ['cheshire','x',135,-760,760,7,2.6,'vintage','CHESHIRE STREET'],
-  ['colts','x',170,-760,760,6.5,2.5,'arches','THREE COLTS LANE'],
-  ['buckhurst','x',330,-330,760,6.5,2.5,'terrace','BUCKHURST STREET'],
-  ['mileend','x',470,-790,790,11,4,'shops','MILE END ROAD'],
-  ['bricklane','z',-760,-470,470,7,2.6,'curry','BRICK LANE'],
-  ['clubrow','z',-620,-470,135,6.5,2.5,'terrace','CLUB ROW'],
-  ['gibraltar','z',-480,-470,135,6.5,2.5,'terrace','GIBRALTAR WALK'],
-  ['vallance','z',-330,-470,470,8,2.6,'terrace','VALLANCE ROAD'],
-  ['mape','z',-180,-330,135,6.5,2.5,'terrace','MAPE STREET'],
-  ['weaver','z',-40,170,470,6.5,2.5,'terrace','WEAVER STREET'],
-  ['wilmot','z',-22,-470,135,7,2.5,'terrace','WILMOT STREET'],
-  ['pollard','z',41,-470,135,6,2,'arches','POLLARD ROW'],
-  ['barnet','z',180,-470,470,6.5,2.5,'terrace','BARNET GROVE'],
-  ['wellington','z',330,-470,135,6.5,2.5,'terrace','WELLINGTON ROW'],
-  ['durant','z',480,-470,470,6.5,2.5,'terrace','DURANT STREET'],
-  ['paradise','z',620,-200,470,6.5,2.5,'terrace','PARADISE ROW'],
-  ['camheath','z',760,-470,470,11,4,'shops','CAMBRIDGE HEATH ROAD'],
+  ['oldbg','x',-210,-370,370,7,2.6,'terrace','OLD BETHNAL GREEN ROAD'],
+  ['columbia','x',-110,-330,-22,7,2.6,'market','COLUMBIA ROAD'],
+  ['derby','x',-55,-330,-22,6.5,2.5,'terrace','DERBYSHIRE STREET'],
+  ['teesdale','x',-95,41,330,6.5,2.5,'terrace','TEESDALE STREET'],
+  ['kirkwall','x',-48,41,180,6,2.2,'terrace','KIRKWALL PLACE'],
+  ['bgr','x',6.5,-370,370,7.8,0,'shops','BETHNAL GREEN ROAD'],     /* pavements set by hand below (5.6 north, 3.0 south) */
+  ['hereford','x',72,-180,330,6.5,2.5,'terrace','HEREFORD STREET'],
+  ['cheshire','x',120,-370,370,7,2.6,'vintage','CHESHIRE STREET'],
+  ['colts','x',155,-370,370,6.5,2.5,'arches','THREE COLTS LANE'],
+  ['buckhurst','x',215,-370,370,6.5,2.5,'terrace','BUCKHURST STREET'],
+  ['vallance','z',-330,-250,240,8,2.6,'terrace','VALLANCE ROAD'],
+  ['mape','z',-180,-210,120,6.5,2.5,'terrace','MAPE STREET'],
+  ['gosset','z',-100,-55,120,6,2.2,'terrace','GOSSET STREET'],
+  ['wilmot','z',-22,-210,120,7,2.5,'terrace','WILMOT STREET'],
+  ['pollard','z',41,-210,120,6,2,'arches','POLLARD ROW'],
+  ['florida','z',105,-210,120,6.5,2.5,'terrace','FLORIDA STREET'],
+  ['barnet','z',180,-210,240,6.5,2.5,'terrace','BARNET GROVE'],
+  ['camheath','z',330,-250,240,11,4,'shops','CAMBRIDGE HEATH ROAD'],
 ];
 /* viaducts: [x0,z0,x1,z1, axis, deck height] */
-const VIADUCTS=[[-800,146,800,158,'x',7.4],[29.05,-470,33.4,146,'z',7.4]];
+const VIADUCTS=[[-370,131,370,143,'x',7.4],[29.05,-250,33.4,131,'z',7.4]];
 /* block characters by area (first match wins): brick, storeys, window kind, interior */
 const ZONES=[
-  [-800,-520,-620,500,{brick:['soot','stock','red'],st:[2,3],win:'sash'}],
-  [-620,-520,-330,-200,{brick:['red'],st:[4,5],win:'mansion'}],
-  [-620,-200,-330,500,{brick:['stock','soot','stucco','red','brown'],st:[2,3],win:'sash'}],
-  [-330,-520,-22,500,{brick:['stock','soot','red','stock','grey','brown'],st:[2,3],win:'sash'}],
-  [34,-520,330,500,{brick:['stock','red','stucco','brown','soot'],st:[2,3],win:'sash'}],
-  [330,-520,800,500,{brick:['stock','cream','red','soot','brown','stucco'],st:[2,3],win:'sash'}],
+  [-370,-250,-180,240,{brick:['stock','soot','red','brown'],st:[2,3],win:'sash'}],
+  [-180,-250,-22,240,{brick:['stock','soot','red','stock','grey','brown'],st:[2,3],win:'sash'}],
+  [-22,-250,180,240,{brick:['stock','red','stucco','brown','soot'],st:[2,3],win:'sash'}],
+  [180,-250,370,240,{brick:['stock','cream','red','soot','brown','stucco'],st:[2,3],win:'sash'}],
 ];
-/* hand-built blocks: the generator leaves these to 48d-hub-landmarks.js. [name, x0,z0,x1,z1] (inside the block rect) */
+/* hand-built blocks: the generator leaves these to 48d-hub-landmarks.js. [name, x0,z0,x1,z1] (the block rect inside its pavements) */
 const LANDMARK_BLOCKS=[
-  ['boundary',-753.9,-460.5,-625.6,-336.1], ['decks',-177.5,-323.9,-24.5,-206.1], ['bramley',185.6,-460.5,324.4,-206.1],
-  ['weavers',-323.4,176.1,-45.6,323.9], ['school',-477.5,13.4,-336.6,65.8], ['supermarket',332.5,13.4,477.5,65.8],
-  ['gardens',625.6,13.4,750.5,128.9], ['church',625.6,-89.5,750.5,-3], ['petrol',627,-460.5,750.5,-410],
+  ['boundary',-323.4,-203.9,-185.75,-116.1], ['decks',-174.25,-203.9,-28,-116.1], ['bramley',185.75,-203.9,320.5,-100.75],
+  ['weavers',-323.4,13.4,-185.75,113.9], ['school',46,13.4,99.25,66.25], ['supermarket',110.75,13.4,174.75,66.25],
+  ['gardens',185.75,13.4,320.5,66.25], ['church',185.75,-89.25,320.5,-3], ['petrol',248,-247,320.5,-218],
 ];
 const STREET_BY=new Map(STREETS.map(s=>[s[0],s]));
-const RESERVED=[[627,-462,752,-408]]; /* the petrol station sits in a corner of a bigger block */
+const RESERVED=[[246,-249,322,-216]]; /* the petrol station sits in a corner of a bigger block */
 const reserved=(x0,z0,x1,z1)=>RESERVED.some(q=>x0<q[2]&&x1>q[0]&&z0<q[3]&&z1>q[1]);
 
 /* ---------------- ground: road and pavement rects ---------------- */
@@ -103,7 +95,7 @@ const PUBS=['THE MARQUIS','THE KING\'S HEAD','THE CARPENTERS ARMS','THE BLIND PI
 let PUBN=0;
 const DOORC=['#141414','#1c2a4a','#7a1a1a','#1e3a26','#c8a020','#3a2a4a','#f2efe6','#2a5a6a'];
 const HOUSEF=new Map();
-function houseFront(brick,seed){ const k=brick+'|'+(seed%6); if(HOUSEF.has(k)) return HOUSEF.get(k); const B=BRICKS[brick], r=hr(seed), w=5*PXM, h=Math.round(3.2*PXM);
+function houseFront(brick,seed){ const k=brick+'|'+(seed%DOORC.length); if(HOUSEF.has(k)) return HOUSEF.get(k); const B=BRICKS[brick], r=hr(seed), w=5*PXM, h=Math.round(3.2*PXM);
   const t=P2(w,h,(g)=>{ paintWall(g,B,w,h,r); const dc=DOORC[seed%DOORC.length];
     /* door with fanlight and steps */ R(g,'#d8d2c2',10,h-62,30,62); R(g,dc,13,h-54,24,52); R(g,'#ffd890',13,h-62,24,7); R(g,'#c8a040',30,h-30,3,3); R(g,'#8a8478',8,h-4,34,4);
     /* bay window */ R(g,'#d8d2c2',54,h-64,58,48); vfill(g,57,h-61,52,40,[[0,'#1c2430'],[1,'#0c1016']]); R(g,'#e6e2d8',57+17,h-61,2,40); R(g,'#e6e2d8',57+34,h-61,2,40); R(g,'#b8b2a0',52,h-16,62,4);
@@ -124,11 +116,17 @@ function buildBlock(B,bi){ const [x0,z0,x1,z1]=B.r, r=hr(5000+bi*7919), cx=(x0+x
   for(const k of ['n','s','w','e']){ if(!D[k]) continue; const S=E[k], f=S[7], horiz=k==='n'||k==='s';
     let a=horiz?x0:z0, b=horiz?x1:z1; if(!horiz){ if(D.n) a=z0+D.n; if(D.s) b=z1-D.s; }
     let run=0, brick=pick(r,Z.brick), st=Z.st[0]+(r()<.4?1:0), fv=r()*3|0, door=r()*100|0;
+    /* a hand-written frontage for this side of this block? */
+    const side=S[1]==='x'?(k==='n'?'s':'n'):(k==='w'?'e':'w'), key=S[0]+':'+side+':'+Math.round(horiz?(x0+x1)/2:(z0+z1)/2);
+    FRONTAGES.push({key,street:S[8],side,from:+a.toFixed(1),to:+b.toFixed(1),len:+(b-a).toFixed(1),depth:D[k],frontage:f,hand:!!HAND[key]});
+    if(HAND[key]){ const list=HAND[key], tot=list.reduce((q,it)=>q+it.w,0), sc=(b-a)/tot; let p=a; const forward=horiz?(side==='n'?1:1):1;
+      list.forEach((it,ii)=>{ const w=it.w*sc; if(it.t!=='gap') lots.push({shut:it.shut,k,a:p,b:p+w,f:it.t==='shop'?'shops':it.t==='pub'?f:'terrace',S,brick:it.brick||brick,st:it.st||(it.t==='shop'?3:2),fv:it.fv??(ii%3),door:it.door??(door+ii),corner:ii===0||ii===list.length-1,pub:it.t==='pub'?it.name:undefined,trade:it.trade,name:it.t==='shop'?it.name:undefined,doorC:it.doorC,hand:true}); p+=w; });
+      continue; }
     for(let p=a;p<b-2;){ const shop=f==='shops'||f==='curry'||f==='market'||f==='vintage'; let w=shop?5+r()*3:4.6+r()*.9; if(b-p-w<4) w=b-p;
       if(--run<=0){ run=shop?2+(r()*3|0):5+(r()*9|0); brick=pick(r,Z.brick); st=(shop?Math.max(3,Z.st[1]+1):Z.st[0]+(r()<.45?1:0)); fv=r()*3|0; }
       lots.push({k,a:p,b:p+w,f,S,brick,st,fv,door:door++,corner:p===a||p+w>=b-.01}); p+=w; } }
   /* a pub on one good corner */
-  for(const L of lots){ if(L.corner&&(L.f==='shops'||L.f==='terrace')&&r()<.16&&PUBN<40){ L.pub=PUBS[PUBN++%PUBS.length]; break; } }
+  if(!lots.some(L=>L.hand)) for(const L of lots){ if(L.corner&&(L.f==='shops'||L.f==='terrace')&&r()<.16&&PUBN<40){ L.pub=PUBS[PUBN++%PUBS.length]; break; } }
   for(const L of lots) buildLot(L,B.r,D,r,Z);
   /* the yard inside: ground, a garden wall ring, sheds and garages, trees; an alley gate from the longest street side */
   const ix0=x0+(D.w||0)+7, iz0=z0+(D.n||0)+7, ix1=x1-(D.e||0)-7, iz1=z1-(D.s||0)-7;
@@ -151,7 +149,7 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
   /* ground floor */
   if(L.pub) groundPub(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r);
   else if(shop){ L.F=F; groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r); }
-  else { const hf=houseFront(L.brick,L.door), hm=hf.mBase, back={n:'s',s:'n',w:'e',e:'w'}[front];
+  else { const hf=houseFront(L.brick,L.doorC!==undefined?DOORC.indexOf(L.doorC)>=0?DOORC.indexOf(L.doorC):L.door:L.door), hm=hf.mBase, back={n:'s',s:'n',w:'e',e:'w'}[front];
     { const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), sx=fx-U[0]*fw/2+U[0]*1.05, sz=fz-U[2]*fw/2+U[2]*1.05; HOUSE_DOORS.push({x:sx+out[0]*.7,z:sz+out[2]*.7,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(L.k==='n'||L.k==='w'?1:0)});
       /* the front: a stone step, the drainpipe on the party wall, a wheelie bin, now and then a dish or a pot */
       const at=(u,o)=>[fx-U[0]*fw/2+U[0]*u+out[0]*o, fz-U[2]*fw/2+U[2]*u+out[2]*o];
@@ -181,7 +179,7 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
 /* a shop front: riser, recessed lit room, frame, fascia sign from the atlas; some shuttered for the night */
 function groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const trades=L.f==='curry'?['curry','curry','beigel','kebab','offy','vintage']:L.f==='market'?['flowers','cafe','vintage','flowers','barber','charity']:L.f==='vintage'?['vintage','cafe','barber','vintage','hardware']:
     ['chicken','offy','phone','barber','laundry','cafe','nails','chemist','agent','gold','vape','kebab','bookie','hardware','charity','chicken','offy','phone'];
-  let tk=pick(r,trades); for(let k=0;k<6&&tk===LAST_TRADE;k++) tk=pick(r,trades); LAST_TRADE=tk; const T=TRADES[tk]; tradeRoom(tk); const shut=r()<.2;
+  let tk=L.trade&&TRADES[L.trade]?L.trade:pick(r,trades); if(!L.trade) for(let k=0;k<6&&tk===LAST_TRADE;k++) tk=pick(r,trades); LAST_TRADE=tk; const T=TRADES[tk]; tradeRoom(tk); const shut=L.shut??(L.hand?false:r()<.2);
   /* the walls of the ground floor (sides and back plain) */
   const sideM=L.F?L.F.mBase:mDark, fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', GF={n:sideM,s:sideM,e:sideM,w:sideM,t:null}; GF[fk]=null; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,GF,{tu:2,tv:2});
   /* the reveal: side walls and ceiling of the recess, so the glass sits in a real opening */
@@ -198,7 +196,7 @@ function groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const trades=L.f==='
     for(const t of [0,.38,1]) eGeo(box(U[0]?.07:.12,gH-.9,U[2]?.07:.12),mFrame,ox+U[0]*gw*t+out[0]*.02,PAVE_Y+(gH-.9)/2,oz+U[2]*gw*t+out[2]*.02);
     if(r()<.3){ STREET_LIGHT.pl.push([[fx+out[0]*1.2,PAVE_Y+2.4,fz+out[2]*1.2],[.9,.8,.62],6]); } }
   /* fascia: a box proud of the wall with the sign on its face */
-  const used=(USED_NAMES[L.S[0]]=USED_NAMES[L.S[0]]||new Set()); let name=pick(r,T.names.length?T.names:['SHOP']); for(let k=0;k<8&&(name===LAST_NAME||used.has(name));k++) name=pick(r,T.names); if(!name) name=T.sub.split(' · ')[0]; LAST_NAME=name; used.add(name); const uv=atlasSign(T.bg,T.fg,name,T.sub,{face:T.face,lit:true,subC:T.fg});
+  const used=(USED_NAMES[L.S[0]]=USED_NAMES[L.S[0]]||new Set()); let name=L.name||pick(r,T.names.length?T.names:['SHOP']); if(!L.name) for(let k=0;k<8&&(name===LAST_NAME||used.has(name));k++) name=pick(r,T.names); if(!name) name=T.sub.split(' · ')[0]; LAST_NAME=name; used.add(name); const uv=atlasSign(T.bg,T.fg,name,T.sub,{face:T.face,lit:true,subC:T.fg});
   const sy=PAVE_Y+gH-.5;
   eSign(uv,[fx+out[0]*.2,sy,fz+out[2]*.2],U,fw-.3,.72);
   if(r()<.35){ const n=2+(r()*3|0), bm=col(0x121214); for(let i=0;i<n;i++){ const t_=.15+i*.14+r()*.05, bx=fx+U[0]*(fw*.5-.5-t_*2)+out[0]*(.45+r()*.3), bz=fz+U[2]*(fw*.5-.5-t_*2)+out[2]*(.45+r()*.3), s_=.32+r()*.12; eGeo(cyl(s_,s_*.7,s_*1.5,6),bm,bx,PAVE_Y+s_*.7,bz,r()*3); } }
@@ -212,7 +210,7 @@ function groundPub(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const green=r()<.5, w
   const uv=atlasSign(green?'#14301e':'#3a1414','#f0d48a',L.pub,'ALES · LAGERS · SKY SPORTS',{face:'cond',lit:true,subC:'#e8d8b0'});
   eSign(uv,[fx+out[0]*.22,PAVE_Y+gH-.4,fz+out[2]*.22],U,fw-.2,.7);
   STREET_LIGHT.pl.push([[fx+out[0]*1.4,PAVE_Y+2.4,fz+out[2]*1.4],[1.3,.85,.45],8]); PUB_SPOTS.push([fx+out[0]*1.6,fz+out[2]*1.6,Math.atan2(out[0],out[2])]); }
-const PUB_SPOTS=[]; let LAST_TRADE='', LAST_NAME=''; const USED_NAMES={}; const HOUSE_DOORS=[], HOUSE_NO={}, EXT_TOPS=[];
+const PUB_SPOTS=[], FRONTAGES=[]; var HAND=HAND||{}; let LAST_TRADE='', LAST_NAME=''; const USED_NAMES={}; const HOUSE_DOORS=[], HOUSE_NO={}, EXT_TOPS=[];
 
 /* ---------------- the viaducts: brick body, arches on both faces, bridges over the streets ---------------- */
 const ARCHT=(()=>{ const out=[]; for(let v=0;v<4;v++){ const r=hr(8400+v), w=5*PXM, h=7.4*PXM; const fill=['lock','shut','brick','lit'][v];

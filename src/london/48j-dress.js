@@ -33,7 +33,7 @@ for(const S of STREETS){ const [id,ax,c,a,b,rw]=S, spans=openSpans(S);
   for(const end of [a,b]){ const other=STREETS.find(T=>T!==S&&T[1]!==ax&&Math.abs(T[2]-end)<.5&&c>T[3]&&c<T[4]); if(!other) continue; const ow=other[5]/2, mouth=end+(end===a?ow+.6:-(ow+.6));
     if(ax==='x') eGrid(mGive,[mouth-.15,.013,c+rw/2],[0,0,-1],[1,0,0],rw,.3,1.2,.3); else eGrid(mGive,[c-rw/2,.013,mouth-.15],X_,Z_,rw,.3,1.2,.3); } }
 /* zebras on the high street, with Belisha beacons */
-for(const zx of [-120,-420,-640,250,560]){ const z0=2.6,z1=10.4; eGrid(mZebra,[zx-1.3,.014,z1],[0,0,-1],[1,0,0],z1-z0,2.6,1.0,2.6);
+for(const zx of [-120,-262,120,252]){ const z0=2.6,z1=10.4; eGrid(mZebra,[zx-1.3,.014,z1],[0,0,-1],[1,0,0],z1-z0,2.6,1.0,2.6);
   for(const [bx,bz] of [[zx-1.6,z0-.35],[zx+1.6,z1+.35]]){ eGeo(cyl(.05,.05,2.4,6),MM(null,{color:0x1a1a1a}),bx,PAVE_Y+1.2,bz); eGeo(cyl(.17,.17,.32,10),mBeaconH,bx,PAVE_Y+2.56,bz); hsol(bx-.08,bz-.08,bx+.08,bz+.08,PAVE_Y+2.4); } }
 
 /* ---------- furniture along every pavement ---------- */
@@ -54,7 +54,7 @@ function kiosk(x,z){ const w=.95,h=2.5; eBoxF(x-w/2,z-w/2,x+w/2,z+w/2,PAVE_Y,PAV
   for(const [u,o] of [[X_,[x-w/2+.12,PAVE_Y+.9,z+w/2+.005]],[NX,[x+w/2-.12,PAVE_Y+.9,z-w/2-.005]],[NZ,[x+w/2+.005,PAVE_Y+.9,z+w/2-.12]],[Z_,[x-w/2-.005,PAVE_Y+.9,z-w/2+.12]]]) eGrid(mKioskGlass,o,u,Y_,w-.24,1.3,1,1);
   hsol(x-w/2,z-w/2,x+w/2,z+w/2,PAVE_Y+h+.45); }
 { const r=hr(8801), near=(x,z,d)=>LAMPS.some(L_=>Math.hypot(L_[0][0]-x,L_[0][2]-z)<d)||BUS_STOPS.some(b=>Math.hypot(b[0]-x,b[1]-z)<5);
-  const busRoads=new Set(['bgr','hackney','camheath','mileend']);
+  const busRoads=new Set(['bgr','camheath','oldbg']);
   for(const S of STREETS){ const [id,ax,c,a,b,rw,pw]=S; let pn=pw,ps=pw; if(id==='bgr'){ pn=5.6; ps=3.0; } const spans=openSpans(S);
     for(const [side,pwid] of [[-1,pn],[1,ps]]){ const kerb=c+side*(rw/2+.55), back=c+side*(rw/2+pwid-.5);
       for(const [p,q] of spans){ let next=p+8+r()*10, nextBus=p+60+r()*80;
@@ -67,7 +67,7 @@ function kiosk(x,z){ const w=.95,h=2.5; eBoxF(x-w/2,z-w/2,x+w/2,z+w/2,PAVE_Y,PAV
           else bollard(X,Z); } } } } }
 
 /* parked cars: one kerb of every one-way street, both kerbs of the wide roads */
-{ const r=hr(8901), wide=new Set(['hackney','camheath','mileend']);
+{ const r=hr(8901), wide=new Set(['camheath']);
   STREETS.forEach((S,si)=>{ const [id,ax,c,a,b,rw]=S, L=LANES[si]; if(!(L.oneway||wide.has(id))) return; const sides=L.oneway?[1]:[-1,1];
     for(const side of sides) for(const [p,q] of openSpans(S)){ for(let s=p+4;s<q-4;s+=5.6){ if(r()>.62) continue; const off=c+side*(rw/2-1.0), x=ax==='x'?s:off, z=ax==='x'?off:s;
         if(inCore(x,z,4)||BUS_STOPS.some(b_=>Math.hypot(b_[0]-x,b_[1]-z)<6)) continue; carPark(x,z,(si*7+Math.round(s))%8,ax==='x'?Math.PI/2:0,0); } } }); }

@@ -99,7 +99,7 @@ LM.weavers=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2;
   bin(cx+2.4,cz-4); bin(cx-2.4,cz+4);
   PARK_SPOTS.push([cx,cz],[fx0+18,fz0+11],[px0+12,pz0+9]);
 };
-const PARK_SPOTS=[];
+const PARK_SPOTS=[], DECK_SPOTS=[], GARAGE_TOPS=[];
 /* a flight of steps from y0, n steps of rise and go, along dir */
 function flight(x,z,dir,w,n,y0,rise,go,m){ for(let i=0;i<n;i++){ const y=y0+(i+1)*rise; let x0,z0,x1,z1;
     if(dir==='x'){ x0=x+i*go; x1=x0+go; z0=z-w/2; z1=z+w/2; } else if(dir==='-x'){ x1=x-i*go; x0=x1-go; z0=z-w/2; z1=z+w/2; } else if(dir==='z'){ z0=z+i*go; z1=z0+go; x0=x-w/2; x1=x+w/2; } else { z1=z-i*go; z0=z1-go; x0=x-w/2; x1=x+w/2; }
@@ -111,22 +111,17 @@ const mConcW=MM(P2(64,64,(g,w,h)=>{ paintWall(g,BRICKS.estate,w,h,hr(6201)); },0
 const mRed=nightM(null,{color:0xff2010,unlit:true,nofog:true},0);
 
 /* THE BRAMLEY ESTATE: three twenty-storey towers you can see from anywhere, a deck block, garages, a car park, a playground */
-LM.bramley=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facade('estate','tower',0), r=hr(6301);
-  const T=[[200,-440,'BRAMLEY HOUSE'],[282,-345,'ASHLEY HOUSE'],[200,-262,'CROMER HOUSE']];
+LM.bramley=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facade('estate','tower',0), r=hr(6301), W=x1-x0, H=z1-z0;
+  const T=[[x0+18,z0+18,'BRAMLEY HOUSE'],[x1-22,(z0+z1)/2-6,'ASHLEY HOUSE'],[x0+18,z1-30,'CROMER HOUSE']];
   for(const [tx,tz,name] of T){ const a=tx-11,b=tz-11,c=tx+11,d=tz+11; eBoxF(a,b,c,d,PAVE_Y,PAVE_Y+3.2,{n:mConcW,s:mConcW,e:mConcW,w:mConcW},{tu:2.5,tv:3.2,cell:3}); tallBlock(a,b,c,d,62,F,3.2);
-    eGrid(mLobby,[tx-2.5,PAVE_Y,d+.03],X_,Y_,5,2.6,5,2.6); eBox(tx-3.5,d,tx+3.5,d+2.5,PAVE_Y+2.8,PAVE_Y+3.1,mConcW); councilSign(name,'FLATS 1–118 · TOWER HAMLETS HOMES',[tx,PAVE_Y+3.5,d+.05],X_,3.6,.6);
-    STREET_LIGHT.pl.push([[tx,PAVE_Y+2.4,d+2],[1.0,1.15,1.2],7]); eBox(tx-4,tz-4,tx+4,tz+4,PAVE_Y+62,PAVE_Y+65,mConcW); eBox(tx-.2,tz-.2,tx+.2,tz+.2,PAVE_Y+65,PAVE_Y+65.4,mRed);
-    for(const [gx,gz] of [[a-4,b+3],[c+4,d-3]]) tree(gx,gz,1.1); }
-  /* the deck block along the south, garages, the car park by Barnet Grove */
-  const DF=facade('estbrick','estate',1); eFacade(250,-232,322,-220,PAVE_Y,PAVE_Y+12,DF,'nsew'); eFlat(250,-232,322,-220,PAVE_Y+12.01,mFelt,4,0); hsol(250,-232,322,-220,PAVE_Y+12);
-  for(let f=1;f<4;f++){ const y=PAVE_Y+f*3; eBoxF(250,-220,322,-218.4,y-.25,y,{s:mConcW,t:mConcW,n:null,e:mConcW,w:mConcW},{tu:2.5,tv:1}); eBoxF(250,-218.6,322,-218.4,y,y+1.1,{s:mConcW,n:mConcW,t:mConcW},{tu:2.5,tv:1.1}); hsol(250,-220,322,-218.4,y,y-.3); hsol(250,-218.6,322,-218.4,y+1.1,y); }
-  for(let f=0;f<3;f++){ flight(247.5,-219.2+(f%2?0:0),f%2?'-z':'z',2.2,0,0,0,0,mConcW); }
-  for(let f=0;f<3;f++){ const y0=PAVE_Y+f*3; flight(246.4,f%2?-219:-226,f%2?'-z':'z',2.0,16,y0,.1875,.42,mConcW); }
-  for(let i=0;i<8;i++){ const gx=190+i*6.2; eBoxF(gx,-232,gx+5.8,-226,PAVE_Y,PAVE_Y+2.5,{n:SHUT[i%6],s:mBrickW,e:mBrickW,w:mBrickW,t:mFelt},{tu:5.8,tv:2.5}); hsol(gx,-232,gx+5.8,-226,PAVE_Y+2.5); }
-  const tBay=P2(32,32,(g,w,h)=>{ R(g,'#2a2a2c',0,0,w,h); specks(g,'#353538',120,6302,w,h); R(g,'#d8d8d0',0,0,1,h); },0,1); eFlat(232,-460,322,-400,PAVE_Y+.005,MM(tBay),2.5,6);
-  for(let x=240;x<322;x+=24) parkLamp(x,-430); for(let i=0;i<14;i++) carPark(236+(i%7)*12,-452+(i>6?36:0),i);
-  cage(240,-390,268,-372,1.2,[['n',252,256]]); eFlat(240,-390,268,-372,PAVE_Y+.01,MM(P2(32,32,(g,w,h)=>{ R(g,'#3a6a8a',0,0,w,h); specks(g,'#4a7a9a',80,6303,w,h); },0,1)),3,6);
-  for(let i=0;i<10;i++) tree(250+r()*60,-380+r()*120,.9+r()*.5);
+    eGrid(mLobby,[tx-2.5,PAVE_Y,d+.03],X_,Y_,5,2.6,5,2.6); eBox(tx-3.5,d,tx+3.5,d+2.5,PAVE_Y+2.8,PAVE_Y+3.1,mConcW); councilSign(name,'',[tx,PAVE_Y+3.5,d+.05],X_,3.6,.6);
+    STREET_LIGHT.pl.push([[tx,PAVE_Y+2.4,d+2],[1.0,1.15,1.2],7]); eBox(tx-4,tz-4,tx+4,tz+4,PAVE_Y+62,PAVE_Y+65,mConcW); eBox(tx-.2,tz-.2,tx+.2,tz+.2,PAVE_Y+65,PAVE_Y+65.4,mRed); tree(a-3,d-3,1.1); }
+  /* garages along the south edge, a car park by the main road, a small playground */
+  for(let i=0;i<7;i++){ const gx=x0+40+i*6.2; eBoxF(gx,z1-9,gx+5.8,z1-3,PAVE_Y,PAVE_Y+2.5,{n:SHUT[i%6],s:mBrickW,e:mBrickW,w:mBrickW,t:mFelt},{tu:5.8,tv:2.5}); hsol(gx,z1-9,gx+5.8,z1-3,PAVE_Y+2.5); GARAGE_TOPS.push([gx+2.9,PAVE_Y+2.5,z1-6]); }
+  const tBay=P2(32,32,(g,w,h)=>{ R(g,'#2a2a2c',0,0,w,h); specks(g,'#353538',120,6302,w,h); R(g,'#d8d8d0',0,0,1,h); },0,1); eFlat(x1-44,z0+4,x1-4,z0+40,PAVE_Y+.005,MM(tBay),2.5,6);
+  for(let i=0;i<8;i++) carPark(x1-38+(i%4)*10,z0+10+(i>3?20:0),i); parkLamp(x1-24,z0+22);
+  cage(x0+44,z0+50,x0+68,z0+66,1.2,[['n',x0+54,x0+58]]); eFlat(x0+44,z0+50,x0+68,z0+66,PAVE_Y+.01,MM(P2(32,32,(g,w,h)=>{ R(g,'#3a6a8a',0,0,w,h); specks(g,'#4a7a9a',80,6303,w,h); },0,1)),3,6);
+  for(let i=0;i<8;i++) tree(x0+40+r()*(W-60),z0+40+r()*(H-55),.9+r()*.5); parkLamp(x0+40,z0+44); parkLamp(x0+80,z1-14);
 };
 /* a parked car (static): body, cabin, wheels, lights */
 const CARC=[0x1a1a1c,0xb8bcc0,0x2a3a5a,0x6a1a1a,0xd8d8d0,0x3a4a3a,0x5a5a5e,0x8a6a2a];
@@ -136,55 +131,54 @@ function carPark(x,z,i,yaw=0,y0=PAVE_Y){ const c=col(CARC[i%CARC.length]), gl_=c
   solR(x,z,1.8,4.2,y0+1.45,yaw); }
 
 /* THE DECKS: three deck-access slabs, five storeys, with walkways and stair towers you can climb */
-LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const r=hr(6401);
-  const slabs=[[-160,-72,-312],[-150,-62,-272],[-160,-72,-232]];
+LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const r=hr(6401), H_=z1-z0;
+  const slabs=[[x0+16,x0+100,z0+16],[x0+30,x0+114,z0+44],[x0+16,x0+100,z0+72]];
   slabs.forEach(([a,b,zc],si)=>{ const zn=zc-5, zs=zc+5, H=5, F=facade(['estbrick','estate','estbrick'][si],'estate',si+3);
     eFacade(a,zn,b,zs,PAVE_Y,PAVE_Y+H*3,F,'nsew'); eFlat(a,zn,b,zs,PAVE_Y+H*3+.01,mFelt,4,0); eBoxF(a-.1,zn-.1,b+.1,zs+.1,PAVE_Y+H*3,PAVE_Y+H*3+.4,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mConcW},{tu:2.5,tv:.4}); hsol(a,zn,b,zs,PAVE_Y+H*3+.4);
     for(let f=1;f<H;f++){ const y=PAVE_Y+f*3; eBoxF(a,zs,b,zs+1.8,y-.28,y,{s:mConcW,t:mConcW,e:mConcW,w:mConcW},{tu:2.5,tv:.3}); eBoxF(a,zs+1.6,b,zs+1.8,y,y+1.05,{s:mConcW,n:mConcW,t:mConcW},{tu:2.5,tv:1.05});
-      hsol(a,zs,b,zs+1.8,y,y-.3); hsol(a,zs+1.6,b,zs+1.8,y+1.05,y); }
-    /* the stair tower at the west end: two half-flights per storey round a landing */
-    const sx=a-5.5; eBoxF(sx,zs-4,a,zs+1.8,PAVE_Y,PAVE_Y+H*3+1,{n:mConcW,w:mConcW,t:mConcW},{tu:2.5,tv:3}); 
+      hsol(a,zs,b,zs+1.8,y,y-.3); hsol(a,zs+1.6,b,zs+1.8,y+1.05,y); if(f>=2) DECK_SPOTS.push([a+20+f*8,y,zs+.9]); }
+    DECK_SPOTS.push([(a+b)/2,PAVE_Y+15.4,zc]);
+    const sx=a-5.5; eBoxF(sx,zs-4,a,zs+1.8,PAVE_Y,PAVE_Y+H*3+1,{n:mConcW,w:mConcW,t:mConcW},{tu:2.5,tv:3});
     for(let f=0;f<H-1;f++){ const y0=PAVE_Y+f*3; flight(sx+.4,zs-2.9,'x',1.6,8,y0,.1875,.55,mConcW); eBoxF(sx+4.8,zs-3.8,a,zs-.4,y0+1.5-.2,y0+1.5,{t:mConcW,n:mConcW,s:mConcW,e:mConcW,w:mConcW}); hsol(sx+4.8,zs-3.8,a,zs-.4,y0+1.5,y0+1.2);
       flight(a,zs+.9,'-x',1.6,8,y0+1.5,.1875,.55,mConcW); }
-    councilSign(['HOLLAND','KENSWORTH','DUNMORE'][si]+' HOUSE','FLATS · NO BALL GAMES · NO LOITERING',[(a+b)/2,PAVE_Y+2.4,zs+.05],X_,3.2,.55);
-    for(let k=0;k<3;k++) tree(a+10+k*30+r()*6,zs+9+r()*4,1); for(let k=0;k<2;k++){ bin(b+3,zn+2+k); } parkLamp(a+20,zs+6); parkLamp(b-20,zs+6); });
-  for(let i=0;i<6;i++) carPark(-40-0,-310+i*7,i+3,Math.PI/2);
+    councilSign(['HOLLAND','KENSWORTH','DUNMORE'][si]+' HOUSE','',[(a+b)/2,PAVE_Y+2.4,zs+.05],X_,3.2,.55);
+    for(let k=0;k<3;k++) tree(a+10+k*28+r()*6,zs+8+r()*3,1); bin(b+3,zn+2); parkLamp(a+20,zs+6); parkLamp(b-20,zs+6); });
+  for(let i=0;i<5;i++) carPark(x1-10,z0+14+i*7,i+3,Math.PI/2);
 };
 
 /* ARNOLD CIRCUS: a mound with a bandstand, ringed by red-brick mansion blocks of the Boundary Estate */
 LM.boundary=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2; eFlat(x0,z0,x1,z1,PAVE_Y,mPave,1.2,4);
-  const gr=MM(tGrass); for(const [rr,h] of [[17,1.0],[12.5,2.0],[8,3.0]]){ eGeo(cyl(rr,rr,h,16),[gr,gr,gr],cx,PAVE_Y+h/2,cz); const q=rr*.78; hsol(cx-q,cz-q,cx+q,cz+q,PAVE_Y+h); }
-  for(const [dx,dz,dir] of [[0,17,'-z'],[0,-17,'z'],[17,0,'-x'],[-17,0,'x']]) { const n=6; flight(cx+dx,cz+dz,dir,2.2,n*3/.5|0,PAVE_Y,.25,.62,mPave); }
+  const gr=MM(tGrass); for(const [rr,h] of [[12.5,1.0],[9.5,2.0],[6.5,3.0]]){ eGeo(cyl(rr,rr,h,16),[gr,gr,gr],cx,PAVE_Y+h/2,cz); const q=rr*.78; hsol(cx-q,cz-q,cx+q,cz+q,PAVE_Y+h); }
+  for(const [dx,dz,dir] of [[0,12.5,'-z'],[0,-12.5,'z'],[12.5,0,'-x'],[-12.5,0,'x']]) flight(cx+dx,cz+dz,dir,2.2,12,PAVE_Y,.25,.5,mPave);
   const top=PAVE_Y+3, bm=col(0x1e3a2a); for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; eBox(cx+Math.cos(a)*4.4-.1,cz+Math.sin(a)*4.4-.1,cx+Math.cos(a)*4.4+.1,cz+Math.sin(a)*4.4+.1,top,top+3,bm); }
   eGeo(cyl(5.2,.3,2,8),bm,cx,top+4,cz); eGeo(cyl(5,5,.3,8),col(0x8a7a5a),cx,top+.15,cz); hsol(cx-4.6,cz-4.6,cx+4.6,cz+4.6,top+.3);
-  for(let k=0;k<12;k++){ const a=k/12*Math.PI*2; tree(cx+Math.cos(a)*21,cz+Math.sin(a)*21,1.2); }
+  for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; tree(cx+Math.cos(a)*16,cz+Math.sin(a)*16,1.1); }
   const F=facade('red','mansion',0), F2=facade('red','mansion',1);
-  for(let k=0;k<8;k++){ const a=k/8*Math.PI*2+Math.PI/8, R_=44, bx=cx+Math.cos(a)*R_, bz=cz+Math.sin(a)*R_, yaw=Math.atan2(Math.cos(a),Math.sin(a))+Math.PI, FF=k%2?F:F2, H=PAVE_Y+15, w=28, d=12;
+  for(let k=0;k<8;k++){ const a=k/8*Math.PI*2+Math.PI/8, R_=Math.min(x1-x0,z1-z0)/2-6, bx=cx+Math.cos(a)*R_*((x1-x0)/(z1-z0)>1.2?1.35:1), bz=cz+Math.sin(a)*R_, yaw=Math.atan2(Math.cos(a),Math.sin(a))+Math.PI, FF=k%2?F:F2, H=PAVE_Y+15, w=20, d=10;
     eBoxR(bx,bz,w,d,PAVE_Y,H,yaw,{f:FF.mBase,b:FF.mBase,l:FF.mBase,r:FF.mBase,t:mFelt},{tu:FF.bays*HUB.BAY,tv:FF.floors*HUB.FLOOR,cell:3});
     eBoxR(bx,bz,w+.06,d+.06,PAVE_Y,H,yaw,{f:FF.mLit,b:FF.mLit},{tu:FF.bays*HUB.BAY,tv:FF.floors*HUB.FLOOR}); eBoxR(bx,bz,w+.3,d+.3,H,H+.5,yaw,{f:mCope,b:mCope,l:mCope,r:mCope,t:mCope});
     solR(bx,bz,w,d,H+.5,yaw); }
-  for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2)*26,cz+Math.sin(k/6*Math.PI*2)*26);
+  for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2)*19,cz+Math.sin(k/6*Math.PI*2)*19);
   STREET_LIGHT.pl.push([[cx,top+2.4,cz],[1.6,1.2,.8],12]); BANDSTAND.push([cx,top,cz]);
 };
 const BANDSTAND=[];
 
 /* THE SCHOOL: a tall Victorian board school, its playground in a cage */
 WIN.school={w:1.6,h:2.3,sill:.6,lintel:true};
-LM.school=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mPave,1.2,4); const F=facade('stock','school',0);
-  eFacade(x0+6,z0+6,x0+72,z0+30,PAVE_Y,PAVE_Y+13,F,'nsew'); hsol(x0+6,z0+6,x0+72,z0+30,PAVE_Y+13);
-  for(const gx of [x0+14,x0+39,x0+64]){ eBoxF(gx-5,z0+5,gx+5,z0+6,PAVE_Y+13,PAVE_Y+17,{n:F.mBase,s:F.mBase,e:F.mBase,w:F.mBase,t:mCope},{tu:10,tv:9}); eGeo(box(10.4,.4,1.4),mCope,gx,PAVE_Y+17,z0+5.5); }
-  eFlat(x0+6,z0+6,x0+72,z0+30,PAVE_Y+13.01,mSlate,2,0); eBox(x0+36,z0+16,x0+42,z0+20,PAVE_Y+13,PAVE_Y+16,mBrickW,{tu:1.6,tv:1.5});
+LM.school=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mPave,1.2,4); const F=facade('stock','school',0), bx1=x0+(x1-x0)*.58;
+  eFacade(x0+3,z0+5,bx1,z1-4,PAVE_Y,PAVE_Y+13,F,'nsew'); hsol(x0+3,z0+5,bx1,z1-4,PAVE_Y+13); eFlat(x0+3,z0+5,bx1,z1-4,PAVE_Y+13.01,mSlate,2,0);
+  const gx=(x0+3+bx1)/2; eBoxF(gx-5,z0+4,gx+5,z0+5,PAVE_Y+13,PAVE_Y+17,{n:F.mBase,s:F.mBase,e:F.mBase,w:F.mBase,t:mCope},{tu:10,tv:9}); eGeo(box(10.4,.4,1.4),mCope,gx,PAVE_Y+17,z0+4.5);
   const pg=MM(P2(64,64,(g,w,h)=>{ R(g,'#2a2a2e',0,0,w,h); specks(g,'#36363a',260,6501,w,h); g.strokeStyle='#d8c040'; g.lineWidth=2; g.strokeRect(8,8,48,48); g.beginPath(); g.arc(32,32,10,0,7); g.stroke(); },0,1));
-  eFlat(x0+78,z0+3,x1-4,z1-3,PAVE_Y+.01,pg,12,6); cage(x0+78,z0+3,x1-4,z1-3,3.2,[['n',x0+90,x0+94]]);
-  railing(x0+2,z0+2,x0+76,z0+2,1.6); councilSign('VALLANCE PRIMARY SCHOOL','EST. 1886 · BOYS · GIRLS · INFANTS',[x0+39,PAVE_Y+2.6,z0+2.03],[-1,0,0],5,.7);
+  eFlat(bx1+3,z0+3,x1-2,z1-3,PAVE_Y+.01,pg,12,6); cage(bx1+3,z0+3,x1-2,z1-3,3.2,[['n',bx1+6,bx1+10]]);
+  railing(x0+2,z0+1.5,bx1,z0+1.5,1.6); councilSign('VALLANCE PRIMARY SCHOOL','',[gx,PAVE_Y+2.6,z0+1.53],[-1,0,0],5,.7);
 };
 
 /* THE SUPERMARKET: a big lit shed and its car park */
 LM.supermarket=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,MM(P2(32,32,(g,w,h)=>{ R(g,'#2a2a2c',0,0,w,h); specks(g,'#353538',120,6601,w,h); R(g,'#d8d8d0',0,0,1,h); },0,1)),2.5,6);
-  const sx0=x0+8,sx1=x0+78,sz0=z0+10,sz1=z1-2; eBoxF(sx0,sz0,sx1,sz1,PAVE_Y,PAVE_Y+7.5,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mFelt},{tu:2.5,tv:3,cell:4}); hsol(sx0,sz0,sx1,sz1,PAVE_Y+7.5);
+  const sx0=x0+3,sx1=x0+(x1-x0)*.62,sz0=z0+9,sz1=z1-2; eBoxF(sx0,sz0,sx1,sz1,PAVE_Y,PAVE_Y+7.5,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mFelt},{tu:2.5,tv:3,cell:4}); hsol(sx0,sz0,sx1,sz1,PAVE_Y+7.5);
   const glass=nightM(P2(128,64,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#f4f8f4'],[1,'#c8d4d0']]); for(let i=0;i<8;i++){ R(g,'#6a8a7a',4+i*16,20,10,44); for(let k=0;k<5;k++) R(g,['#c83a2a','#e8c040','#3a7a3a','#f0f0f0'][k%4],5+i*16,24+k*8,8,5); } },0,1),{unlit:true},0);
-  eGrid(glass,[sx1,PAVE_Y,sz0-.03],NX,Y_,sx1-sx0-6,3.2,sx1-sx0-6,3.2); eSign(atlasSign('#0e5a3a','#ffffff','FOODSAVE','OPEN 7AM – 11PM · PARKING',{face:'grot',subC:'#bfe8d0'}),[(sx0+sx1)/2,PAVE_Y+5.4,sz0-.05],NX,14,2);
-  for(let x=x0+86;x<x1-4;x+=12) parkLamp(x,(z0+z1)/2); for(let i=0;i<9;i++) carPark(x0+88+(i%5)*11,z0+8+(i>4?30:0),i+1);
+  eGrid(glass,[sx1-2,PAVE_Y,sz0-.03],NX,Y_,sx1-sx0-6,3.2,sx1-sx0-6,3.2); eSign(atlasSign('#0e5a3a','#ffffff','FOODSAVE','OPEN 7AM – 11PM',{face:'grot',subC:'#bfe8d0'}),[(sx0+sx1)/2,PAVE_Y+5.4,sz0-.05],NX,12,1.8);
+  for(let i=0;i<6;i++) carPark(sx1+5+(i%3)*7,z0+10+(i>2?24:0),i+1,0); parkLamp(sx1+12,(z0+z1)/2);
   STREET_LIGHT.pl.push([[(sx0+sx1)/2,PAVE_Y+3,sz0-3],[1.2,1.3,1.25],10]);
 };
 
@@ -229,15 +223,14 @@ LM.church=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mGrass,2,6); railRect(x0+.
 };
 
 /* THE PETROL STATION: a lit canopy, pumps, a kiosk */
-LM.petrol=([x0,z0,x1,z1])=>{ const fx0=650,fx1=748,fz0=-458,fz1=-414; eFlat(fx0,fz0,fx1,fz1,PAVE_Y+.005,mTarmac,2,6);
-  const cX0=664,cX1=700,cZ0=-446,cZ1=-428, white=col(0xe8e8e4), under=nightM(null,{color:0xf4f8ff,unlit:true},.0), red=col(0xc81a1a);
+LM.petrol=([x0,z0,x1,z1])=>{ const fx0=x0+2,fx1=x1-2,fz0=z0+2,fz1=z1-2; eFlat(fx0,fz0,fx1,fz1,PAVE_Y+.005,mTarmac,2,6);
+  const cX0=fx0+8,cX1=fx0+38,cZ0=fz0+6,cZ1=fz0+20, white=col(0xe8e8e4), under=nightM(null,{color:0xf4f8ff,unlit:true},.0), red=col(0xc81a1a);
   eBoxF(cX0,cZ0,cX1,cZ1,PAVE_Y+5,PAVE_Y+6,{n:red,s:red,e:red,w:red,t:white},{tu:2,tv:1}); eGrid(under,[cX0,PAVE_Y+4.99,cZ0],X_,Z_,cX1-cX0,cZ1-cZ0,4,4); hsol(cX0,cZ0,cX1,cZ1,PAVE_Y+6,PAVE_Y+5);
-  for(const px of [668,696]) eBox(px-.25,(cZ0+cZ1)/2-.25,px+.25,(cZ0+cZ1)/2+.25,PAVE_Y,PAVE_Y+5,white);
-  for(let i=0;i<4;i++){ const px=670+i*7.5, pz=(cZ0+cZ1)/2; eBox(px-.6,pz-2,px+.6,pz+2,PAVE_Y,PAVE_Y+.2,col(0x8a8a86)); eBox(px-.35,pz-.5,px+.35,pz+.5,PAVE_Y+.2,PAVE_Y+1.9,white); eBox(px-.36,pz-.3,px+.36,pz+.3,PAVE_Y+1.1,PAVE_Y+1.6,under); hsol(px-.6,pz-2,px+.6,pz+2,PAVE_Y+1.9); }
-  for(const [lx,lz] of [[674,-437],[690,-437]]) STREET_LIGHT.pl.push([[lx,PAVE_Y+4.5,lz],[1.5,1.6,1.7],11]);
-  eBoxF(712,-458,744,-448,PAVE_Y,PAVE_Y+3.6,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mFelt},{tu:2.5,tv:3.6}); hsol(712,-458,744,-448,PAVE_Y+3.6); tradeRoom('offy'); eGrid(TRADES.offy.mRoom,[744,PAVE_Y+.3,-447.97],NX,Y_,20,2.6,20,2.6);
-  eSign(atlasSign('#c81a1a','#ffffff','FUEL & SHOP','OPEN 24 HOURS · CAR WASH',{face:'grot',subC:'#ffe0d0'}),[728,PAVE_Y+3.2,-447.9],NX,14,.8);
-  eBox(fx0+2,fz1-2,fx0+2.3,fz1-1.7,PAVE_Y,PAVE_Y+6,mPole); eSign(atlasSign('#141414','#ffd040','UNLEADED 152.9','DIESEL 158.9 · SUPER 164.9',{face:'grot',subC:'#ffffff'}),[fx0+2.15,PAVE_Y+5.4,fz1-1.55],X_,2.4,.9);
+  for(const px of [cX0+3,cX1-3]) eBox(px-.25,(cZ0+cZ1)/2-.25,px+.25,(cZ0+cZ1)/2+.25,PAVE_Y,PAVE_Y+5,white);
+  for(let i=0;i<4;i++){ const px=cX0+5+i*6.5, pz=(cZ0+cZ1)/2; eBox(px-.6,pz-2,px+.6,pz+2,PAVE_Y,PAVE_Y+.2,col(0x8a8a86)); eBox(px-.35,pz-.5,px+.35,pz+.5,PAVE_Y+.2,PAVE_Y+1.9,white); eBox(px-.36,pz-.3,px+.36,pz+.3,PAVE_Y+1.1,PAVE_Y+1.6,under); hsol(px-.6,pz-2,px+.6,pz+2,PAVE_Y+1.9); }
+  STREET_LIGHT.pl.push([[(cX0+cX1)/2,PAVE_Y+4.5,(cZ0+cZ1)/2],[1.5,1.6,1.7],12]);
+  const kx0=fx1-26,kx1=fx1-2,kz0=fz0,kz1=fz0+9; eBoxF(kx0,kz0,kx1,kz1,PAVE_Y,PAVE_Y+3.6,{n:mConcW,s:mConcW,e:mConcW,w:mConcW,t:mFelt},{tu:2.5,tv:3.6}); hsol(kx0,kz0,kx1,kz1,PAVE_Y+3.6); tradeRoom('offy'); eGrid(TRADES.offy.mRoom,[kx0+2,PAVE_Y+.3,kz1+.03],X_,Y_,kx1-kx0-4,2.6,kx1-kx0-4,2.6);
+  eSign(atlasSign('#c81a1a','#ffffff','FUEL & SHOP','OPEN 24 HOURS',{face:'grot',subC:'#ffe0d0'}),[(kx0+kx1)/2,PAVE_Y+3.2,kz1+.1],X_,12,.8);
 };
 
 
