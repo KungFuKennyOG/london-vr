@@ -71,7 +71,7 @@ function makeCrowdPed(i){ const t0=performance.now(), id=CROWD[i], S=PEOPLE[i], 
   CROWD_LOG.ms+=performance.now()-t0; CROWD_LOG.built++; return p; }
 /* the slow parts, one at a time: 0 paint the clothes, 1 paint the face */
 function crowdPrep(i,stage){ const t0=performance.now(), id=CROWD[i];
-  if(stage===0) CROWD_DRESS[i](); else { FACE[id]=FACE[id]||{}; if(!FACE[id].fight) FACE[id].fight=paintHead(HEADS[id],'fight'); }
+  if(stage===0) CROWD_DRESS[i](); else { FACE[id]=FACE[id]||{}; if(!FACE[id].fight||!FACE[id].fight.hi){ FACE[id].fight=ckFaceHi(HEADS[id],FACE[id].fight||paintHead(HEADS[id],'fight')); FACE[id].fight.hi=1; } /* denser face for handshake distance (45b) */ }
   const k=stage?'face':'dress'; CROWD_LOG[k]=(CROWD_LOG[k]||0)+performance.now()-t0; }
 /* ---------------- pavements: a line down the middle of each, with its half-width ---------------- */
 const PLINES=[];

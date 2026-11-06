@@ -89,10 +89,6 @@ const tRigger=garment(64,32,1294,()=>['#5a4028','leather',.4],{folds:3,grime:.3,
 /* ---------- hats, hair and coverings (all on the head joint, all baked into the person's mesh) ---------- */
 const mFlat=c=>M(null,{color:hexInt(c)}), mFab=(c,seed,fn)=>M(P2(16,16,(g,w,h)=>{ R(g,c,0,0,w,h); if(fn) fn(g,w,h); },6,seed),{double:true});
 function topi(J,c){ crown(J,[[.185,.083,.103],[.225,.084,.104],[.248,.062,.08],[.258,0,0]],mFab(c,1801,(g,w,h)=>{ for(let y=1;y<h;y+=3) for(let x=(y%2);x<w;x+=3) R(g,'rgba(0,0,0,.16)',x,y,1,1); }),-.012); }
-function hijab(J,o,c,seed){ const m=mFab(c,seed,(g,w,h)=>{ for(let x=0;x<w;x+=5) R(g,'rgba(0,0,0,.12)',x,0,2,h); });
-  crown(J,[[.1,.088,.106],[.16,.094,.113],[.21,.092,.11],[.25,.072,.09],[.275,.02,.03]],m,-.022);
-  mk(box(.19,.26,.06,{tw:1.06,td:1.2,at:[0,-.13,0]}),m,J.head,0,.21,-.08,-.06,0,0); for(const s of [-1,1]) mk(box(.03,.19,.11,{at:[0,-.095,0]}),m,J.head,s*.079,.17,-.005,-.02,0,s*.06);
-  const t=torsoAt(o,1.53*o.hf); mk(lathe([[-.07,t[1]+.045,t[2]+.05,t[3]],[0,t[1]+.03,t[2]+.035,t[3]],[.07,t[1]+.016,t[2]+.024,t[3]+.006]],10,{capB:false,capT:false}),m,J.neck); }
 function capFlat(J,c){ const m=mFab(c,1803,(g,w,h)=>{ for(let i=0;i<w;i+=3){ R(g,'rgba(255,255,255,.08)',i,0,1,h); R(g,'rgba(0,0,0,.12)',0,i,w,1); } });
   crown(J,[[.17,.09,.108],[.205,.094,.116],[.225,.096,.128,.012],[.24,.07,.1,.02],[.245,0,0,.02]],m,-.005); mk(box(.15,.012,.06),m,J.head,0,.172,.122,.22); }
 function bobble(J,c,c2){ beanie(J,c); mk(box(.05,.05,.05),M(null,{color:hexInt(c2||c)}),J.head,0,.3,-.01); }
@@ -127,6 +123,92 @@ function aHandbag(J,side,c){ const h=J['hand'+side], m=pm(c); mk(box(.26,.18,.1,
 function aGilet(J,o,c){ vest(J,o,M(P2(16,32,(g,w,h)=>{ R(g,c,0,0,w,h); for(let y=2;y<h;y+=5) R(g,'rgba(0,0,0,.28)',0,y,w,1); R(g,'rgba(0,0,0,.4)',7,0,2,h); },4,1816),{double:true}),.03); }
 function aHivis(J,o,c){ vest(J,o,M(garment(128,64,1817+c.length,()=>[c,'poly',.3],{folds:4,grime:.2,decor:I=>{ for(const y of [26,44]){ softRect(I,0,y,128,6,'#b4b8bc',1,.6); softLine(I,0,y+1,128,y+1,'#ffffff',.4,1); } for(const cx of [40,88]) softRect(I,cx-3,0,6,26,'#b4b8bc',1,.6); }}),{double:true}),.03); }
 function aWaistcoat(J,o,c){ vest(J,o,M(P2(16,32,(g,w,h)=>{ R(g,c,0,0,w,h); R(g,'rgba(0,0,0,.45)',7,0,2,h); for(let y=6;y<h;y+=7) R(g,'#b8b0a0',9,y,1,1); },4,1818),{double:true}),.02); }
+/* ---------- handshake distance (0.6-1 m in the headset): shoulders, hands, the hijab, the face ----------
+   Still the Stairwell rig and still one draw a person: every piece here rides a joint and is baked in with the body.
+   - Shoulders: a rounded deltoid cap in the sleeve's cloth on each arm joint, with the sleeve tube's flat top tucked
+     down under it, so the arm comes out of a shoulder instead of a box corner.
+   - Hands: a tapered palm, three two-part fingers and a thumb, posed per hand: a grip round whatever's held (phone,
+     cup, bag handles, lead, trolley bar), else relaxed and half-curled. Painted at 32 px (knuckles, nails' light ends).
+   - The hijab: one draped piece that frames the face, closes under the chin and falls over the shoulders and chest.
+   - Faces: painted at 1.44x the density (the base face smoothed up, then the eyes, lids and lips repainted crisp). */
+const CK_HANDT={};
+function ckHandTex(skin,skinD){ const k=skin+skinD; if(CK_HANDT[k]) return CK_HANDT[k];
+  return CK_HANDT[k]=P2(32,32,(g,w,h)=>{ R(g,skin,0,0,w,h); g.globalAlpha=.32; R(g,skinD,0,0,w,3); R(g,skinD,0,h-3,w,3); R(g,skinD,0,0,3,h); R(g,skinD,w-3,0,3,h);
+    g.globalAlpha=.18; for(const y of [9,16,23]) R(g,skinD,4,y,w-8,1); g.globalAlpha=.16; R(g,'#ffffff',6,5,w-12,3); g.globalAlpha=1; },8,(skin.charCodeAt(1)||7)*31); }
+/* one finger: two blocks from a knuckle, each joint bent by a toward the palm */
+function ckFinger(par,m,s,x,y,z,w,l1,l2,a1,a2,splay){ const n1=N(par,x,y,z,0,splay||0,-s*a1); mk(box(w*1.02,l1,w,{tw:1.04,td:1.04,at:[0,-l1/2,0]}),m,n1);
+  const n2=N(n1,0,-l1,0,0,0,-s*a2); mk(box(w*.94,l2,w*.92,{tw:1.06,td:1.06,at:[0,-l2/2,0]}),m,n2); return n1; }
+/* grip: 'grip' (round a handle or a cup), 'phone' (round a flat phone), 'fist', or 'rest' */
+function ckHand(J,o,side,grip){ const s=side==='L'?1:-1, H=J['hand'+side], m=M(ckHandTex(o.skinHex,o.skinDHex)), ps=-s, sc=Math.max(.86,Math.min(1.08,o.ag||1));
+  if(J['open'+side]) J['open'+side].vis=false; if(J['wrap'+side]) J['wrap'+side].vis=false;
+  const root=N(H,0,0,0); root.s=[sc,sc,sc];
+  mk(box(.028,.088,.074,{tw:.84,td:.86,at:[0,-.044,0]}),m,root); /* the palm, narrowing to the wrist */
+  const cu={grip:[1.3,1.25],phone:[.8,.75],fist:[1.55,1.45],rest:[.42,.5]}[grip]||[.42,.5];
+  ckFinger(root,m,s,ps*.002,-.086,.024,.02,.04,.036,cu[0]*.95,cu[1],-.05);   /* index */
+  ckFinger(root,m,s,ps*.002,-.088,.001,.021,.043,.038,cu[0],cu[1],0);        /* middle */
+  ckFinger(root,m,s,ps*.002,-.085,-.022,.021,.038,.032,cu[0]*1.05,cu[1]*1.05,.06); /* ring and little, together */
+  /* the thumb: off the front of the palm, across it when gripping */ const th=grip==='rest'?[-.5,-s*.35,.18,.2]:[-.25,-s*.95,.35,.45];
+  const t1=N(root,ps*.008,-.026,.034,th[0],0,th[1]); mk(box(.021,.036,.021,{at:[0,-.018,0]}),m,t1); const t2=N(t1,0,-.036,0,0,0,-s*th[3]); mk(box(.019,.03,.019,{tw:1.05,at:[0,-.015,0]}),m,t2); }
+/* a rounded shoulder: a cap in the sleeve's cloth on the arm joint, and the sleeve tube's flat top tucked under it */
+function ckShoulders(J,o){ const jk=o.jacket||0, ag=o.ag||1, hf=o.hf||1, r=.062*ag+jk*.6;
+  for(const [L_,s] of [['L',1],['R',-1]]){ const m=s>0?(o.armLM||o.armM):o.armM; if(!m) continue;
+    const g=lathe([[-.16,r*.94,r*.94],[-.1,r*1.0,r*1.0],[-.045,r*1.04,r*1.03],[0,r*1.0,r*.98],[.03,r*.82,r*.8],[.05,r*.48,r*.46],[.058,0,0]],10);
+    for(let i=1;i<g.T.length;i+=2) g.T[i]=.9+g.T[i]*.08; /* the shoulder end of the sleeve picture (no cuff, no skin) */
+    mk(g,m,J['arm'+L_],s*.006,0,0); }
+  const S=J.skin; if(!S) return; const ax=[BONES.indexOf('armL'),BONES.indexOf('armR')], top=1.47*hf, bp=S.bindP, P=S.geo.P;
+  for(let i=0;i<bp.length/3;i++){ const b=S.bi[i*2]; if(b!==ax[0]&&b!==ax[1]) continue; if(bp[i*3+1]<=top) continue; const jx=S.bpos[b][0];
+    for(const A of [bp,P]){ A[i*3+1]=top; A[i*3]=jx+(A[i*3]-jx)*.78; A[i*3+2]*=.78; } } }
+/* the hijab: one draped shell. Around the head (open at the face, closed under the chin) on the head joint, then the
+   drape over the shoulders and chest on the neck joint, overlapping so the join never shows when the head turns */
+function ckShell(rows,seg,hole,uv){ const g=new Geo(), n=seg+1, idx=[];
+  rows.forEach((R_,j)=>{ for(let i=0;i<=seg;i++){ const th=(i/seg-.5)*Math.PI*2, f=R_(th); if(!f){ idx.push(-1); continue; } idx.push(g.v(f,[0,1,0],[i/seg,uv(j,rows.length)])); } });
+  for(let j=0;j<rows.length-1;j++) for(let i=0;i<seg;i++){ const a=idx[j*n+i],b=idx[j*n+i+1],c=idx[(j+1)*n+i+1],d=idx[(j+1)*n+i]; if(a<0||b<0||c<0||d<0) continue; if(hole&&hole(i,j)) continue; g.I.push(a,c,b,a,d,c); }
+  smoothNormals(g); g.groups.push({start:0,count:g.I.length,mi:0}); return g; }
+function hijab(J,o,c,seed){ const dk=mix(c,'#000000',.32), lt=mix(c,'#ffffff',.14);
+  const m=M(P2(32,64,(g,w,h)=>{ R(g,c,0,0,w,h); const r=rng(seed); for(let x=0;x<w;x+=3+(r()*3|0)){ g.globalAlpha=.1+r()*.14; R(g,r()<.5?dk:lt,x,0,1+(r()*2|0),h); } g.globalAlpha=1; },5,seed),{double:true});
+  const hs=o.headS||1;
+  /* head: [y, half-width, half-depth, forward]; the face is open between chin (y .03) and brow (y .2), framed tight */
+  const HR=[[.268,.012,.016,-.022],[.258,.05,.062,-.022],[.24,.08,.097,-.02],[.21,.096,.113,-.018],[.17,.099,.117,-.016],[.13,.098,.116,-.012],[.09,.095,.113,-.006],[.05,.092,.108,0],[.015,.09,.104,.004],[-.02,.086,.1,.006],[-.055,.088,.102,.004],[-.09,.096,.108,0]];
+  /* the face opening, an oval from mid-forehead to just under the chin: the shell's vertices inside it are pulled out
+     to its rim (and tucked in toward the face), so the edge is a smooth oval, not stepped */
+  const yc=.104, yh=.074, tw=.86, prof=y=>{ for(let i=1;i<HR.length;i++) if(y>=HR[i][0]){ const A=HR[i-1],B=HR[i],f=(y-B[0])/(A[0]-B[0]); return [B[1]+(A[1]-B[1])*f,B[2]+(A[2]-B[2])*f,B[3]+(A[3]-B[3])*f]; } return HR[HR.length-1].slice(1); };
+  const SEG=22, YS=[]; for(let y=HR[0][0];y>HR[HR.length-1][0]-1e-4;y-=(y>.02&&y<.19?.014:.028)) YS.push(y); if(YS[YS.length-1]>HR[HR.length-1][0]+1e-4) YS.push(HR[HR.length-1][0]);
+  const gH=new Geo(), n=SEG+1, inside=[];
+  YS.forEach((y0,j)=>{ for(let i=0;i<=SEG;i++){ let th=(i/SEG-.5)*Math.PI*2, y=y0; const u=th/tw, v=(y-yc)/yh, d=Math.hypot(u,v); let k=1;
+      if(d<1){ th=u/(d||1e-3)*tw; y=yc+v/(d||1e-3)*yh; k=.95; inside.push(1); } else { inside.push(0); if(d<1.25) k=.95+.05*(d-1)/.25; }
+      const [rx,rz,cz]=prof(y); gH.v([rx*k*Math.sin(th)*hs,y*hs,(cz+rz*k*Math.cos(th))*hs],[0,1,0],[i/SEG,.5+.5*(y-HR[HR.length-1][0])/(HR[0][0]-HR[HR.length-1][0])]); } });
+  for(let j=0;j<YS.length-1;j++) for(let i=0;i<SEG;i++){ const a=j*n+i,b=a+1,c=a+n+1,d=a+n; if(inside[a]&&inside[b]&&inside[c]&&inside[d]) continue; gH.I.push(a,c,b,a,d,c); }
+  smoothNormals(gH); gH.groups.push({start:0,count:gH.I.length,mi:0}); mk(gH,m,J.head);
+  /* the drape: from inside the head piece's hem, out over the shoulders, longer at the front and back */
+  const t=torsoAt(o,1.38*o.hf), sw=Math.max(.19,(.19*(o.w||1))+(.062*(o.ag||1)+(o.jacket||0)*.6)*.7+.015), fd=t[2]+t[3]+.035, bd=t[2]-t[3]+.03;
+  const DR=[[.07,.075,.08],[.035,.1,.1],[.0,.135,.125],[-.03,sw*.86,.14],[-.06,sw,.15],[-.1,sw*1.01,.155],[-.15,sw*.97,.16],[-.21,sw*.93,.16],[-.28,sw*.88,.16]];
+  const rowsD=DR.map(([y,rx,rz],j)=>th=>{ const c_=Math.cos(th), hang=-.12-.17*Math.pow(Math.abs(c_),1.5); if(y<hang&&j>0&&DR[j-1][0]<=hang) return null;
+    const Y=Math.max(y,hang), z=c_>0?Math.max(rz,fd*(j>2?1:.6+j*.13)):Math.max(rz,bd*(j>2?1:.6+j*.13)); return [rx*Math.sin(th),Y,z*c_+(c_>0?.006:0)]; });
+  mk(ckShell(rowsD,SEG,null,(j,n)=>.5*(1-j/(n-1))),m,J.neck); }
+/* how each hand is posed: round whatever it holds, a phone held up, a fist on a lead or a stick, else relaxed */
+function ckGrip(J,S,side){ const h=(S.hold||[])[side==='R'?0:1]||'down', H=J['hand'+side], held=H.kids.some(k=>k!==J['open'+side]&&k!==J['wrap'+side]);
+  if(h==='text'||h==='ear') return 'phone'; if(h==='lead'||h==='stick') return 'fist'; if(held) return h==='chest'&&String(S.props||'').includes('aPhone')&&side==='R'?'phone':'grip';
+  if(h==='back'||h==='bar') return 'grip'; return 'rest'; }
+/* the face at 1.44x the density: the painted face smoothed up to 368x184 (it still shares a row of the person's 512x512 atlas with the torso), then the eyes, lids and lips painted crisp */
+function ckFaceHi(s,src){ const W=368,H=184,k=W/256, cx=128*k;
+  return tex(W,H,null,g=>{ g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(src.c,0,0,W,H);
+    const E=FL3.eye*k, MO=FL3.mouth*k, iris=s.iris||'#3a2a1a', dk=mix(s.skinD,'#000000',.55);
+    for(const sx of [-1,1]){ const ex=cx+sx*18*k, rx=7.4*k, ry=2.7*k;
+      g.save(); g.beginPath(); g.ellipse(ex,E+.3*k,rx,ry,0,0,Math.PI*2); g.clip();
+      g.fillStyle=s.white||'#e2dccf'; g.fillRect(ex-rx,E-ry,rx*2,ry*2+2);
+      const gr=g.createLinearGradient(0,E-ry,0,E+ry); gr.addColorStop(0,'rgba(0,0,0,.28)'); gr.addColorStop(.5,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(ex-rx,E-ry,rx*2,ry*2+2);
+      g.fillStyle=mix(iris,'#000000',.35); g.beginPath(); g.arc(ex,E+.4*k,3.05*k,0,Math.PI*2); g.fill();
+      g.fillStyle=iris; g.beginPath(); g.arc(ex,E+.4*k,2.45*k,0,Math.PI*2); g.fill();
+      g.fillStyle='#0a0606'; g.beginPath(); g.arc(ex,E+.4*k,1.15*k,0,Math.PI*2); g.fill();
+      g.fillStyle='rgba(255,255,255,.92)'; g.fillRect(ex-1.6*k,E-1.1*k,1.1*k,1.1*k); g.restore();
+      /* lids: a dark lash line on top that wings out a touch, a softer lower lid, the crease above */
+      g.strokeStyle=dk; g.lineCap='round'; g.lineWidth=1.3*k; g.beginPath(); g.ellipse(ex,E+.3*k,rx,ry,0,Math.PI*1.04,Math.PI*1.96); g.stroke();
+      g.lineWidth=.9*k; g.beginPath(); g.moveTo(ex+sx*rx*.95,E-.2*k); g.lineTo(ex+sx*(rx+1.6*k),E-1.1*k); g.stroke();
+      g.globalAlpha=.35; g.lineWidth=.7*k; g.beginPath(); g.ellipse(ex,E+.3*k,rx*.92,ry,0,Math.PI*.1,Math.PI*.9); g.stroke();
+      g.globalAlpha=.22; g.lineWidth=.8*k; g.beginPath(); g.ellipse(ex,E+.6*k,rx*1.08,ry*2.1,0,Math.PI*1.15,Math.PI*1.85); g.stroke(); g.globalAlpha=1; }
+    /* lips: the line between them, and a little light on the lower lip */
+    g.strokeStyle=mix(s.lip||s.skinD,'#000000',.5); g.globalAlpha=.75; g.lineWidth=.9*k; g.beginPath(); g.moveTo(cx-12*k,MO); g.quadraticCurveTo(cx,MO+1.2*k,cx+12*k,MO); g.stroke();
+    g.globalAlpha=.2; g.fillStyle='#ffffff'; g.beginPath(); g.ellipse(cx,MO+2.2*k,4*k,.8*k,0,0,Math.PI*2); g.fill(); g.globalAlpha=1; }); }
 /* ---------- the people: who they are, what they wear, what they carry, how they hold it ---------- */
 const CSK={w1:['#f0c8aa','#c49a7e'],w2:['#e8bc9c','#bc9072'],w3:['#ecc4aa','#bc967e'],b1:['#a87050','#784a32'],b2:['#9a6444','#6e4430'],b3:['#b88462','#8a5a40'],k1:['#5e3a26','#3a2214'],k2:['#7a4a30','#4e2c1c'],k3:['#4a2c1c','#2e1a10'],c1:['#e8c49a','#b8946e'],m1:['#c8916c','#986448']};
 /* role: what they do and when (48f2 has the schedule). hold: the arms when walking (R,L). rain: brolly | hood | none */
@@ -189,7 +271,8 @@ const CROWD_N=PEOPLE.length, CROWD=[], CROWD_DRESS=[]; /* painting the clothes i
         if(S.kurta) skirt(J,oo,crowdSkirt(S.kurtaUnder||S.tc,1840+i,{slit:1}),S.kurta,1.1);
         if(S.longCoat) skirt(J,oo,crowdSkirt(S.tc,1840+i,{slit:1,fab:'wool'}),S.longCoat,1.14);
         if(S.legs==='skirt') skirt(J,oo,crowdSkirt(S.lc,1850+i,{pattern:S.skirtPat&&S.skirtPat[1]}),.86,1.1);
-        if(S.over) S.over(J,oo); if(S.props) S.props(J,oo); }};
+        if(S.over) S.over(J,oo); if(S.props) S.props(J,oo);
+        oo.skinHex=sk_[0]; oo.skinDHex=sk_[1]; ckShoulders(J,oo); for(const sd of ['R','L']) ckHand(J,oo,sd,ckGrip(J,S,sd)); }};
     CROWD_DRESS[i]=()=>{ const R_=ROSTER[id]; if(R_.torso) return; R_.torso=crowdTorso(id,1500+i*11,Sx); R_.arm=crowdArm(1600+i*11,Sx); R_.leg=crowdLeg(1700+i*11,S.abaya||S.sari?Object.assign({},S,{legs:'trousers',lc:S.lc}):S); };
     CROWD.push(id); }); console.log('[london] crowd wardrobe: people',CROWD.length,'ms',Math.round(performance.now()-t0)); }
 /* ---------- baking: one person, one mesh, one texture ----------
@@ -201,7 +284,7 @@ const CROWD_ATLAS={}; let _crowdTexId=1;
 function crowdAtlas(id,mats){ let A=CROWD_ATLAS[id]; if(!A) A=CROWD_ATLAS[id]={regions:new Map(),list:[],tex:null,mat:null};
   const key=m=>(m.tex?(m.tex.__cid||(m.tex.__cid=_crowdTexId++)):'c')+'|'+m.color.map(v=>v.toFixed(3)).join(',')+'|'+m.rep.join('x')+'|'+(m.emis[0]+m.emis[1]+m.emis[2]>0?m.emis.map(v=>v.toFixed(2)).join(','):'');
   if(!A.tex){ for(const m of mats){ const k=key(m); if(A.regions.has(k)) continue; const t=m.tex, rp=[Math.min(4,Math.max(1,Math.round(m.rep[0]))),Math.min(4,Math.max(1,Math.round(m.rep[1])))];
-      const w=t?Math.min(256,t.c.width*rp[0]):4, h=t?Math.min(256,t.c.height*rp[1]):4, R_={k,m,w,h,rp,x:0,y:0}; A.regions.set(k,R_); A.list.push(R_); }
+      const cap=t&&t.c.width>256?504:256, w=t?Math.min(cap,t.c.width*rp[0]):4, h=t?Math.min(256,t.c.height*rp[1]):4, /* the hi-res face keeps its width */ R_={k,m,w,h,rp,x:0,y:0}; A.regions.set(k,R_); A.list.push(R_); }
     /* shelf-pack into a 512-wide sheet, tallest first, with a 2 px gutter */
     const L=A.list.slice().sort((a,b)=>b.h-a.h||b.w-a.w), W=512; let x=0,y=0,rowH=0; for(const q of L){ if(x+q.w+4>W){ x=0; y+=rowH+4; rowH=0; } q.x=x+2; q.y=y+2; x+=q.w+4; rowH=Math.max(rowH,q.h); }
     let H=16; while(H<y+rowH+4) H*=2; const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); g.imageSmoothingEnabled=false;
