@@ -16,14 +16,14 @@ const CROWD_SPOTS={shops:[],benches:[],stops:[],kiosks:[]};
     try{ return _gs.apply(this,arguments); } finally { CROWD_SPOTS.shops.push(shopNow); shopNow=null; } };
   tradeRoom=function(k){ if(shopNow&&!shopNow.trade) shopNow.trade=k; return _tr.apply(this,arguments); };
   eGrid=function(m){ if(shopNow&&!shopNow.shut&&SHUT.indexOf(m)>=0) shopNow.shut=true; return _eg.apply(this,arguments); };
-  bench=function(x,z,ry){ CROWD_SPOTS.benches.push({x,z,yaw:ry}); const ax=Math.abs(Math.sin(ry))<.5, hx=ax?.82:.3, hz=ax?.3:.82; CROWD_FURN.push([x-hx,z-hz,x+hx,z+hz]); return _be.apply(this,arguments); };
+  bench=function(x,z,ry){ CROWD_SPOTS.benches.push({x,z,yaw:ry}); const ax=Math.abs(Math.sin(ry))<.5, hx=ax?.82:.3, hz=ax?.3:.82; CROWD_FURN.push([x-hx,z-hz,x+hx,z+hz,'bench']); return _be.apply(this,arguments); };
   busStop=function(x,z,ax,side){ CROWD_SPOTS.stops.push({x,z,ax,side,q:[]}); return _bs.apply(this,arguments); };
   kiosk=function(x,z){ CROWD_SPOTS.kiosks.push({x,z}); return _ki.apply(this,arguments); };
   /* things people mustn't walk through that the player can: lamp columns, tree trunks, bollards, benches (footprints for 48f4) */
   const _la=lamp,_tre=tree,_bol=bollard;
-  lamp=function(x,z){ CROWD_FURN.push([x-.11,z-.11,x+.11,z+.11]); return _la.apply(this,arguments); };
-  tree=function(x,z,s=1,y0=PAVE_Y){ if(y0<PAVE_Y+.5){ const t=.14*s+.04; CROWD_FURN.push([x-t,z-t,x+t,z+t]); } return _tre.apply(this,arguments); };
-  bollard=function(x,z){ CROWD_FURN.push([x-.1,z-.1,x+.1,z+.1]); return _bol.apply(this,arguments); }; }
+  lamp=function(x,z){ CROWD_FURN.push([x-.11,z-.11,x+.11,z+.11,'lamp']); return _la.apply(this,arguments); };
+  tree=function(x,z,s=1,y0=PAVE_Y){ if(y0<PAVE_Y+.5){ const t=.14*s+.04; CROWD_FURN.push([x-t,z-t,x+t,z+t,'tree']); } return _tre.apply(this,arguments); };
+  bollard=function(x,z){ CROWD_FURN.push([x-.1,z-.1,x+.1,z+.1,'bollard']); return _bol.apply(this,arguments); }; }
 const CROWD_FURN=[];
 
 /* ---------- the wardrobe: painted tops, legs and sleeves from a short spec ---------- */

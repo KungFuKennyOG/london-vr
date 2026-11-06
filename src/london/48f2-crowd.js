@@ -79,8 +79,12 @@ for(const S of STREETS){ const [id,ax,c,a,b,rw,pw]=S; let pn=pw,ps=pw; if(id==='
   for(const [off,w,side] of [[c-rw/2-pn/2,pn,-1],[c+rw/2+ps/2,ps,1]]){ const cut=id==='bgr'?[[-17,37]]:[]; let segs=[[a,b]];
     for(const [p_,q] of cut) segs=segs.flatMap(([u,v])=>q<=u||p_>=v?[[u,v]]:[[u,p_],[q,v]].filter(([s0,s1])=>s1-s0>3));
     for(const [u,v] of segs) PLINES.push({ax,c:off,a:u,b:v,id,hw:Math.max(.25,w/2-.45),side,road:c}); } }
+const CROWD_ZEBRAS=[-120,-262,120,252]; /* the high street's zebras (48j-dress) */
 const lineXZ=(L,s)=>L.ax==='x'?[s,L.c]:[L.c,s];
 function nextLine(L,end,goal){ const [ex,ez]=lineXZ(L,end), out=[];
+  if(end===L.a?L.capA:L.capB){ /* the same pavement, past whatever cuts it (walked round by a path), else back the way you came */ let best=null,bd=12;
+    for(const M2 of PLINES){ if(M2===L||M2.id!==L.id||M2.side!==L.side||M2.ax!==L.ax) continue; const e=end===L.a?M2.b:M2.a, d=end===L.a?L.a-e:e-L.b; if(d>0&&d<bd){ bd=d; best=[M2,e,d]; } }
+    return best; }
   for(const M2 of PLINES){ if(M2===L) continue; const s=clamp(M2.ax==='x'?ex:ez,M2.a,M2.b), [px,pz]=lineXZ(M2,s), d=Math.hypot(px-ex,pz-ez); if(d>=14) continue;
     if(Math.abs(px-ex)>1.6&&Math.abs(pz-ez)>1.6) continue; /* no diagonals across a junction */ if(!pobClear(ex,ez,px,pz,.2)) continue; out.push([M2,s,d]); }
   if(!out.length) return null; if(!goal&&Math.random()<.6){ const h=TOD.h; let tot=0; for(const o of out){ o[3]=lively(o[0],h); tot+=o[3]; } let u=Math.random()*tot; for(const o of out){ u-=o[3]; if(u<=0) return o; } }
@@ -93,13 +97,15 @@ const QTRADES=new Set(['chicken','kebab']), WTRADES=new Set(['vintage','phone','
 function crowdSpots(){ CS.ready=true; pobBuild(); pobSplitLines();
   const fix=(sl,ox,oz)=>{ for(let k=0;k<5;k++){ if(pobHit(sl.x,sl.z,.22)<0) return true; sl.x+=ox*.2; sl.z+=oz*.2; } return false; }, keep=(spot,ox,oz)=>{ spot.slots=spot.slots.filter(sl=>fix(sl,ox||0,oz||0)); return spot.slots.length>0; };
   for(const [x,z,yaw] of PUB_SPOTS){ if(inCore(x,z,2)) continue; const ox=Math.sin(yaw), oz=Math.cos(yaw), ux=Math.cos(yaw), uz=-Math.sin(yaw);
-    const P_={x,z,ox,oz,door:1,slots:[[x-ux*.55,z-uz*.55],[x+ux*.55,z+uz*.55],[x+ox*.65,z+oz*.65]].map(([sx,sz])=>({x:sx,z:sz,p:null}))}; if(keep(P_,ox,oz)&&pobClear(x-ox*1.3,z-oz*1.3,x,z,.15)) CS.pubs.push(P_); }
+    const P_={x,z,ox,oz,door:1,slots:[[x-ux*.55,z-uz*.55],[x+ux*.55,z+uz*.55],[x+ox*.65,z+oz*.65]].map(([sx,sz])=>({x:sx,z:sz,p:null}))};
+    /* the doorstep: as far back toward the door as a body fits */ let st=null; for(let k=0;k<=9;k++){ const X=x-ox*.15*k, Z=z-oz*.15*k; if(pobHit(X,Z,.22)>=0) break; st=[X,Z]; }
+    if(st&&keep(P_,ox,oz)){ P_.step=st; CS.pubs.push(P_); } }
   for(const sh of CROWD_SPOTS.shops){ if(inCore(sh.x,sh.z,3)||sh.shut) continue;
-    if(QTRADES.has(sh.trade)){ const slots=[]; for(let k=0;k<5;k++){ const d=.9+k*.78; slots.push({x:sh.x+sh.ox*.8+sh.ux*d,z:sh.z+sh.oz*.8+sh.uz*d,p:null}); } const Q={x:sh.x,z:sh.z,sh,slots,door:[sh.x+sh.ox*.25-sh.ux*.6,sh.z+sh.oz*.25-sh.uz*.6],next:10+Math.random()*15};
+    if(QTRADES.has(sh.trade)){ const slots=[]; for(let k=0;k<5;k++){ const d=.9+k*.78; slots.push({x:sh.x+sh.ox*.8+sh.ux*d,z:sh.z+sh.oz*.8+sh.uz*d,p:null}); } const Q={x:sh.x,z:sh.z,sh,slots,door:pobFree(sh.x+sh.ox*.25-sh.ux*.6,sh.z+sh.oz*.25-sh.uz*.6,sh.ox,sh.oz,8),next:10+Math.random()*15}; if(!Q.door) continue;
       /* a queue runs from the door until something's in the way */ let n=0; while(n<slots.length&&fix(slots[n],sh.ox,sh.oz)) n++; slots.length=n; if(n>=2) CS.queues.push(Q); }
     else if(WTRADES.has(sh.trade)) CS.windows.push(sh); }
   for(const b of CROWD_SPOTS.benches){ const fx=Math.sin(b.yaw), fz=Math.cos(b.yaw), ux=Math.cos(b.yaw), uz=-Math.sin(b.yaw); if(inCore(b.x,b.z,2)) continue;
-    if(pobHit(b.x+fx*.6,b.z+fz*.6,.2)>=0) continue; /* nowhere to put your feet */ CS.benches.push({x:b.x,z:b.z,yaw:b.yaw,slots:[-.42,.42].map(u=>({x:b.x+ux*u-fx*.06,z:b.z+uz*u-fz*.06,p:null}))}); }
+    if(pobHit(b.x+fx*.6,b.z+fz*.6,.2)>=0) continue; /* nowhere to put your feet */ CS.benches.push({x:b.x,z:b.z,yaw:b.yaw,slots:[-.42,.42].map(u=>({x:b.x+ux*u-fx*.06,z:b.z+uz*u-fz*.06,fx:b.x+ux*u+fx*.62,fz:b.z+uz*u+fz*.62,p:null}))}); }
   for(const st of CROWD_SPOTS.stops){ const rx=st.ax==='x'?0:-st.side, rz=st.ax==='x'?-st.side:0, ux=st.ax==='x'?1:0, uz=st.ax==='x'?0:1; let k=1; while(k<6&&!onRoad(st.x+rx*k,st.z+rz*k)) k+=.25;
     const yaw=Math.atan2(rx,rz); st.yaw=yaw; st.kerb=[st.x+rx*(k-.45),st.z+rz*(k-.45)]; st.slots=[-1.1,0,1.1,2.4].map((u,ii)=>({x:st.x+ux*u+(ii===3?rx*(k-1.2):0),z:st.z+uz*u+(ii===3?rz*(k-1.2):0),p:null})); st.slots=st.slots.filter(sl=>pobHit(sl.x,sl.z,.2)<0); if(st.slots.length) CS.stops.push(st); }
   CS.windows=CS.windows.filter(sh=>pobHit(sh.x+sh.ox*.7,sh.z+sh.oz*.7,.2)<0);
@@ -107,7 +113,8 @@ function crowdSpots(){ CS.ready=true; pobBuild(); pobSplitLines();
   /* Columbia Road: pitches along both kerbs, where the pavement's clear */
   const CR=STREETS.find(S=>S[0]==='columbia'); if(CR){ const [,,c,a,b,rw]=CR; for(const [x0,side] of [[-130,-1],[-178,1],[-236,-1],[-282,1],[-92,1]]){ for(let dx=0;dx<16;dx+=1){ const x=x0+dx, kz=c+side*(rw/2+.75), tz=c+side*(rw/2+1.45);
         if(navWalk(x-.7,kz,.25)&&navWalk(x+.7,kz,.25)&&navWalk(x,tz,.25)){ CS.pitches.push({x,z:tz,bx:x,bz:kz,yaw:side<0?Math.PI:0,slots:[{x,z:tz,p:null}],buckets:null}); break; } } } }
-  for(const [x,z] of TUBES) CS.tubes.push([x,z]);
+  for(const [x,z] of TUBES){ const f=pobNear(x,z,3); if(f) CS.tubes.push(f); } /* the station mouth, where a body fits */
+  console.log('[london] crowd solids: rects',POB.n,'pavement cuts',POB.cuts,'lines',POB.lines0,'->',PLINES.length);
   console.log('[london] crowd spots: pubs',CS.pubs.length,'queues',CS.queues.length,'windows',CS.windows.length,'benches',CS.benches.length,'stops',CS.stops.length,'decks',CS.decks.length,'pitches',CS.pitches.length); }
 /* ---------------- the hours ---------------- */
 const hourW=(R_,h)=>{ let w=0; for(const [a,b,v] of R_) if(a<=b?(h>=a&&h<b):(h>=a||h<b)) w=Math.max(w,v); return w; };
@@ -132,7 +139,7 @@ const seen=(x,z)=>typeof navSight!=='function'||!NAV||navSight(CW.px,CW.pz,x,z);
 function freePed(roles,h){ /* a person not out yet whose role fits, weighted by the hour */ let tot=0; const c=[];
   for(const p of PED_POOL){ if(p.alive||p.cool>LIFE.t||(roles&&!roles.has(p.role))) continue; const w=hourW(ROLE_H[p.role]||[],h); if(w>0){ c.push([p,w]); tot+=w; } }
   if(!c.length) return null; let u=Math.random()*tot; for(const [p,w] of c){ u-=w; if(u<=0) return p; } return c[c.length-1][0]; }
-function show(p,x,z,yaw,act){ p.alive=true; p.root.vis=true; p.x=x; p.z=z; p.y=floorAt(x,z); p.yaw=yaw; p.act=act; p.t=0; p.react=null; p.flee=0; p.pause=0; p.goal=null; p.dodge[0]=p.dodge[1]=0; p.animAcc=9; p.E.G=null; p.look=null; p.lookW=0; p.partner=null; p.home=null; p.alight=0; p.sniff=0;
+function show(p,x,z,yaw,act){ p.alive=true; p.root.vis=true; p.x=x; p.z=z; p.y=floorAt(x,z); p.yaw=yaw; p.act=act; p.t=0; p.react=null; p.flee=0; p.pause=0; p.goal=null; p.dodge[0]=p.dodge[1]=0; p.pn=0; p.pushT=0; p.free0=false; p.animAcc=9; p.E.G=null; p.look=null; p.lookW=0; p.partner=null; p.home=null; p.alight=0; p.sniff=0;
   if(p.trolley) trolleyAt(p,act==='bench'||act==='rest'||act==='stop'||act==='queue'?'front':'pull'); return p; }
 function hide(p){ p.alive=false; p.root.vis=false; if(p.spot){ p.spot.p=null; p.spot=null; } if(p.stop){ const q=p.stop.q, k=q.indexOf(p); if(k>=0) q.splice(k,1); p.stop=null; } p.cool=LIFE.t+4; if(CW.filmer===p) CW.filmer=null; }
 function startWalk(p,L,s,dir){ p.line=L; p.s=s; p.dir=dir; p.lane=(Math.random()-.5)*Math.min(1.2,L.hw*1.4); p.act='walk'; p.t=0; }
@@ -153,9 +160,10 @@ function spawnWalker(p,h){ const f=pickLine(h,CW.warm?8:20); if(!f) return false
   p.yaw=L.ax==='x'?(p.dir>0?Math.PI/2:-Math.PI/2):(p.dir>0?0:Math.PI); return true; }
 /* doors: people come out of their houses and the shops, and go in again */
 const DOORS=new Map(); let doorsReady=false; const dkey=(x,z)=>Math.floor(x/16)*4096+Math.floor(z/16);
-function addDoor(d){ if(pobHit(d.x,d.z,.15)>=0) return; const nl=nearestLine(d.x,d.z); if(!nl||nl.d>4) return; const [lx,lz]=lineXZ(nl.L,nl.s); if(!pobClear(d.x,d.z,lx,lz,.18)) return; d.L=nl.L; d.s=nl.s; const k=dkey(d.x,d.z); let a=DOORS.get(k); if(!a) DOORS.set(k,a=[]); a.push(d); }
+function addDoor(d){ /* a doorstep a body fits on, with a clear walk to the pavement */ const f=pobFree(d.x,d.z,-d.ix,-d.iz,4,.2); if(!f) return; d.x=f[0]; d.z=f[1]; const nl=nearestReach(d.x,d.z); if(!nl||!nl.clear||nl.d>4.5) return; d.L=nl.L; d.s=nl.s; const k=dkey(d.x,d.z); let a=DOORS.get(k); if(!a) DOORS.set(k,a=[]); a.push(d); }
 function doorsInit(){ doorsReady=true; for(const d of HOUSE_DOORS) if(!inCore(d.x,d.z,2)) addDoor({x:d.x,z:d.z,ix:Math.sin(d.yaw),iz:Math.cos(d.yaw),kind:'house'});
-  for(const sh of CROWD_SPOTS.shops) if(!sh.shut&&!inCore(sh.x,sh.z,2)) addDoor({x:sh.x+sh.ox*.55,z:sh.z+sh.oz*.55,ix:-sh.ox,iz:-sh.oz,kind:'shop',trade:sh.trade}); }
+  for(const sh of CROWD_SPOTS.shops) if(!sh.shut&&!inCore(sh.x,sh.z,2)) addDoor({x:sh.x+sh.ox*.55,z:sh.z+sh.oz*.55,ix:-sh.ox,iz:-sh.oz,kind:'shop',trade:sh.trade});
+  let n=0; for(const a_ of DOORS.values()) n+=a_.length; console.log('[london] crowd doors',n,'of',HOUSE_DOORS.length+CROWD_SPOTS.shops.length); }
 function doorsNear(x,z,r){ const out=[]; for(let a=Math.floor((x-r)/16);a<=Math.floor((x+r)/16);a++) for(let b=Math.floor((z-r)/16);b<=Math.floor((z+r)/16);b++){ const L=DOORS.get(a*4096+b); if(L) for(const d of L) if(Math.abs(d.x-x)<r&&Math.abs(d.z-z)<r) out.push(d); } return out; }
 const SHOP_H={chicken:[[11,24,1],[0,3,1]],kebab:[[11,24,1],[0,3,1]],offy:[[7,24,1]],cafe:[[7,17,1]],curry:[[12,23,1]],beigel:[[0,24,1]]};
 const doorOpen=(d,h)=>d.kind==='house'?(h>1&&h<6?.25:1):hourW(SHOP_H[d.trade]||[[9,18,1]],h);
@@ -163,16 +171,16 @@ function spawnFromDoor(p,h){ const D=doorsNear(CW.px,CW.pz,34); let best=null,bs
   for(let k=0;k<12&&D.length;k++){ const d=D[Math.random()*D.length|0], dist=Math.hypot(d.x-CW.px,d.z-CW.pz); if(dist<9||dist>34) continue; const w=doorOpen(d,h)*(d.kind==='shop'?1.6:1); if(!w) continue;
     const sc=w*(seen(d.x,d.z)?2.5:.3)*(.5+Math.random()); if(sc>bs){ bs=sc; best=d; } }
   if(!best) return false; const nl={L:best.L,s:best.s}; if(PLINES.indexOf(nl.L)<0) return false;
-  show(p,best.x,best.z,Math.atan2(-best.ix,-best.iz),'emerge'); p.line=nl.L; p.s=nl.s; const [lx,lz]=lineXZ(nl.L,nl.s); p.tx=lx; p.tz=lz; commute(p,lx,lz,nl.L); return true; }
-function spawnAt(p,spot,slot,act,yaw,from){ slot.p=p; p.spot=slot; show(p,from?from[0]:slot.x,from?from[1]:slot.z,yaw,act); p.home=spot; return true; }
+  show(p,best.x,best.z,Math.atan2(-best.ix,-best.iz),'emerge'); if(!pedJoin(p,nl.L,nl.s,0)) return false; const [lx,lz]=lineXZ(nl.L,nl.s); commute(p,lx,lz,nl.L); if(p.goal) p.jdir=p.dir; return true; }
+function spawnAt(p,spot,slot,act,yaw,from){ slot.p=p; p.spot=slot; show(p,from?from[0]:slot.x,from?from[1]:slot.z,yaw,act); p.home=spot; p.pn=0;
+  if(from&&!pedPlan(p,slot.fx??slot.x,slot.fz??slot.z)){ hide(p); return false; } return true; }
 function freeSlot(list,near,walkIn){ const c=[]; for(const s of list){ const d=Math.hypot(s.x-CW.px,s.z-CW.pz); if(d<8||d>48) continue; for(const sl of s.slots) if(!sl.p&&!inCore(sl.x,sl.z,1)&&(CW.warm||walkIn||d>near||!inView(sl.x,sl.z,d)||s.door)) { c.push([s,sl,seen(s.x,s.z)?3:1]); break; } }
   let tot=0; for(const q of c) tot+=q[2]; let u=Math.random()*tot; for(const q of c){ u-=q[2]; if(u<=0) return q; } return null; }
 /* where someone walking up to a spot comes from: along the pavement, from out of sight if possible */
-function approach(x,z){ if(CW.warm) return null; const nl=nearestLine(x,z); if(!nl) return null; let fallback=null;
-  for(const sg of [1,-1]){ const s=clamp(nl.s+sg*(7+Math.random()*4),nl.L.a,nl.L.b), [ax,az]=lineXZ(nl.L,s), d=Math.hypot(ax-CW.px,az-CW.pz); if(pobHit(ax,az,.25)>=0) continue;
-    const [bx,bz]=lineXZ(nl.L,nl.s); if(!pobClear(ax,az,bx,bz,.2)||!pobClear(bx,bz,x,z,.15)) continue; if(!inView(ax,az,d)||d>30) return [ax,az]; fallback=fallback||[ax,az]; }
+function approach(x,z){ if(CW.warm) return null; const nl=nearestReach(x,z); if(!nl||!nl.clear) return inView(x,z,Math.hypot(x-CW.px,z-CW.pz))?'no':null; let fallback=null;
+  for(let sg=1;sg>=-1;sg-=2){ const s=clamp(nl.s+sg*(7+Math.random()*4),nl.L.a,nl.L.b), [ax,az]=lineXZ(nl.L,s), d=Math.hypot(ax-CW.px,az-CW.pz); if(pobHit(ax,az,.25)>=0) continue;
+    const [bx,bz]=lineXZ(nl.L,nl.s); if(!pobClear(ax,az,bx,bz,.2)) continue; if(!inView(ax,az,d)||d>30) return [ax,az]; fallback=fallback||[ax,az]; }
   return fallback||(inView(x,z,Math.hypot(x-CW.px,z-CW.pz))?'no':null); }
-const spotFrom=(x,z)=>{ const a=approach(x,z); return a; };
 function spawnActivity(h){ const rain=isRain(), w={walk:1.5,door:1.5}; for(const k in ACT_H) w[k]=hourW(ACT_H[k],h)*(rain&&(k==='bench'||k==='chat')?0:rain&&k==='pub'?.7:1)*1.4;
   let tot=0; for(const k in w) tot+=w[k]; let u=Math.random()*tot, act='walk'; for(const k in w){ u-=w[k]; if(u<=0){ act=k; break; } }
   if(act==='walk'||act==='door'){ const p=freePed(null,h); if(!p||p.role==='trader') return false; if(act==='door'&&!CW.warm&&spawnFromDoor(p,h)) return true; return spawnWalker(p,h); }
@@ -180,12 +188,13 @@ function spawnActivity(h){ const rain=isRain(), w={walk:1.5,door:1.5}; for(const
     const f=pickLine(h,CW.warm?8:20); if(!f) return false; const [L,s,x,z]=f, ax=L.ax==='x', d=.48; if(pobHit(ax?x-d:x,ax?z:z-d,.22)>=0||pobHit(ax?x+d:x,ax?z:z+d,.22)>=0) return false; show(a,ax?x-d:x,ax?z:z-d,ax?Math.PI/2:0,'chat'); show(b,ax?x+d:x,ax?z:z+d,ax?-Math.PI/2:Math.PI,'chat'); a.partner=b; b.partner=a; a.line=b.line=L; a.s=b.s=s; a.dur=b.dur=14+Math.random()*30; return true; }
   const list=act==='pub'?CS.pubs:act==='queue'?CS.queues:act==='bench'?CS.benches:act==='stop'?CS.stops:CS.decks; const f=freeSlot(list,act==='deck'?20:30,act==='queue'||act==='bench'||act==='stop'); if(!f) return false;
   const p=freePed(ACT_ROLES[act],h); if(!p) return false; const [spot,slot]=f;
-  if(act==='pub'){ /* out of the pub door for a smoke, often with company */ const door=[spot.x-spot.ox*1.3,spot.z-spot.oz*1.3]; spawnAt(p,spot,slot,'pub',Math.atan2(spot.ox,spot.oz),CW.warm?null:door); p.dur=40+Math.random()*90;
-    const q=spot.slots.find(s=>!s.p); const o=q&&Math.random()<.7?freePed(ACT_ROLES.pub,h):null; if(o){ spawnAt(o,spot,q,'pub',Math.atan2(spot.ox,spot.oz),CW.warm?null:[door[0]+.4,door[1]+.4]); o.dur=p.dur*(.7+Math.random()*.6); } return true; }
-  const from=act==='queue'||act==='bench'||act==='stop'?approach(slot.x,slot.z):null; if(from==='no') return false;
-  if(act==='queue'){ spawnAt(p,spot,slot,'queue',0,from); p.dur=999; return true; }
-  if(act==='bench'){ if(p.role==='drunk'&&h>5&&h<22) return false; spawnAt(p,spot,slot,'bench',spot.yaw,from); p.dur=25+Math.random()*70; return true; }
-  if(act==='stop'){ spawnAt(p,spot,slot,'stop',spot.yaw,from); spot.q.push(p); p.stop=spot; p.dur=70+Math.random()*90; return true; }
+  if(act==='pub'){ /* out of the pub door for a smoke, often with company */ const door=spot.step; if(!spawnAt(p,spot,slot,'pub',Math.atan2(spot.ox,spot.oz),CW.warm?null:door)) return false; p.dur=40+Math.random()*90;
+    const q=spot.slots.find(s=>!s.p); const o=q&&Math.random()<.7?freePed(ACT_ROLES.pub,h):null; if(o){ spawnAt(o,spot,q,'pub',Math.atan2(spot.ox,spot.oz),CW.warm?null:door); o.dur=p.dur*(.7+Math.random()*.6); } return true; }
+  const from=act==='queue'||act==='bench'||act==='stop'?approach(slot.fx??slot.x,slot.fz??slot.z):null; if(from==='no') return false;
+  if(act==='bench'&&p.role==='drunk'&&h>5&&h<22) return false;
+  if(act==='queue'){ if(!spawnAt(p,spot,slot,'queue',0,from)) return false; p.dur=999; return true; }
+  if(act==='bench'){ if(!spawnAt(p,spot,slot,'bench',spot.yaw,from)) return false; p.dur=25+Math.random()*70; return true; }
+  if(act==='stop'){ if(!spawnAt(p,spot,slot,'stop',spot.yaw,from)) return false; spot.q.push(p); p.stop=spot; p.dur=70+Math.random()*90; return true; }
   if(act==='deck'){ spawnAt(p,spot,slot,'deck',0); p.y=spot.y; p.dur=60+Math.random()*120; return true; }
   return false; }
 function spawnTraders(h){ if(h<7.8||h>15.2) { for(const P_ of CS.pitches) if(P_.buckets) P_.buckets.vis=false; return; }
@@ -200,17 +209,19 @@ function busStopWant(v,dt){ if(v.dwell>0){ v.dwell-=dt; if(v.dwell<3.2&&!v.board
     if(along>-1.5&&along<32&&side>1.2&&side<9){ if(along<1.4&&v.v<.6){ v.dwell=6; v.stopAt=S; return 0; } return Math.max(0,(along-.4)*.75); } }
   return v.vmax; }
 function crowdBoard(v){ const S=v.stopAt; if(!S) return; const fx=Math.sin(v.yaw), fz=Math.cos(v.yaw), lx=fz, lz=-fx, door=[v.x+fx*(v.len/2-1.6)+lx*(v.wid/2+.2),v.z+fz*(v.len/2-1.6)+lz*(v.wid/2+.2)];
-  for(const p of S.q.slice()){ if(Math.random()<.85){ if(p.spot){ p.spot.p=null; p.spot=null; } p.act='board'; p.tx=door[0]; p.tz=door[1]; p.t=0; p.via=[p.x+(S.kerb[0]-S.x),p.z+(S.kerb[1]-S.z)]; } }
-  S.q.length=0; /* someone gets off */ const o=freePed(ACT_ROLES.stop,TOD.h); if(o&&Math.random()<.7&&alivePeds()<PED_MAX){ const nl=nearestLine(S.x,S.z); if(nl){ show(o,door[0],door[1],v.yaw,'walk'); startWalk(o,nl.L,nl.s,Math.random()<.5?1:-1); o.alight=1.2; } } }
+  /* out from under the shelter to the kerb (between the posts), then along to the door */
+  for(const p of S.q.slice()){ if(Math.random()<.85){ if(p.spot){ p.spot.p=null; p.spot=null; } p.stop=null; p.act='board'; p.tx=door[0]; p.tz=door[1]; p.t=0;
+      const kx=p.x+(S.kerb[0]-S.x), kz=p.z+(S.kerb[1]-S.z); if(!pedPlan(p,kx,kz)){ p.pth[0]=kx; p.pth[1]=kz; p.pn=1; } if(p.pn<PATH_MAX){ p.pth[p.pn*2]=door[0]; p.pth[p.pn*2+1]=door[1]; p.pn++; } } }
+  S.q.length=0; /* someone gets off, and walks up onto the pavement round the shelter */ const o=freePed(ACT_ROLES.stop,TOD.h); if(o&&Math.random()<.7&&alivePeds()<PED_MAX){ show(o,door[0],door[1],v.yaw,'walk'); if(pedRejoin(o,0)) o.alight=1.2; } }
 const alivePeds=()=>{ let n=0; for(const p of PED_POOL) if(p.alive) n++; return n; };
 /* ---------------- alarm: the hook for later (fights, gunshots, a car through a window) ---------------- */
 /* level 1: startled, stop and look. 2: scatter, run away from it. 3: panic: run screaming, anyone very close cowers first */
 function crowdAlarm(x,z,radius=20,level=2){ let screams=0;
   for(const p of PED_POOL){ if(!p.alive) continue; const d=Math.hypot(p.x-x,p.z-z); if(d>radius) continue; const lv=d<radius*.4?level:Math.max(1,level-1);
-    if(lv<=1){ p.react={k:'startle',t:3+Math.random()*4,x,z}; if(screams<1&&Math.random()<.5){ crowdBark(p,'gasp'); screams++; } continue; }
+    if(lv<=1||p.act==='deck'||p.act==='line'){ p.react={k:'startle',t:3+Math.random()*4,x,z}; if(screams<1&&Math.random()<.5){ crowdBark(p,'gasp'); screams++; } continue; }
     if(p.spot){ p.spot.p=null; p.spot=null; } if(p.stop){ const q=p.stop.q, k=q.indexOf(p); if(k>=0) q.splice(k,1); p.stop=null; } p.partner=null;
-    if(p.act!=='walk'){ const nl=nearestLine(p.x,p.z); if(nl) startWalk(p,nl.L,nl.s,1); }
-    if(p.line) p.dir=(p.line.ax==='x'?p.x-x:p.z-z)>=0?1:-1; p.act='walk';
+    if(p.act!=='walk'&&p.act!=='emerge'){ p.home=null; leaveSpot(p); if(!p.alive) continue; }
+    if(p.act==='emerge'){ p.jdir=(p.line.ax==='x'?p.tx-x:p.tz-z)>=0?1:-1; } else { if(p.line) p.dir=(p.line.ax==='x'?p.x-x:p.z-z)>=0?1:-1; p.act='walk'; }
     p.flee=8+Math.random()*7; p.fleeFrom=[x,z]; p.react=lv>=3&&d<4&&Math.random()<.5?{k:'cower',t:2+Math.random()*3,x,z}:null; p.pause=0;
     if(screams<(lv>=3?3:1)&&Math.random()<.6){ crowdBark(p,lv>=3?'scream':'gasp'); screams++; } } }
 function crowdBark(p,kind){ if(typeof auVoice==='function') auVoice(kind,p.x,p.z,p.voice); }
@@ -226,13 +237,20 @@ function walkStep(p,dt){ const L=p.line; let sp=p.speed*(isRain()?1.12:1); const
   const lat=L.ax==='x'?CW.pz-L.c:CW.px-L.c, along=(L.ax==='x'?CW.px:CW.pz)-p.s, dp=Math.hypot(CW.px-p.x,CW.pz-p.z);
   if(dp<2.2&&Math.abs(along)<2.6){ const away=p.lane-lat||(p.i%2?1:-1); laneT=clamp(lat+Math.sign(away)*Math.min(hw*2,1.05),-hw,hw); if(Math.abs(laneT-lat)<.6) laneT=clamp(lat-Math.sign(away)*1.05,-hw,hw); if(dp<1.1&&along*p.dir>0) sp*=.35; }
   else { for(const o of PED_POOL){ if(o===p||!o.alive) continue; const dx=o.x-p.x, dz=o.z-p.z; if(dx*dx+dz*dz<1.1){ const ol=L.ax==='x'?o.z-L.c:o.x-L.c; laneT=clamp(p.lane+(p.lane>=ol?.5:-.5),-hw,hw); break; } } }
-  p.steerT=(p.steerT||0)-dt; if(p.steerT<=0){ p.steerT=.2+Math.random()*.1; const fl=pobLane(L,p.s,p.dir,clamp(laneT,-hw,hw)); if(fl===null){ if(!pobClear(p.x,p.z,p.x+(L.ax==='x'?p.dir*1.2:0),p.z+(L.ax==='x'?0:p.dir*1.2),.2)){ p.dir*=-1; } } else p.laneFree=fl; }
-  if(p.laneFree!==undefined&&Math.abs(p.laneFree-laneT)>.01&&pobLane(L,p.s,p.dir,laneT)!==laneT) laneT=p.laneFree;
+  /* what's ahead on the pavement (a bin, a shelter, a parked car's nose): a few times a second, the nearest free lane */
+  p.steerT=(p.steerT||0)-dt; if(p.steerT<=0){ p.steerT=.2+Math.random()*.1; const want=clamp(laneT,-hw,hw), fl=pobLane(L,p.s,p.dir,want);
+    if(fl===null){ p.laneBlk=false; if(!pobClear(p.x,p.z,p.x+(L.ax==='x'?p.dir*1.2:0),p.z+(L.ax==='x'?0:p.dir*1.2),.2)) p.dir*=-1; } else { p.laneFree=fl; p.laneBlk=Math.abs(fl-want)>.01; } }
+  if(p.laneBlk) laneT=p.laneFree;
   p.lane+=clamp(laneT-p.lane,-dt*2.4,dt*2.4);
-  p.s+=p.dir*sp*dt;
-  if(p.goal&&Math.hypot(p.goal[0]-p.x,p.goal[1]-p.z)<7&&pobClear(p.x,p.z,p.goal[0],p.goal[1],.2)){ p.act='goal'; return sp; }
+  const s0=p.s; p.s+=p.dir*sp*dt;
+  if(L.id==='bgr'&&!p.goal&&p.flee<=0&&LIFE.t>(p.zebT||0)){ for(const zx of CROWD_ZEBRAS) if((s0-zx)*(p.s-zx)<=0){ p.zebT=LIFE.t+20; if(Math.random()<.4){ /* over the zebra to the other side */
+      for(const M2 of PLINES) if(M2.id==='bgr'&&M2.side!==L.side&&zx>M2.a+1&&zx<M2.b-1){ if(pedJoin(p,M2,zx,Math.random()<.5?1:-1,true)) return sp; } } } }
+  if(p.goal&&LIFE.t>(p.planT||0)&&Math.hypot(p.goal[0]-p.x,p.goal[1]-p.z)<7){ p.planT=LIFE.t+1.5; if(pedPlan(p,p.goal[0],p.goal[1])){ p.act='goal'; return sp; } }
   if(p.s<L.a||p.s>L.b){ const end=p.s<L.a?L.a:L.b, nl=nextLine(L,end,p.goal||(p.flee>0&&p.fleeFrom?[2*p.x-p.fleeFrom[0],2*p.z-p.fleeFrom[1]]:null));
-    if(nl&&Math.random()<.9){ p.line=nl[0]; p.s=nl[1]; const L2=nl[0]; p.dir=p.s-L2.a<1?1:p.s>L2.b-1?-1:p.goal?((L2.ax==='x'?p.goal[0]:p.goal[1])>p.s?1:-1):(Math.random()<.5?1:-1); p.lane=clamp(p.lane,-L2.hw,L2.hw); }
+    if(nl&&Math.random()<.9){ const L2=nl[0], s2=nl[1], d2=s2-L2.a<1?1:s2>L2.b-1?-1:p.goal?((L2.ax==='x'?p.goal[0]:p.goal[1])>s2?1:-1):(Math.random()<.5?1:-1);
+      /* over to the next pavement: across the junction or round what cuts this one, walked (not slid), on a path */
+      const [qx,qz]=lineXZ(L2,s2); if(Math.hypot(qx-p.x,qz-p.z)>1.2){ const g=p.goal; if(pedJoin(p,L2,s2,d2,true)){ p.goal=g; return sp; } p.dir*=-1; p.s=clamp(p.s,L.a,L.b); return sp; }
+      p.line=L2; p.s=s2; p.dir=d2; p.lane=clamp(p.lane,-L2.hw,L2.hw); }
     else { p.dir*=-1; p.s=clamp(p.s,L.a,L.b); } if(Math.random()<.15&&!p.flee) p.pause=1.5+Math.random()*3; }
   const [lx,lz]=lineXZ(p.line,p.s), tx=lx+(p.line.ax==='x'?0:p.lane), tz=lz+(p.line.ax==='x'?p.lane:0), k=Math.min(1,dt*6); p.x+=(tx-p.x)*k; p.z+=(tz-p.z)*k; pobPush(p);
   turnTo(p,p.line.ax==='x'?(p.dir>0?Math.PI/2:-Math.PI/2):(p.dir>0?0:Math.PI),dt);
@@ -242,14 +260,17 @@ function walkIdeas(p,h){ if(p.flee>0||p.goal||p.pause>0) return;
   const late=!hourW(ROLE_H[p.role]||[],h); /* past their hours: heading home */
   if(late&&p.far>24&&!inView(p.x,p.z,p.far)){ hide(p); return; }
   if(h>9&&h<19&&ACT_ROLES.window.has(p.role)&&Math.random()<.22){ for(const sh of CS.windows){ const dx=p.x-sh.x, dz=p.z-sh.z; if(Math.abs(dx)>4.5||Math.abs(dz)>4.5) continue; const o=dx*sh.ox+dz*sh.oz; if(o<0||o>4) continue; const u=dx*sh.ux+dz*sh.uz; if(Math.abs(u)>sh.w/2-.4) continue;
-      const wx=sh.x+sh.ox*.7+sh.ux*u, wz=sh.z+sh.oz*.7+sh.uz*u; if(!pobClear(p.x,p.z,wx,wz,.2)) continue; p.act='window'; p.tx=wx; p.tz=wz; p.tyaw=Math.atan2(-sh.ox,-sh.oz); p.dur=4+Math.random()*6; p.t=0; return; } }
+      const wx=sh.x+sh.ox*.7+sh.ux*u, wz=sh.z+sh.oz*.7+sh.uz*u; if(!pedPlan(p,wx,wz)) continue; p.act='window'; p.tx=wx; p.tz=wz; p.tyaw=Math.atan2(-sh.ox,-sh.oz); p.dur=4+Math.random()*6; p.t=0; return; } }
   if(Math.random()<.4&&p.alight<=0){ for(const d of doorsNear(p.x,p.z,2.2)){ const dx=p.x-d.x, dz=p.z-d.z; if(dx*dx+dz*dz>4.8||dx*d.ix+dz*d.iz>0) continue; /* home, or into a shop */
-      const want=late&&d.kind==='house'?.9:(d.kind==='house'?(h>18||h<8?.14:.04):.07)*doorOpen(d,h); if(Math.random()<want&&pobClear(p.x,p.z,d.x,d.z,.18)){ p.act='board'; p.tx=d.x+d.ix*.45; p.tz=d.z+d.iz*.45; p.via=null; p.t=0; return; } } }
+      const want=late&&d.kind==='house'?.9:(d.kind==='house'?(h>18||h<8?.14:.04):.07)*doorOpen(d,h); if(Math.random()<want&&pedPlan(p,d.x,d.z)){ p.act='board'; p.tx=d.x; p.tz=d.z; p.t=0; return; } } }
   if(p.trolley&&Math.random()<.05){ p.act='rest'; p.dur=5+Math.random()*7; p.t=0; trolleyAt(p,'front'); return; }
   if(p.dog&&Math.random()<.08){ p.pause=2+Math.random()*3; p.sniff=p.pause; return; }
   if(p.hasPhone&&Math.random()<.012){ p.act='call'; p.dur=6+Math.random()*10; p.t=0; } }
-function stuck(p,dt){ p.stuckT=(p.stuckT||0)+dt; if(p.stuckT<1.2) return; p.stuckT=0; if(!inView(p.x,p.z,p.far||99)){ hide(p); return; } if(p.spot||p.act==='window'||p.act==='emerge'||p.act==='goal'||p.act==='board'){ p.goal=null; leaveSpot(p); } }
-function leaveSpot(p){ if(p.spot){ p.spot.p=null; p.spot=null; } if(p.stop){ const q=p.stop.q, k=q.indexOf(p); if(k>=0) q.splice(k,1); p.stop=null; } const nl=nearestLine(p.x,p.z); if(!nl){ hide(p); return; } startWalk(p,nl.L,nl.s,Math.random()<.5?1:-1); if(p.trolley) trolleyAt(p,'pull'); }
+/* pressed against something for a while on the way somewhere: out of sight they go home, in sight they give up and rejoin the pavement */
+function stuck(p){ if(!(p.pushT>1.2)) return false; p.pushT=0; if(!inView(p.x,p.z,p.far||99)){ hide(p); return true; } p.goal=null; leaveSpot(p); return true; }
+function leaveSpot(p){ const sl=p.spot; if(p.spot){ p.spot.p=null; p.spot=null; } if(p.stop){ const q=p.stop.q, k=q.indexOf(p); if(k>=0) q.splice(k,1); p.stop=null; }
+  let ok; if(sl&&sl.fx!==undefined&&Math.hypot(p.x-sl.x,p.z-sl.z)<.5){ /* up off the bench, a step forward, then away */ const ox=p.x,oz=p.z; p.x=sl.fx; p.z=sl.fz; ok=pedRejoin(p,0); p.x=ox; p.z=oz; if(ok) pathPrepend(p,sl.fx,sl.fz); }
+  else ok=pedRejoin(p,0); if(ok&&p.trolley) trolleyAt(p,'pull'); }
 function crowdPed(p,dt,h){ const far=Math.hypot(p.x-CW.px,p.z-CW.pz); p.far=far; p.t+=dt;
   if(far>64&&!(p.act==='trader'&&far<75)){ hide(p); return; }
   let moving=0, run=0, aR=p.hold[0], aL=p.hold[1], body=ROLE_BODY[p.role]||'stand', headX=0, gest=null, look=null, legsFree=true;
@@ -260,20 +281,23 @@ function crowdPed(p,dt,h){ const far=Math.hypot(p.x-CW.px,p.z-CW.pz); p.far=far;
     if(watching||(p.react&&(p.react.k==='startle'||p.react.k==='tut'))){ /* stand and look */ look=p.react&&p.react.k==='startle'?[p.react.x,p.react.z]:[CW.px,CW.pz]; turnTo(p,Math.atan2(look[0]-p.x,look[1]-p.z),dt,watching?2.5:4); }
     else { const sp=walkStep(p,dt); moving=sp>.05; run=p.flee>0||p.role==='jogger'?1:0; if(Math.random()<dt*.6) walkIdeas(p,h); if(p.alight>0) p.alight-=dt; }
     if(p.act==='walk'&&p.flee<=0&&far>46&&Math.random()<dt*.02&&!inView(p.x,p.z,far)) { hide(p); return; } }
-  else if(p.act==='goal'){ /* into the station */ const dx=p.goal[0]-p.x, dz=p.goal[1]-p.z, d=Math.hypot(dx,dz); if(d<.8){ hide(p); return; } const sp=p.speed*dt; p.x+=dx/d*sp; p.z+=dz/d*sp; if(pobPush(p)) stuck(p,dt); moving=1; turnTo(p,Math.atan2(dx,dz),dt); }
-  else if(p.act==='board'){ if(p.via&&Math.hypot(p.via[0]-p.x,p.via[1]-p.z)<.3) p.via=null; const T_=p.via||[p.tx,p.tz], dx=T_[0]-p.x, dz=T_[1]-p.z, d=Math.hypot(dx,dz); if(!p.via&&d<.5||p.t>7){ hide(p); return; }
-    const sp=1.5*dt; p.x+=dx/d*Math.min(d,sp); p.z+=dz/d*Math.min(d,sp); if(!p.via&&pobPush(p)&&d<.9){ hide(p); return; } else if(p.via) pobPush(p); moving=1; turnTo(p,Math.atan2(dx,dz),dt,7); }
-  else if(p.act==='emerge'){ const dx=p.tx-p.x, dz=p.tz-p.z, d=Math.hypot(dx,dz); if(d<.15||p.t>8){ const L=p.line, g=p.goal; startWalk(p,L,p.s,p.dir||(Math.random()<.5?1:-1)); p.goal=g; }
-    else { const sp=Math.min(d,p.speed*dt); p.x+=dx/d*sp; p.z+=dz/d*sp; if(pobPush(p)) stuck(p,dt); moving=1; turnTo(p,Math.atan2(dx,dz),dt,6); } }
+  else if(p.act==='goal'){ /* into the station */ const d=pedFollow(p,dt,p.speed); if(d<.8||p.t>25){ hide(p); return; } if(stuck(p)) return; moving=1; }
+  else if(p.act==='board'){ /* in at a door, onto the bus */ const d=pedFollow(p,dt,p.flee>0?3:1.5,7); if((d>=0&&d<.35&&p.pi>=p.pn-1)||d<0||p.t>12){ hide(p); return; } if(stuck(p)) return; moving=1; }
+  else if(p.act==='emerge'){ /* out of a door, up from a spot, over to the next pavement: on a path, then along the line */ const d=pedFollow(p,dt,p.flee>0?Math.max(p.speed*2.4,3.1):p.speed);
+    if(p.t>14&&d>=.15){ if(!inView(p.x,p.z,far)){ hide(p); return; } pedRejoin(p,p.jdir); }
+    else if(d<.15){ const L=p.line, g=p.goal; p.act='walk'; p.dir=p.jdir||1; const lat=L.ax==='x'?p.z-L.c:p.x-L.c; p.lane=clamp(lat,-L.hw,L.hw); p.t=0; p.goal=g; if(p.trolley) trolleyAt(p,'pull'); }
+    else { if(stuck(p)) return; moving=1; if(p.flee>0){ p.flee-=dt; run=1; } } }
   else if(p.act==='window'){ const dx=p.tx-p.x, dz=p.tz-p.z, d=Math.hypot(dx,dz);
-    if(p.t<p.dur&&d>.08){ const sp=Math.min(d,p.speed*.8*dt); p.x+=dx/d*sp; p.z+=dz/d*sp; if(pobPush(p)) stuck(p,dt); moving=1; turnTo(p,Math.atan2(dx,dz),dt); }
+    if(p.t<p.dur&&d>.08){ pedFollow(p,dt,p.speed*.8); if(stuck(p)) return; moving=1; }
     else if(p.t<p.dur){ turnTo(p,p.tyaw,dt,3); gest='browse'; if(p.trolley&&p.trolleyMode!=='front') trolleyAt(p,'front'); }
     else { p.act='walk'; if(p.trolley) trolleyAt(p,'pull'); } }
   else if(p.act==='rest'){ body='lean'; aR='bar'; aL='bar'; headX=-.05; if(p.t>p.dur){ p.act='walk'; trolleyAt(p,'pull'); } }
   else if(p.act==='call'){ aR='ear'; gest='call'; if(p.t>p.dur) p.act='walk'; }
   else if(p.act==='line'&&p.dbg){ const D=p.dbg; body=D.body||body; aR=D.aR||aR; aL=D.aL||aL; gest=D.gest||null; legsFree=body!=='sit'&&body!=='slump'&&body!=='cower'; if(D.trolley&&p.trolley) trolleyAt(p,D.trolley); if(D.react) p.react={k:D.react,t:99,x:CW.px,z:CW.pz}; }
   else { /* standing or sitting somewhere */
-    const sl=p.spot; let arrived=true; if(sl){ const dx=sl.x-p.x, dz=sl.z-p.z, d=Math.hypot(dx,dz); if(d>.04){ const sp=Math.min(d,(d>1?p.speed:.9)*dt); p.x+=dx/d*sp; p.z+=dz/d*sp; if(p.act!=='bench'&&pobPush(p)) stuck(p,dt); if(d>.22){ arrived=false; moving=1; turnTo(p,Math.atan2(dx,dz),dt,6); } } }
+    const sl=p.spot; let arrived=true;
+    if(sl&&p.pn>0){ /* walking up to it: the plan first (to the front of a bench), then the last step straight in */ const d=pedFollow(p,dt,p.speed); arrived=false; moving=1; if(d<.12) p.pn=0; else if(stuck(p)) return; }
+    else if(sl){ const dx=sl.x-p.x, dz=sl.z-p.z, d=Math.hypot(dx,dz); if(d>.04){ const sp=Math.min(d,(d>1?p.speed:.9)*dt); p.x+=dx/d*sp; p.z+=dz/d*sp; if(p.act!=='bench'&&p.act!=='deck'&&p.act!=='trader'&&pobPush(p)){ p.pushT=(p.pushT||0)+dt; if(stuck(p)) return; } if(d>.22){ arrived=false; moving=1; turnTo(p,Math.atan2(dx,dz),dt,6); } } }
     if(!arrived){ p.t=0; if(p.act==='pub'&&p.trolley) trolleyAt(p,'pull'); }
     else if(p.act==='pub'){ gest=p.hold[0]==='low'?'smoke':'chat'; if(gest==='chat'&&p.hold[0]!=='chest') aR='pocket'; look=nearestFriend(p); if(p.home&&!watching) turnTo(p,Math.atan2(p.home.x-p.x,p.home.z-p.z),dt,2); if(p.t>p.dur&&!watching){ leaveSpot(p); } }
     else if(p.act==='chat'){ gest='chat'; if(p.partner&&p.partner.alive) look=[p.partner.x,p.partner.z]; if(p.t>p.dur||!p.partner||!p.partner.alive){ const b=p.partner; p.partner=null; leaveSpot(p); if(b&&b.alive&&b.act==='chat'){ b.partner=null; b.t=b.dur+1; } } }
@@ -347,7 +371,7 @@ function crowdTick(dt,eye){ if(!CS.ready) crowdSpots(); if(!doorsReady) doorsIni
   if(alive>want+2){ /* too many for the hour: someone out of sight goes home */ for(const p of PED_POOL) if(p.alive&&p.far>30&&!inView(p.x,p.z,p.far)&&p.act!=='trader'){ hide(p); break; } }
   /* the chicken-shop queues move up */
   for(const Q of CS.queues){ Q.next-=dt; if(Q.next>0) continue; Q.next=18+Math.random()*20; const head=Q.slots[0].p; if(!head) { for(let k=0;k<Q.slots.length-1;k++){ if(!Q.slots[k].p&&Q.slots[k+1].p){ const m=Q.slots[k+1].p; Q.slots[k+1].p=null; Q.slots[k].p=m; m.spot=Q.slots[k]; } } continue; }
-    Q.slots[0].p=null; head.spot=null; head.act='board'; head.tx=Q.door[0]; head.tz=Q.door[1]; head.t=0;
+    Q.slots[0].p=null; head.spot=null; head.act='board'; head.tx=Q.door[0]; head.tz=Q.door[1]; head.t=0; if(!pedPlan(head,Q.door[0],Q.door[1])) hide(head);
     for(let k=0;k<Q.slots.length-1;k++){ const m=Q.slots[k+1].p; if(m){ Q.slots[k+1].p=null; Q.slots[k].p=m; m.spot=Q.slots[k]; } } }
   for(const p of PED_POOL) if(p.alive) crowdPed(p,dt,h); }
 /* for the tools: stats, the alarm, a line-up of everyone for a picture */
