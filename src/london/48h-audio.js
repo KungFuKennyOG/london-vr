@@ -49,3 +49,37 @@ function auBurst(g0,freq,len){ const c=AU.ctx,t=c.currentTime,s=c.createBufferSo
 function foxScream(eye){ const c=AU.ctx,t=c.currentTime,p=auPanner(),a=Math.random()*6.28; setPos(p,eye[0]+Math.cos(a)*35,1,eye[2]+Math.sin(a)*35);
   for(let k=0;k<3;k++){ const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(); o.type='sawtooth'; f.type='bandpass'; f.frequency.value=1400; f.Q.value=2; const t0=t+k*.55; o.frequency.setValueAtTime(900,t0); o.frequency.linearRampToValueAtTime(1500,t0+.12); o.frequency.linearRampToValueAtTime(700,t0+.4);
     g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.25,t0+.05); g.gain.linearRampToValueAtTime(0,t0+.42); o.connect(f); f.connect(g); g.connect(p); o.start(t0); o.stop(t0+.45); } }
+/* ---------------- voices: the crowd's barks, synthesised (a buzz through three formant filters, plus breath and
+   consonant noise), so they read as a tut, an "oi", a "watch it", a trader's call, a laugh, a scream. No words, no files. ---------------- */
+const VOW={a:[760,1150,2500],e:[520,1820,2500],i:[310,2200,2950],o:[560,860,2450],u:[350,820,2350],r:[480,1350,1700],x:[520,1450,2500],O:[620,940,2480]};
+/* phrases: [vowel, seconds, pitch, consonant before] */
+const PHRASE={
+  tut:[[null,.05,1,'click'],[null,.14,1,'click'],['x',.16,.9,'h']],
+  oi:[['O',.11,1.25,null],['i',.2,1.0,null]],
+  watch:[['O',.13,1.15,'w'],['i',.09,1.05,'ch'],['i',.14,.9,'t']],
+  gasp:[['a',.32,1.5,'h']],
+  scream:[['a',.85,2.7,null],['e',.4,2.4,null]],
+  call:[['x',.12,1.3,'l'],['a',.22,1.55,'v'],['i',.12,1.4,'l'],['a',.28,1.2,'f'],['i',.2,1.35,'v'],['o',.4,1.05,'p']],
+  laugh:[['a',.09,1.5,'h'],['a',.09,1.4,'h'],['a',.09,1.3,'h'],['a',.13,1.15,'h']],
+  cough:[[null,.12,1,'k'],[null,.14,1,'k']],
+  sing:[['o',.38,1.0,'w'],['e',.32,1.12,'l'],['o',.55,.92,'l'],['a',.4,1.05,null]],
+  woof:[['O',.12,1.0,'w'],['O',.14,.9,'w']],
+  ooh:[['u',.5,1.25,'w']],
+  mutter:[['x',.09,.95,'w'],['O',.1,.9,'t'],['x',.12,.85,'s']]};
+let auVoiceN=0;
+function auVoice(kind,x,z,v){ if(!AU.on||!AU.ctx||auVoiceN>=3) return; const ph=PHRASE[kind]; if(!ph) return; const c=AU.ctx, t0=c.currentTime+.02;
+  const dog=kind==='woof', f0=dog?150:(v&&v.f0)||120, fm=dog?.7:v&&v.fem?1.17:1, loud=kind==='scream'?.5:kind==='call'?.42:kind==='tut'||kind==='mutter'?.22:.32;
+  const p=auPanner(); p.refDistance=kind==='scream'||kind==='call'?5:2.2; p.rolloffFactor=1.2; setPos(p,x,1.6,z);
+  const out=c.createGain(); out.gain.value=0; out.connect(p);
+  const src=c.createOscillator(); src.type='sawtooth'; const vib=c.createOscillator(), vg=c.createGain(); vib.frequency.value=kind==='scream'?7:5.5; vg.gain.value=kind==='scream'?f0*.06:f0*.012; vib.connect(vg); vg.connect(src.frequency);
+  const F=[0,1,2].map(k=>{ const f=c.createBiquadFilter(); f.type='bandpass'; f.Q.value=k?11:7; const g=c.createGain(); g.gain.value=k===0?1:k===1?.6:.25; src.connect(f); f.connect(g); g.connect(out); return f; });
+  const nz=c.createBufferSource(); nz.buffer=AU.white; const nf=c.createBiquadFilter(); nf.type='bandpass'; nf.Q.value=1.4; const ng=c.createGain(); ng.gain.value=0; nz.connect(nf); nf.connect(ng); ng.connect(p);
+  let t=t0; for(const [vw,d,pm_,cons] of ph){
+    if(cons){ const cf={click:2400,ch:3600,s:5200,t:2800,k:1800,h:1400,w:600,l:800,v:1200,f:4000,p:1500}[cons]||1500, cd=cons==='click'?.012:cons==='t'||cons==='k'||cons==='p'?.03:cons==='w'||cons==='l'||cons==='v'?.05:.07, ca=cons==='click'?.5:cons==='h'||cons==='w'||cons==='l'?.12:.28;
+      nf.frequency.setValueAtTime(cf,t); ng.gain.setValueAtTime(0,t); ng.gain.linearRampToValueAtTime(ca*loud*(dog?.4:1),t+cd*.3); ng.gain.linearRampToValueAtTime(0,t+cd); t+=cd*.8; }
+    if(!vw){ t+=d; continue; }
+    const V=VOW[vw]; F.forEach((f,k)=>f.frequency.setTargetAtTime(V[k]*fm,t,.02));
+    src.frequency.setTargetAtTime(f0*pm_,t,.03); if(kind==='scream'||kind==='ooh'||kind==='oi') src.frequency.linearRampToValueAtTime(f0*pm_*.8,t+d);
+    out.gain.setTargetAtTime(loud,t,.015); out.gain.setTargetAtTime(kind==='sing'?loud*.7:loud*.3,t+d*.6,.04); out.gain.setTargetAtTime(0,t+d,.025); t+=d+.03; }
+  src.start(t0); vib.start(t0); nz.start(t0,Math.random()*1.5); const end=t+.25; src.stop(end); vib.stop(end); nz.stop(end); auVoiceN++;
+  src.onended=()=>{ auVoiceN--; try{ out.disconnect(); p.disconnect(); ng.disconnect(); }catch(e){} }; }
