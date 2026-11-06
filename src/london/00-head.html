@@ -116,7 +116,7 @@ body:not(.lookdev):not(.capture) .hud{display:none}
 @media (max-height:520px){ .start{gap:8px} .start h2{font-size:clamp(40px,12vh,72px)} .start .pitch{font-size:13px} .start .ctl{display:none} .start .row button{padding:10px 16px;font-size:18px;min-height:44px} }
 body.capture .start,body.capture .ghud,body.capture .gEnd{display:none!important}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
-.ldnNav{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:6px 12px;background:rgba(10,10,12,.72);color:#ffd040;font:700 15px/1.2 'Courier New',monospace;letter-spacing:.04em;border-radius:4px;z-index:30;pointer-events:none;white-space:nowrap}
+.ldnNav{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);padding:6px 12px;background:rgba(10,10,12,.72);color:#ffd040;font:700 15px/1.2 'Courier New',monospace;letter-spacing:.04em;border-radius:4px;z-index:30;pointer-events:none;white-space:nowrap}
 .ldnNav i{display:inline-block;font-style:normal}
 .ldnToast{position:fixed;top:30%;left:50%;transform:translateX(-50%);padding:10px 18px;background:rgba(10,10,12,.82);color:#ffd040;font:700 20px/1.2 'Courier New',monospace;letter-spacing:.08em;border:1px solid #ffd040;z-index:31;pointer-events:none}
 body:not(.playing) .ldnNav,body:not(.playing) .ldnToast{display:none}
