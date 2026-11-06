@@ -36,4 +36,9 @@ function todTick(dt){ TOD.h=(TOD.h+dt*TOD.rate*(TOD.fast?40:1))%24; const h=TOD.
   if(typeof dayHideTick==='function'&&BAKED.kids.length) dayHideTick(); if(GAME.G.on) phoneDirtyT(); }
 function todStr(){ const h=Math.floor(TOD.h), m=Math.floor((TOD.h-h)*60); return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
 let _todLast=''; function phoneDirtyT(){ const s=todStr(); if(s!==_todLast){ _todLast=s; if(typeof GAME.phoneDirty==='function') GAME.phoneDirty(); } }
-addEventListener('keydown',e=>{ if(e.code==='KeyT') TOD.fast=true; }); addEventListener('keyup',e=>{ if(e.code==='KeyT') TOD.fast=false; });
+addEventListener('keydown',e=>{ if(e.code==='KeyT') TOD.fast=true; });
+/* phones: the clock button (bottom left) shows the time; hold it to wind the clock on, like T */
+{ let clk=null, shown=-1; const hold=v=>e=>{ e.preventDefault(); e.stopPropagation(); TOD.fast=v; if(clk) clk.setAttribute('aria-pressed',v?'true':'false'); };
+  const tickClock=()=>{ if(!clk){ clk=document.getElementById('tClock'); if(!clk) return; for(const [ev,v] of [['pointerdown',true],['pointerup',false],['pointercancel',false]]) clk.addEventListener(ev,hold(v)); addEventListener('pointerup',()=>{ if(TOD.fast&&clk.getAttribute('aria-pressed')==='true') hold(false)({preventDefault(){},stopPropagation(){}}); }); }
+    const m=Math.floor(TOD.h*60)%1440; if(m!==shown){ shown=m; clk.textContent=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+' ▸▸'; } };
+  setInterval(tickClock,250); } addEventListener('keyup',e=>{ if(e.code==='KeyT') TOD.fast=false; });

@@ -87,6 +87,17 @@ function phoneExtra(g,w,h){ const T=curTarget(), P=GP(); g.textAlign='left';
   if(JOBS.run){ g.fillStyle='#ffd040'; g.font=`bold 22px ${TYPEF}`; g.fillText('ROOF RUN · '+JOBS.run.t.toFixed(1)+' s',14,h-228); }
   const got=GAME.CASH.filter(c=>c.hub&&c.got).length; g.fillStyle='#8a857a'; g.font=`bold 16px ${TYPEF}`; g.fillText('STASHES '+got+'/'+JOBS.stashN+(JOBS.best?' · RUN '+JOBS.best.toFixed(1)+'s':''),14,h-84); }
 let navEl=null, toastEl=null, toastT=0;
+/* a real arrow (SVG, not a font glyph: phones draw ▲ as an emoji play button): head and shaft, black outline, points the way to go */
+const NAV_ARROW='<svg viewBox="0 0 64 64" width="58" height="58" aria-hidden="true"><path d="M32 4 L58 34 L42 34 L42 60 L22 60 L22 34 L6 34 Z" fill="#ffd040" stroke="#160f06" stroke-width="4" stroke-linejoin="round"/></svg>';
+/* the objective beam: a tall amber column of light standing on the target, seen over the rooftops from anywhere (like a flare
+   or a lamp in the sky), with a bobbing chevron at head height; hidden when you're on top of it */
+const BEAM=(()=>{ const t=P2(16,128,(g,w,h)=>{ for(let y=0;y<h;y++){ const k=y/h; g.fillStyle=`rgba(255,${Math.round(176+60*k)},${Math.round(40+90*k)},${(.15+.85*Math.pow(k,1.6)).toFixed(3)})`; g.fillRect(0,y,w,1); } R(g,'rgba(255,255,230,.95)',w/2-1,0,2,h); },0,1);
+  const m=M(t,{unlit:true,nofog:true,double:true}); m.cut=2; const root=N(world); root.dyn=true; root.vis=false;
+  for(const ry of [0,Math.PI/2]) mk(plane(1.1,60),m,root,0,30,0,0,ry,0);
+  const cm=M(null,{color:0xffb020,unlit:true,nofog:true,double:true}); const chev=N(root); chev.dyn=true;
+  mk(box(.5,.12,.12),cm,chev,-.18,.12,0,0,0,-.7); mk(box(.5,.12,.12),cm,chev,.18,.12,0,0,0,.7); return {root,chev}; })();
+function beamTick(T){ const on=!!T&&!(GG().xr&&false); if(!on){ BEAM.root.vis=false; return; } const d=Math.hypot(T[0]-GP().x,T[1]-GP().z);
+  BEAM.root.vis=d>5; BEAM.root.p=[T[0],0,T[1]]; BEAM.chev.p=[0,2.6+Math.sin(performance.now()/300)*.15,0]; BEAM.chev.r=[0,performance.now()/700,0]; }
 function toast(s){ if(!toastEl){ toastEl=document.createElement('div'); toastEl.className='ldnToast'; document.body.append(toastEl); } toastEl.textContent=s; toastEl.hidden=false; toastT=2.6; }
 function jobsTick(dt){ const G=GG(); if(!G.on) return; if(!beatsMade){ makeBeats(); makeStashes(); makeLenny(); }
   /* Lenny at the club */ if(LENNY){ const d=Math.hypot(GP().x-LENNY.n.p[0],GP().z-LENNY.n.p[2]); if(G.phase==='leg2'&&!G.result&&d<2.6){ if(G.stars===0){ G.queue.length=0; GAME.sayNow('lenny',3.4); GAME.done(); } else if(!G.said.has('lennyNo')){ G.said.add('lennyNo'); GAME.say('lennyNo',3); } } else if(d>5) G.said.delete('lennyNo'); }
@@ -94,5 +105,6 @@ function jobsTick(dt){ const G=GG(); if(!G.on) return; if(!beatsMade){ makeBeats
   const T=curTarget(); const key=T?(Math.round(Math.hypot(T[0]-GP().x,T[1]-GP().z)/5)+'|'+Math.round((Math.atan2(T[0]-GP().x,T[1]-GP().z)-GP().yaw)*6)):'';
   if(key!==navLast||JOBS.gig||JOBS.run){ navLast=key; GAME.phoneDirty(); }
   if(!navEl){ navEl=document.createElement('div'); navEl.className='ldnNav'; document.body.append(navEl); }
-  if(T&&!G.xr&&!window.__CAPTURE){ const dx=T[0]-GP().x, dz=T[1]-GP().z, a=Math.atan2(dx,dz)-GP().yaw; navEl.hidden=false; navEl.innerHTML='<i style="transform:rotate('+(-a)+'rad)">▲</i> '+T[2]+' · '+Math.round(Math.hypot(dx,dz))+' m'+(JOBS.gig?' · '+Math.ceil(Math.max(0,JOBS.gig.t-JOBS.gig.t0))+' s':'')+(JOBS.run?' · '+JOBS.run.t.toFixed(1)+' s':''); } else navEl.hidden=true;
+  beamTick(T);
+  if(T&&!G.xr&&!window.__CAPTURE){ const dx=T[0]-GP().x, dz=T[1]-GP().z, a=Math.atan2(dx,dz)-GP().yaw, aw=Math.atan2(Math.sin(a),Math.cos(a)), behind=Math.abs(aw)>2.5; navEl.hidden=false; navEl.innerHTML='<b style="transform:rotate('+(-a)+'rad)">'+NAV_ARROW+'</b><span>'+T[2]+(behind?' · behind you':'')+'<br><em>'+Math.round(Math.hypot(dx,dz))+' m</em>'+(JOBS.gig?' · '+Math.ceil(Math.max(0,JOBS.gig.t-JOBS.gig.t0))+' s':'')+(JOBS.run?' · '+JOBS.run.t.toFixed(1)+' s':'')+'</span>'; } else navEl.hidden=true;
   if(toastEl&&toastT>0){ toastT-=dt; if(toastT<=0) toastEl.hidden=true; } }

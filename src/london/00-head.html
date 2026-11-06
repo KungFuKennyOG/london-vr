@@ -103,6 +103,8 @@ body.playing #view{cursor:crosshair}
 body.playing.touch .touch-ui{display:block}
 #tStick{position:fixed;left:max(22px,env(safe-area-inset-left,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));width:132px;height:132px;border-radius:50%;background:rgba(236,230,218,.08);border:2px solid rgba(236,230,218,.35);touch-action:none;z-index:7}
 #tKnob{position:absolute;left:41px;top:41px;width:50px;height:50px;border-radius:50%;background:rgba(240,162,62,.85);box-shadow:0 0 0 3px rgba(0,0,0,.4);pointer-events:none}
+.touch-ui #tClock{position:fixed;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(214px + env(safe-area-inset-bottom,0px));z-index:40;padding:8px 12px;border-radius:18px;border:2px solid rgba(236,230,218,.45);background:rgba(14,15,15,.6);color:#ffd040;font:700 15px/1 'Courier New',monospace;letter-spacing:.04em;touch-action:none;-webkit-user-select:none;user-select:none}
+.touch-ui #tClock[aria-pressed="true"]{background:var(--amber);color:#160f06;border-color:var(--amber)}
 .tbtns{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;z-index:7}
 .tbtns button{width:84px;height:84px;border-radius:50%;border:2px solid rgba(236,230,218,.45);background:rgba(14,15,15,.6);color:var(--ink);font:400 18px/1 var(--name);letter-spacing:.04em;text-transform:uppercase;touch-action:none;-webkit-user-select:none;user-select:none}
 .tbtns button[aria-pressed="true"]{background:var(--amber);color:#160f06;border-color:var(--amber)}
@@ -117,7 +119,10 @@ body:not(.lookdev):not(.capture) .hud{display:none}
 body.capture .start,body.capture .ghud,body.capture .gEnd{display:none!important}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
 .ldnNav{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);padding:6px 12px;background:rgba(10,10,12,.72);color:#ffd040;font:700 15px/1.2 'Courier New',monospace;letter-spacing:.04em;border-radius:4px;z-index:30;pointer-events:none;white-space:nowrap}
-.ldnNav i{display:inline-block;font-style:normal}
+.ldnNav{display:flex;align-items:center;gap:12px;padding:8px 16px 8px 8px!important;border:2px solid rgba(255,208,64,.6);border-radius:30px!important}
+.ldnNav b{display:grid;place-items:center;width:64px;height:64px;transition:transform .08s linear;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.ldnNav span{font:700 16px/1.25 'Courier New',monospace;letter-spacing:.05em;text-align:left}
+.ldnNav em{font-style:normal;font-size:20px;color:#fff3c8}
 .ldnToast{position:fixed;top:30%;left:50%;transform:translateX(-50%);padding:10px 18px;background:rgba(10,10,12,.82);color:#ffd040;font:700 20px/1.2 'Courier New',monospace;letter-spacing:.08em;border:1px solid #ffd040;z-index:31;pointer-events:none}
 body:not(.playing) .ldnNav,body:not(.playing) .ldnToast{display:none}
 </style>
@@ -147,7 +152,7 @@ body:not(.playing) .ldnNav,body:not(.playing) .ldnToast{display:none}
   <p class="ctl">Phone: thumbstick to walk, drag to look, RUN, GRAB and JUMP (landscape works best). Desktop: mouse to look, WASD to walk, Shift to run, E or click to grab, Space to vault or climb, hold T to wind the clock. Headset: left stick to walk (click it to run), right stick to turn, squeeze with a hand on the bag to grab it, A or X to vault or climb. Look at someone up close to meet them.</p>
 </section>
 <div class="ghud" aria-live="polite"><p id="gAct" hidden></p><p id="gObj"></p><p id="gStars" data-n="0"></p><p id="gCash" hidden></p><p id="gSub" hidden></p></div>
-<div class="touch-ui" aria-label="Touch controls"><div id="tStick" aria-label="Move"><div id="tKnob"></div></div><div class="tbtns"><button type="button" id="tJump">Jump</button><button type="button" id="tRun" aria-pressed="false">Run</button><button type="button" id="tGrab">Grab</button></div></div>
+<div class="touch-ui" aria-label="Touch controls"><div id="tStick" aria-label="Move"><div id="tKnob"></div></div><div class="tbtns"><button type="button" id="tJump">Jump</button><button type="button" id="tRun" aria-pressed="false">Run</button><button type="button" id="tGrab">Grab</button></div><button type="button" id="tClock" aria-label="Hold to fast-forward time">--:-- ▸▸</button></div>
 <section class="gEnd" id="gEnd" hidden><h2 id="gEndH"></h2><p id="gEndP"></p><button type="button" id="gAgain">Run it again</button></section>
 <p id="err" hidden></p>
 <p id="loading">Putting the kettle on&hellip;</p>
