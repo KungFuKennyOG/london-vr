@@ -404,7 +404,7 @@ function actTick(dt){ ACT.t+=dt; const k=Math.min(1,ACT.t/ACT.dur),e=x=>x*x*(3-2
   P.running=true; if(k>=1){ ACT.on=false; P.x=x1; P.y=y1; P.z=z1; P.ground=!ACT.fall; P.vy=0; P.vx=P.vz=0; ACT.fall=false; } }
 /* the nearest solid straight ahead that you'd have to get over. Edge barriers (s.bar: Heras, hoardings, the stopped bus) are
    never something you get onto or over, so they're skipped as targets but still stop a vault that would cross them. */
-function solidAhead(fx,fz,maxD){ let best=null; const e=maxD+P.r+.1; for(const s of solNear(P.x-e,P.z-e,P.x+e,P.z+e)){ if(s.y1<=P.y+STEP||s.y0>P.y+BODY+.9||s.y1>P.y+REACH_GROUND+.5) continue; /* overhead ledges in reach count too */
+function solidAhead(fx,fz,maxD,skip){ let best=null; const e=maxD+P.r+.1; for(const s of solNear(P.x-e,P.z-e,P.x+e,P.z+e)){ if(skip&&skip.has(s)||s.y1<=P.y+STEP||s.y0>P.y+BODY+.9||s.y1>P.y+REACH_GROUND+.5) continue; /* overhead ledges in reach count too */
   if(s.y0>P.y+BODY-.05&&s.y1>P.y+REACH_GROUND+.05) continue; /* over your head and out of reach (the flight above you): you go under it */ const r=[s.r[0]-P.r,s.r[1]-P.r,s.r[2]+P.r,s.r[3]+P.r],h=rayRect(P.x,P.z,fx,fz,r);
   if(!h||h[1]<0||h[0]>maxD) continue; if(h[0]<-.01){ const hr=rayRect(P.x,P.z,fx,fz,s.r); if(!hr||hr[1]<0) continue; } /* brushing past it, or with your back to it: not ahead */
   if(!best||h[0]<best.d) best={s,d:Math.max(0,h[0]),t1:h[1],thick:h[1]-h[0]-2*P.r}; } return best; }
@@ -412,7 +412,7 @@ function solidAhead(fx,fz,maxD){ let best=null; const e=maxD+P.r+.1; for(const s
    run of stair treads: the nearest solid plus every solid along the way that touches it (a gap too narrow to stand in counts as
    touching). Returns the pieces nearest first, the highest top, and where along the ray it ends. */
 const GAP=.4;
-function obstacleAhead(fx,fz,maxD){ const a=solidAhead(fx,fz,maxD); if(!a) return null;
+function obstacleAhead(fx,fz,maxD,skip){ const a=solidAhead(fx,fz,maxD,skip); if(!a) return null;
   const mem=[a], L=maxD+P.r+3, x1=P.x+fx*L, z1=P.z+fz*L, cand=solNear(Math.min(P.x,x1)-.6,Math.min(P.z,z1)-.6,Math.max(P.x,x1)+.6,Math.max(P.z,z1)+.6);
   let end=a.t1, top=a.s.y1, grow=true;
   while(grow){ grow=false;
@@ -437,7 +437,10 @@ const MPROBE=[[.32,0],[.2,0],[.45,0],[.12,0]]; for(const l of [.25,-.25,.5,-.5])
 function mantleSpot(s,fx,fz){ if(s.bar) return null; const h=rayRect(P.x,P.z,fx,fz,s.r); const t0=h?Math.max(0,h[0]):0;
   for(const [e,l] of MPROBE){ const x=h?P.x+fx*(t0+e)-fz*l:clamp(P.x,s.r[0]+.1,s.r[2]-.1),z=h?P.z+fz*(t0+e)+fx*l:clamp(P.z,s.r[1]+.1,s.r[3]-.1); if(!h&&l) continue;
     if(!inR([s.r[0]-P.r*.5,s.r[1]-P.r*.5,s.r[2]+P.r*.5,s.r[3]+P.r*.5],x,z,0)) continue;
-    const g=groundAt(x,z,s.y1); if(g<s.y1-.03||!inWalk(x,z,0)||solidHit(x,z,P.r*.5,g,g+BODY)) continue; if(nearBar(x,z,g)) continue; return [x,g,z]; } return null; }
+    const g=groundAt(x,z,s.y1); if(g<s.y1-.03||!inWalk(x,z,0)||solidHit(x,z,P.r*.5,g,g+BODY)) continue; if(nearBar(x,z,g)) continue; return [x,g,z]; }
+  /* a thin top met at an angle (a parapet's corner, a tread's end): the probes overshoot it, so try the nearest point on it */
+  if(h){ const mx=Math.min(.12,(s.r[2]-s.r[0])/2), mz=Math.min(.12,(s.r[3]-s.r[1])/2), x=clamp(P.x+fx*(t0+.2),s.r[0]+mx,s.r[2]-mx), z=clamp(P.z+fz*(t0+.2),s.r[1]+mz,s.r[3]-mz), g=groundAt(x,z,s.y1);
+    if(g>=s.y1-.03&&inWalk(x,z,0)&&!solidHit(x,z,P.r*.5,g,g+BODY)&&!nearBar(x,z,g)) return [x,g,z]; } return null; }
 /* an edge barrier (Heras, a hoarding, the stopped bus) is never stood on or crossed over the top: you can't be over one unless
    you're 3 m above it (dropping off a roof onto the Heras, walking off a garage along it) */
 function nearBar(x,z,feet){ for(const s of solNear(x-P.r,z-P.r,x+P.r,z+P.r)) if(s.bar&&feet<s.y1+3&&x>s.r[0]-P.r&&x<s.r[2]+P.r&&z>s.r[1]-P.r&&z<s.r[3]+P.r) return true; return false; }
@@ -445,8 +448,11 @@ function nearBar(x,z,feet){ for(const s of solNear(x-P.r,z-P.r,x+P.r,z+P.r)) if(
    wall, the railing's wall, the higher tread), within reach */
 function mantleOnto(o,fx,fz,reach){ for(const m of o.mem){ const s=m.s; if(s.bar||s.y1-P.y>reach+.04||s.y1<=P.y+STEP) continue; const sp=mantleSpot(s,fx,fz); if(sp) return sp; } return null; }
 const VAULT_H=1.34, VAULT_T=1.1;
-/* what a jump right now would do: vault over, or climb onto, the obstacle ahead */
-function jumpPlan(fx,fz){ const o=obstacleAhead(fx,fz,.8); if(!o) return null;
+/* what a jump right now would do: vault over, or climb onto, the obstacle ahead. If the nearest thing ahead is overhead (the next flight of a fire escape over the landing)
+   and gives you nothing, look past it for the thing at your feet */
+function jumpPlan(fx,fz){ let skip=null; for(let k=0;k<3;k++){ const o=obstacleAhead(fx,fz,.8,skip); if(!o) return null; const pl=planFor(o,fx,fz); if(pl) return pl;
+    if(!o.mem.every(m=>m.s.y0>P.y+1.3)) return null; skip=skip||new Set(); for(const m of o.mem) skip.add(m.s); } return null; }
+function planFor(o,fx,fz){
   if(!o.bar&&o.low.length&&o.vtop-P.y<=VAULT_H&&o.vthick<=VAULT_T){ const land=vaultLand(o,fx,fz); if(land){ if(land[1]<P.y-.7&&free(land[0],land[2],P.y-.3)) return {kind:'vault',to:[land[0],Math.max(land[1],P.y-.3),land[2]],peak:o.vtop+.14,dur:.5,fall:true}; /* over a balcony rail or a wall into a drop: clear it, then fall */
     return {kind:'vault',to:land,peak:o.vtop+.14,dur:.55}; } }
   const sp=mantleOnto(o,fx,fz,P.ground?REACH_GROUND:REACH_AIR); if(sp){ const h=sp[1]-P.y; return {kind:'mantle',to:sp,peak:0,dur:clamp(.38+h*.25,.42,1.05)}; } return null; }

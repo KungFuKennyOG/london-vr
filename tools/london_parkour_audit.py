@@ -103,7 +103,7 @@ JS = r"""
 def kind_of(t, src):
     fns = t['fns']; f = ' '.join(fns); w = t['r'][2] - t['r'][0]; d = t['r'][3] - t['r'][1]; th = min(w, d); ln = max(w, d); h = t['y1'] - t['y0']
     file = src[0] if src else ''
-    if 'carPark' in f: return 'car'
+    if 'carPark' in f or 'vkPark' in f: return 'car'
     if 'bin' in fns[:1]: return 'bin'
     if 'postbox' in f: return 'postbox'
     if 'railing' in f: return 'railing'
