@@ -8,11 +8,15 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
   - You are Danny "Two Sugars" Doyle, 19, a wannabe gangster from the Hollis House estate in Bethnal Green.
   - The tone is Guy Ritchie: rival crews, jobs that go wrong, freeze-frame character intros, a cocky voiceover.
 - **The loop:** take a job, it goes wrong, heat rises, you escape on foot, you lie low, you get paid.
-- **The world:** a compressed East London of dense hubs.
-  - **The estate** (Hackney / Bethnal Green) is the start.
-  - **The City** is reached on foot through Shoreditch's back streets.
-  - **The docks** (Limehouse) are reached on foot along the Regent's Canal.
-  - **Soho** is reached only by Tube or cab.
+- **The world: four hand-built hubs, an optional fifth** (Kenny, Nov 5). Each is about 3–4 minutes' run across and loads as its own level.
+  1. **Bethnal Green** (start, your manor): the estate, Bethnal Green Road, Columbia Road, Weavers Fields, the arches. Small jobs.
+  2. **Shoreditch & the City:** Brick Lane to Liverpool Street, towers over old streets. Money men, the first heist. Reached **on foot** through a seam: the dog-leg railway underpass at the bottom of Brick Lane.
+  3. **Limehouse & the Docks:** canal basin, warehouses, the river, Canary Wharf. Smuggling, the rival firm. Reached **on foot** through a seam: the Regent's Canal towpath under two low bridges.
+  4. **Soho & the West End:** neon alleys, theatres, Chinatown. The finale. **Tube or cab only** (a seated passenger ride covers the load).
+  5. *(optional)* **Peckham**, south of the river: a rival crew's turf.
+  - **Seams** (Kenny: "reachable on foot but some kind of hidden loading"): a 30–40 s route that bends so neither end is visible; the next hub streams in and the last unloads while you walk it, so the Quest holds one hub plus the seam.
+  - **Every other hub edge is a real London barrier**, dressed, never an invisible wall: the canal (towpath gated for works), viaducts and fenced rail cuttings, roadworks (Heras fencing, ROAD CLOSED, a stopped bus), police cordons for story beats. The skyline carries on beyond. Bethnal Green station on Cambridge Heath Road becomes the Tube door.
+- **Civilians** (Kenny, Nov 5): **adults only, no kids, in every hub.** Each hub has its own mix, wardrobe and behaviours (Bethnal Green: East End nans with trolleys, Bangladeshi families, builders, hipsters, market traders, pub smokers, dog walkers). They follow the time of day (morning commuters and shutters up, daytime shoppers and market, evening pub crowd and takeaways, late-night drunks, night-shift workers, cabbies; rain thins them). **They can be hurt and killed** (it's a GTA-like): witnesses scream, run and call 999 (stars), crowds scatter, shops shutter, bodies stay down until the police or an ambulance come, the odd builder or bouncer squares up. Combat (Stairwell's melee and weapons) comes in after the hub is solid.
 - **The Concept doc** in this Project has the full pitch, the crews, the wanted levels and the milestones.
 
 ## Status (Nov 5, 2026)
@@ -55,12 +59,14 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
 - **Measured:** Brick Lane to Cambridge Heath Road, running, 7 min 28 s. Per view about 110–190 draw calls and 15–32k triangles (VR doubles it; 48 m chunks). Load about 10 s in headless SwiftShader; ~1.08M emitted vertices. Not yet run on a Quest: fps, comfort and load time are the open questions.
 - **What's in:** 24 named streets, about 90 generated blocks (terraces with steps, bins, drainpipes, dishes; shop rows with lit recesses and a sign atlas; corner pubs), both viaducts with arches, landmarks (Weavers Fields, Bramley towers, deck estate with stairs, Arnold Circus, school, supermarket, Museum Gardens and the Tube, St John's, petrol station), street dressing (markings, zebras, bus stops, kiosks, trees, parked cars on one-way streets), the crowd (14 Londoners on the Stairwell rig, pooled 24), traffic on the left (cars, cabs, vans, night bus, mopeds, police), day/night (24 min day, T winds it), synthesised 3D sound, cops chasing on a 1 m nav grid, the job (Arch 9, then Lenny at the boxing club on Cheshire Street), side jobs (25 stashes, Ali's deliveries, the Roof Run), phone/HUD arrow.
 - **Reviews (fresh agents):** 4.5 then 5.0 (provisional vs BAYHEM L3 6.2). Night high street, arches, lit windows, signage and rain are the strengths. Open from review 2: per-lot dressing density, day light direction, shop interiors as real rooms, landmark silhouettes (Arnold Circus, church tower), car shapes, facade repetition. Round 3 addressed some of these but has not been re-reviewed.
+- **Reviews compare against the real Bethnal Green** (Kenny, Nov 5): the reviewer gets reference photos of the actual streets and scores the vibe, not only the polish.
 - **Kenny's rules this session:** no wobble, 95% sharpness (do not mark down sharpness); crowd must be the Stairwell rig, never block people; "extremely polished", multiple rounds; pictures at the end.
 
 ## The hub (Nov 5, in progress)
-- **Kenny's calls:** a 7–8 minute hub **at running speed** (measured: 7 min 28 s Brick Lane → Cambridge Heath Road by bot). "Middle option": every street, block character and landmark placed by hand; the kit fills each block's houses. Make the city feel ALIVE; day/night cycle; side activities; "extremely polished", multiple polish rounds; take pictures at the end.
+- **Re-plan (Kenny, Nov 5 night): a compact 3–4 minute hub, everything hand-crafted, "dense it up", "still needs to feel like London".** Hub x −370..370, z −250..240 (about 740 × 490 m, Soho-sized). Bethnal Green Road (z 6.5) start to Lenny's boxing club (−250, 128) runs in about 2 min. Every street side has a key (`docs/FRONTAGES.md`, made by `tools/london_frontages.py`); `HAND['street:side:mid']=[{t:'shop'|'house'|'pub'|'gap', w, trade, name, brick, st, fv, door, doorC, shut}]` in a `48c*-hand-*.js` file replaces the generator for that side.
+- **Earlier call (superseded):** a 7–8 minute hub **at running speed** (measured: 7 min 28 s Brick Lane → Cambridge Heath Road by bot). "Middle option": every street, block character and landmark placed by hand; the kit fills each block's houses. Make the city feel ALIVE; day/night cycle; side activities; "extremely polished", multiple polish rounds; take pictures at the end.
 - **Files:** `41-perf.js` (chunk emitter, bake, nearest-8 lights, grid-indexed chunk drawing, culling), `48b-hub-kit.js` (facades with separate lit-window layer, sign atlas, trades, furniture, lamps, trees), `48c-hub-plan.js` (STREETS, VIADUCTS, ZONES, LANDMARK_BLOCKS, block finder, lot generator), `48d-hub-landmarks.js` (sky ring + skyline, landmarks, `buildHub()` call), `48e-nav.js` (1 m nav grid, BFS fields, grid sight).
-- **Coordinates:** x east, z south; hub x −800..800, z −520..500. The old street (CORE rects `[-16,-27,29,15]`, `[29,-2.9,36,15]`) keeps its hand-built WALK rects; the hub is walkable everywhere else and buildings are SOL.
+- **Coordinates:** x east, z south; hub x −370..370, z −250..240 (was −800..800 × −520..500). The old street (CORE rects `[-16,-27,29,15]`, `[29,-2.9,36,15]`) keeps its hand-built WALK rects; the hub is walkable everywhere else and buildings are SOL.
 - **Rules:** anything that moves/hides is flagged `n.dyn=true` or it gets baked. Sign boxes need `boxW(w,h,d,w,h)`. Hub geometry is emitted (no nodes); tall landmarks use `farBox` (nofog, noDist). `texMips=true` in London (nearest + mipmaps).
 - **Tools:** `tools/london_map.py` (2D plan), `tools/london_run.py run|walk x,z ...` (timed bot route, stuck report), scratchpad `chase.py`.
 
@@ -124,6 +130,9 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
 | 1 | Nov 5, 2026 | not reviewed | No PS1, bleach bypass, London kit v1. Kenny: "so ugly". Abandoned. |
 | 2 | Nov 5, 2026 | 5.0 (provisional) | PS1 return + dressing. Thin dark strip, text overflow, weak freeze staging, blocky close-ups. Identity: "same studio, different game", yes. Keep: the painted-face cast in London silhouettes and the red-only freeze. |
 | — | Nov 5, 2026 | 5.0 (provisional) | Three.js rebuild (shelved). Faces at 0.6 m "a swollen potato", grade not bleach-bypass, too clean. Liked: the eye-level street with lit interiors and wet reflections. Kenny: "so ugly". |
+
+## Parked for later (Kenny's notes, to work on)
+- **Combat feel differs from Stairwell** (Kenny, Nov 5): London characters should **not die as quickly as Stairwell's**, and should **behave differently in general** when fighting or hurt (more knock-downs, staggering, getting back up, fleeing, pleading). Tune it when melee comes in.
 
 ## Next steps
 1. Show Kenny the pass 2 frames and the artifact; fold in his reaction and the fresh review.
