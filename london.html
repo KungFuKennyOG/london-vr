@@ -2659,28 +2659,40 @@ const BRICKS={
   estbrick:{base:'#6a4a34',dark:'#4e3626',light:'#7c5a40',mortar:'#3a2a20',soot:.2},
   brown:{base:'#5e4632',dark:'#46342a',light:'#705842',mortar:'#3a2c22',soot:.3},
   cream:{base:'#b8b4a8',dark:'#98948a',light:'#c8c4b8',mortar:null,soot:.32},
+  /* hand-written frontages: yellow London stock, 1950s buff, and painted brick (the courses still show through the paint) */
+  yellow:{base:'#9a875c',dark:'#7a6a44',light:'#b09a6c',mortar:'#6a5e48',soot:.32},
+  lbuff:{base:'#a08a68',dark:'#86704f',light:'#b29c78',mortar:'#7a6c56',soot:.2},
+  paintW:{base:'#d4d0c4',dark:'#bcb8ac',light:'#e2ded4',mortar:null,soot:.18,paint:true},
+  paintCr:{base:'#d0bf96',dark:'#b8a880',light:'#ddd0aa',mortar:null,soot:.2,paint:true},
+  paintBl:{base:'#7e98a6',dark:'#6a8290',light:'#90aab6',mortar:null,soot:.22,paint:true},
+  paintPk:{base:'#bf8f86',dark:'#a87a72',light:'#cc9e96',mortar:null,soot:.22,paint:true},
+  paintGr:{base:'#7e8e72',dark:'#6a7a60',light:'#8e9e82',mortar:null,soot:.22,paint:true},
+  paintNv:{base:'#2c3648',dark:'#222a3a',light:'#364258',mortar:null,soot:.15,paint:true},
+  paintBk:{base:'#242426',dark:'#1a1a1c',light:'#2e2e30',mortar:null,soot:.1,paint:true},
 };
 function paintWall(g,B,w,h,r){ R(g,B.base,0,0,w,h);
   if(B.mortar){ for(let y=0;y<h;y+=3){ const off=(y/3%2)*4; for(let x=-8+off;x<w;x+=8){ const v=r(); g.fillStyle=v<.15?B.dark:v>.88?B.light:B.base; g.fillRect(x,y,7,2); } g.fillStyle=B.mortar; g.fillRect(0,y+2,w,1); } }
   else if(B.panel){ for(let y=0;y<h;y+=PXM*1.5) R(g,B.dark,0,y,w,1); for(let x=0;x<w;x+=PXM*2.5) R(g,B.dark,x,0,1,h); for(let i=0;i<w*h/40;i++) R(g,r()<.5?B.dark:B.light,r()*w|0,r()*h|0,1,1); }
-  else { for(let i=0;i<w*h/30;i++) R(g,r()<.5?B.dark:B.light,r()*w|0,r()*h|0,1,1); }
+  else { for(let i=0;i<w*h/30;i++) R(g,r()<.5?B.dark:B.light,r()*w|0,r()*h|0,1,1); if(B.paint) for(let y=2;y<h;y+=3) R(g,'rgba(0,0,0,.07)',0,y,w,1); }
   for(let i=0;i<w/6;i++){ const x=r()*w|0; vfill(g,x,0,1+(r()*3|0),h*(.2+r()*.7),[[0,`rgba(10,8,6,${B.soot})`],[1,'rgba(10,8,6,0)']]); } }
 /* window kinds: sash (Victorian), estate (wide), shopflat (over shops), mansion (Boundary-estate red brick) */
-const WIN={sash:{w:1.0,h:1.65,sill:.9,lintel:true}, estate:{w:1.7,h:1.3,sill:1.0}, mansion:{w:1.1,h:1.8,sill:.85,lintel:true,arch:true}, tower:{w:1.9,h:1.4,sill:.9}};
+const WIN={seg:{w:1.0,h:1.6,sill:.9,seg:true}, factory:{w:2.0,h:1.7,sill:.8,panes:true}, sash:{w:1.0,h:1.65,sill:.9,lintel:true}, estate:{w:1.7,h:1.3,sill:1.0}, mansion:{w:1.1,h:1.8,sill:.85,lintel:true,arch:true}, tower:{w:1.9,h:1.4,sill:.9}};
 const LITC=[['#ffcf8a','#ffb060'],['#ffe2b0','#ffc080'],['#ffd8a0','#ff9a50'],['#9ab8ff','#6a88d0'],['#fff2d8','#e8d0a8'],['#ffb878','#e08040']];
 /* returns {base, lit}: bays x floors tile, BAY wide, FLOOR tall */
 function facadeTex(brick,win,seed,bays=4,floors=3,litP=.32){ const W_=WIN[win],B=BRICKS[brick],bw=HUB.BAY*PXM,fh=HUB.FLOOR*PXM,w=bays*bw,h=floors*fh;
   const r=hr(seed), plan=[]; for(let f=0;f<floors;f++) for(let b=0;b<bays;b++){ const lit=r()<litP; plan.push({f,b,lit,c:LITC[r()*LITC.length|0],cur:r(),fig:lit&&r()<.12,tv:r()<.15,blind:r()<.3}); }
   const ww=W_.w*PXM,wh=W_.h*PXM;
-  const base=P2(w,h,(g)=>{ paintWall(g,B,w,h,r);
+  const base=P2S(w,h,(g)=>{ paintWall(g,B,w,h,r);
     for(const p of plan){ const x=p.b*bw+(bw-ww)/2, y=h-(p.f*fh+W_.sill*PXM+wh);
-      if(W_.lintel) R(g,brick==='stucco'||brick==='cream'?'#e8e2d2':'#c8c0a8',x-2,y-4,ww+4,4); R(g,'#b8b2a0',x-2,y+wh,ww+4,3);
-      R(g,'#e6e2d8',x-1,y-1,ww+2,wh+2); vfill(g,x+1,y+1,ww-2,wh-2,[[0,'#1c2430'],[1,'#0c1016']]);
+      if(W_.lintel) R(g,brick==='stucco'||brick==='cream'||B.paint?'#e8e2d2':'#c8c0a8',x-2,y-4,ww+4,4); R(g,'#b8b2a0',x-2,y+wh,ww+4,3);
+      if(W_.seg){ g.fillStyle=B.paint?'#e8e2d2':'#9a4a34'; g.beginPath(); g.ellipse(x+ww/2,y+2,ww/2+3,7,0,Math.PI,0); g.fill(); R(g,g.fillStyle,x-3,y-1,ww+6,3); }
+      R(g,W_.panes?'#2a2c2e':'#e6e2d8',x-1,y-1,ww+2,wh+2); vfill(g,x+1,y+1,ww-2,wh-2,[[0,'#1c2430'],[1,'#0c1016']]);
+      if(W_.panes){ for(let i=1;i<4;i++) R(g,'#2a2c2e',x+i*ww/4,y,1,wh); for(let i=1;i<3;i++) R(g,'#2a2c2e',x,y+i*wh/3,ww,1); if(p.cur<.3) R(g,'#6a6a64',x+ww/4+1,y+wh/3+1,ww/4-1,wh/3-1); }
       if(!p.lit&&p.blind) R(g,'#3a3630',x+1,y+1,ww-2,(wh-2)*(.3+p.cur*.5));
-      R(g,'#e6e2d8',x,y+wh*.5,ww,2); if(win!=='estate'&&win!=='tower') R(g,'#e6e2d8',x+ww/2-1,y,2,wh);
+      if(!W_.panes){ R(g,'#e6e2d8',x,y+wh*.5,ww,2); if(win!=='estate'&&win!=='tower') R(g,'#e6e2d8',x+ww/2-1,y,2,wh); }
       g.fillStyle='rgba(160,180,200,.18)'; g.fillRect(x+2,y+2,ww*.3,wh*.4); }
     if(B.panel) for(let f=1;f<floors;f++) R(g,'#6a6860',0,h-f*fh-2,w,3); },0,seed);
-  const lit=P2(w,h,(g)=>{ g.clearRect(0,0,w,h);
+  const lit=P2S(w,h,(g)=>{ g.clearRect(0,0,w,h);
     for(const p of plan){ if(!p.lit) continue; const x=p.b*bw+(bw-ww)/2, y=h-(p.f*fh+W_.sill*PXM+wh);
       vfill(g,x+1,y+1,ww-2,wh-2,[[0,p.tv?'#7a9ad8':p.c[0]],[1,p.tv?'#4a6ab0':p.c[1]]]);
       if(p.cur<.6){ const cc=['rgba(120,40,30,.75)','rgba(40,60,90,.7)','rgba(150,120,60,.7)','rgba(60,90,50,.7)'][(p.cur*6|0)%4]; R(g,cc,x+1,y+1,ww*.22,wh-2); R(g,cc,x+ww-1-ww*.22,y+1,ww*.22,wh-2); }
@@ -2694,7 +2706,8 @@ function facade(brick,win,v=0){ const k=brick+'|'+win+'|'+v; if(!FAC.has(k)){ co
     const lm=nightM(f.lit,{unlit:true,cut:true}); f.mBase=MM(f.base); f.mLit=lm; FAC.set(k,f); } return FAC.get(k); }
 
 /* upper floors: base on the walls, lit layer 2 cm proud of the street faces. faces: which sides get windows ('nsew') */
-function eFacade(x0,z0,x1,z1,y0,y1,F,faces,o={}){ const tu=F.bays*HUB.BAY, tv=F.floors*HUB.FLOOR, ou=o.ou||0, ov=o.ov||0, plain=o.plain||F.mBase;
+function eFacade(x0,z0,x1,z1,y0,y1,F,faces,o={}){ if(o.atlas) return eFacadeA(x0,z0,x1,z1,y0,y1,F,faces,o);
+  const tu=o.tu||F.bays*HUB.BAY, tv=F.floors*HUB.FLOOR, ou=o.ou||0, ov=o.ov||0, plain=o.plain||F.mBase;
   const skip=o.skip||'', fm=k=>skip.includes(k)?null:faces.includes(k)?F.mBase:plain;
   /* street faces get vertices every 3 m for the lamps to light; plain backs are single quads */
   const G={n:fm('n'),s:fm('s'),e:fm('e'),w:fm('w')};
@@ -2704,6 +2717,27 @@ function eFacade(x0,z0,x1,z1,y0,y1,F,faces,o={}){ const tu=F.bays*HUB.BAY, tv=F.
   if(faces.includes('n')) eGrid(lm,[x1,y0,z0-e],NX,Y_,x1-x0,y1-y0,tu,tv,ou,ov);
   if(faces.includes('e')) eGrid(lm,[x1+e,y0,z1],NZ,Y_,z1-z0,y1-y0,tu,tv,ou,ov);
   if(faces.includes('w')) eGrid(lm,[x0-e,y0,z0],Z_,Y_,z1-z0,y1-y0,tu,tv,ou,ov); }
+/* the same on the facade atlas (FA/FAL): every face except o.skip is cut into whole bays (about 2.5 m, stretched to fit) and whole floors,
+   in pieces of at most 4 bays x 3 floors, each showing a window-aligned piece of its brick's cell: one draw per chunk for every facade.
+   o.seed varies which bays and floors of the cell a piece shows (so the lit windows differ house to house) */
+function eFacadeA(x0,z0,x1,z1,y0,y1,F,faces,o){ const rc=faCell(F), du=rc[2]-rc[0], dv=rc[3]-rc[1], skip=o.skip||'', H=y1-y0, nf=Math.max(1,Math.round(H/HUB.FLOOR)), fh=H/nf; let sd=(o.seed|0)>>>0;
+  const face=(org,U,len,N)=>{ const nb=Math.max(1,Math.round(len/HUB.BAY)), bw=len/nb;
+    for(let b=0;b<nb;b+=4){ const cb=Math.min(4,nb-b); for(let f=0;f<nf;f+=3){ const cf=Math.min(3,nf-f); sd=(sd*1103515245+12345)>>>0; const sb=(sd>>>8)%(5-cb), sf=(sd>>>16)%(4-cf);
+        const p=[org[0]+U[0]*b*bw,y0+f*fh,org[2]+U[2]*b*bw], w=cb*bw, h=cf*fh, tu=w/(du*cb/4), tv=h/(dv*cf/3), ou=rc[0]+du*sb/4, ov=rc[1]+dv*sf/3;
+        eGrid(FA.m,p,U,Y_,w,h,tu,tv,ou,ov,3,HUB.FLOOR); eGrid(FAL.m,[p[0]+N[0]*.02,p[1],p[2]+N[2]*.02],U,Y_,w,h,tu,tv,ou,ov); } } };
+  if(!skip.includes('s')) face([x0,0,z1],X_,x1-x0,Z_); if(!skip.includes('n')) face([x1,0,z0],NX,x1-x0,NZ);
+  if(!skip.includes('e')) face([x1,0,z1],NZ,z1-z0,X_); if(!skip.includes('w')) face([x0,0,z0],Z_,z1-z0,NX); }
+
+/* the big atlas pages are plain software canvases: hundreds of draws go into them, and accelerated canvases this size starve the
+   browser's canvas budget (every small canvas painted after them, like the cast's, then crawled) */
+function P2S(w,h,fn){ return texS(w,h,null,g=>fn(g,w,h)); }
+function texS(w,h,base,fn){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d',{willReadFrequently:true}); if(base){ g.fillStyle=base; g.fillRect(0,0,w,h); } if(fn) fn(g,w,h); return {c,glt:null,f:-1}; }
+/* the facade atlas: each brick-and-window facade's 4-bay x 3-floor tile as a cell, and its lit-window layer at half size on a twin page */
+const FA={W:2048,H:648,cw:240,ch:216,cols:8,rows:3,n:0}; /* 24 facades (about 16 in use) */ FA.t=texS(FA.W,FA.H,null,g=>{ R(g,'#5a4a3a',0,0,FA.W,FA.H); }); FA.g=FA.t.c.getContext('2d'); FA.m=M(FA.t,{});
+const FAL={t:texS(FA.W/2,FA.H/2,null,g=>{ g.clearRect(0,0,FA.W/2,FA.H/2); })}; FAL.g=FAL.t.c.getContext('2d'); FAL.m=nightM(FAL.t,{unlit:true,cut:true});
+function faCell(F){ if(F.fa) return F.fa; if(FA.n>=FA.cols*FA.rows){ console.warn('[london] facade atlas full'); return (F.fa=FA.first.fa); } if(!FA.n) FA.first=F;
+  const i=FA.n++, x=(i%FA.cols)*FA.cw, y=Math.floor(i/FA.cols)*FA.ch; FA.g.drawImage(F.base.c,x,y,FA.cw,FA.ch); FAL.g.drawImage(F.lit.c,x/2,y/2,FA.cw/2,FA.ch/2);
+  return (F.fa=[(x+.5)/FA.W,1-(y+FA.ch-.5)/FA.H,(x+FA.cw-.5)/FA.W,1-(y+.5)/FA.H]); }
 
 /* ---------------- roofs, copings, ground ---------------- */
 const tRoofFelt=P2(64,64,(g,w,h)=>{ R(g,'#2c2d30',0,0,w,h); specks(g,'#3c3d41',260,8101,w,h); specks(g,'#1c1d20',200,8102,w,h); for(let i=0;i<6;i++) R(g,'rgba(0,0,0,.25)',0,(i*11)%h,w,1); },0,1);
@@ -2716,15 +2750,20 @@ const mCope=col(0x8a8680), mDark=col(0x1a1b1d), mFrame=col(0x16171a), mConc=MM(t
 const mRail=col(0x111214), mRailG=col(0x1e3a2a), mBrickW=MM(tStock), mSootW=MM(tSoot);
 
 /* ---------------- the sign atlas: every shop sign in the hub on one mipmapped 2048 page ---------------- */
-const SA={W:2048,H:2048,cw:512,ch:64,cols:4,n:0,c:null,t:null,cache:new Map()};
-SA.t=tex(SA.W,SA.H,null,g=>{ R(g,'#000',0,0,SA.W,SA.H); }); SA.t.smooth=true; SA.c=SA.t.c.getContext('2d'); SA.m=nightM(SA.t,{unlit:true},.35);
-/* returns [u0,v0,u1,v1] of a painted sign (same args as signTex) */
-function atlasSign(bg,fg,main,sub,o={}){ const key=[bg,fg,main,sub,o.face,o.subC].join('|'); if(SA.cache.has(key)) return SA.cache.get(key);
-  const i=SA.n++, cx=(i%SA.cols)*SA.cw, cy=Math.floor(i/SA.cols)*SA.ch; if(cy+SA.ch>SA.H){ console.warn('[london] sign atlas full'); SA.n--; return SA.cache.values().next().value; }
-  const g=SA.c; g.save(); g.translate(cx,cy); g.beginPath(); g.rect(0,0,SA.cw,SA.ch); g.clip(); drawSign(g,SA.cw,SA.ch,bg,fg,main,sub,Object.assign({w0:SA.cw/3},o)); g.restore();
-  const uv=[cx/SA.W,1-(cy+SA.ch)/SA.H,(cx+SA.cw)/SA.W,1-cy/SA.H]; SA.cache.set(key,uv); return uv; }
+/* pages of 2048 x 1024 (5 x 18 signs of 384 x 56), opened as they fill: every hand-written shop has its own name */
+const SA={W:2048,H:1024,cw:384,ch:56,cols:5,rows:18,pages:[],all:[],cache:new Map()};
+function signPage(){ const P={n:0}; P.t=texS(SA.W,SA.H,null,g=>{ R(g,'#000',0,0,SA.W,SA.H); }); P.t.smooth=true; P.c=P.t.c.getContext('2d'); P.m=nightM(P.t,{unlit:true},.35); SA.pages.push(P); return P; }
+signPage(); SA.t=SA.pages[0].t; SA.m=SA.pages[0].m;
+function paintSignCell(P,cx,cy,args){ const g=P.c; g.save(); g.translate(cx,cy); g.beginPath(); g.rect(0,0,SA.cw,SA.ch); g.clip(); drawSign(g,SA.cw,SA.ch,...args); g.restore(); }
+/* returns [u0,v0,u1,v1] of a painted sign (same args as signTex), with .m its page's material */
+function atlasSign(bg,fg,main,sub,o={}){ const key=[bg,fg,main,sub,o.face,o.subC,o.lit].join('|'); if(SA.cache.has(key)) return SA.cache.get(key);
+  let P=SA.pages[SA.pages.length-1]; if(P.n>=SA.cols*SA.rows){ if(SA.pages.length>=8){ console.warn('[london] sign atlas full'); return SA.cache.values().next().value; } P=signPage(); }
+  const i=P.n++, cx=(i%SA.cols)*SA.cw, cy=Math.floor(i/SA.cols)*SA.ch, args=[bg,fg,main,sub,Object.assign({w0:SA.cw/3},o)]; paintSignCell(P,cx,cy,args); SA.all.push([P,cx,cy,args]);
+  const uv=[(cx+.5)/SA.W,1-(cy+SA.ch-.5)/SA.H,(cx+SA.cw-.5)/SA.W,1-(cy+.5)/SA.H]; uv.m=P.m; SA.cache.set(key,uv); return uv; }
+/* the faces arrive after the hub is built: repaint every sign in the atlas with them */
+FONTS_READY.then(()=>{ for(const [P,cx,cy,args] of SA.all){ P.c.clearRect(cx,cy,SA.cw,SA.ch); paintSignCell(P,cx,cy,args); } for(const P of SA.pages) retex(P.t); });
 /* a sign quad on a face: centre c, along U, width w, height h, outward normal from U x Y */
-function eSign(uv,c,U,w,h){ const o=[c[0]-U[0]*w/2,c[1]-h/2,c[2]-U[2]*w/2], B=emitBucket(SA.m,c[0],c[2],4), b0=B.n, n=[U[1]*0-U[2]*1,U[2]*0-U[0]*0,U[0]*1-U[1]*0];
+function eSign(uv,c,U,w,h){ const o=[c[0]-U[0]*w/2,c[1]-h/2,c[2]-U[2]*w/2], B=emitBucket(uv.m||SA.m,c[0],c[2],4), b0=B.n, n=[U[1]*0-U[2]*1,U[2]*0-U[0]*0,U[0]*1-U[1]*0];
   const P=[[0,0],[1,0],[1,1],[0,1]]; for(const [s,t] of P){ B.P.push(o[0]+U[0]*w*s,o[1]+h*t,o[2]+U[2]*w*s); B.Nm.push(n[0],n[1],n[2]); B.T.push(uv[0]+(uv[2]-uv[0])*s,uv[1]+(uv[3]-uv[1])*t); B.n++; }
   B.I.push(b0,b0+1,b0+2,b0,b0+2,b0+3); }
 
@@ -2749,11 +2788,34 @@ const TRADES={
   charity:{bg:'#5a2a6a',fg:'#ffffff',face:'grot',names:['EAST END HOSPICE','ST MARY\'S CHARITY SHOP','HELPING HANDS'],sub:'CHARITY SHOP',room:'#ece4f0'},
   flowers:{bg:'#2a4a2a',fg:'#f6e6c0',face:'cond',names:['COLUMBIA FLOWERS','THE FLOWER STALL','PETALS'],sub:'FLOWERS · PLANTS',room:'#e8f0e0'},
   vintage:{bg:'#2a2a2a',fg:'#e8d8b8',face:'cond',names:['ROKIT','BEYOND RETRO','THE VINTAGE STORE','CHESHIRE VINTAGE'],sub:'VINTAGE · RECORDS',room:'#e0d4c0'},
+  /* the hand-written high streets: names come from the frontage, these are fallbacks */
+  piemash:{bg:'#1e4a2e',fg:'#f2e6c8',face:'cond',names:['PIE & MASH'],sub:'PIE · MASH · LIQUOR · JELLIED EELS',room:'#e4ece2'},
+  bakery:{bg:'#f2e2c0',fg:'#5a2a10',face:'grot',names:['BAKERY'],sub:'BREAD · CAKES · SAMOSAS',room:'#f6e8cc'},
+  cashcarry:{bg:'#d8201a',fg:'#ffffff',face:'anton',names:['CASH & CARRY'],sub:'WHOLESALE · RETAIL · RICE · SPICES',room:'#ecece4'},
+  grocer:{bg:'#1a6a2a',fg:'#ffffff',face:'grot',names:['SUPERSTORE'],sub:'HALAL MEAT · FRESH FISH · VEG',room:'#eef0e0'},
+  sweets:{bg:'#e8b020',fg:'#7a0a1a',face:'fat',names:['SWEET CENTRE'],sub:'SWEETS · SAMOSAS · CATERING',room:'#fff4dc'},
+  pound:{bg:'#e8d020',fg:'#1a1a8a',face:'anton',names:['POUND PLUS'],sub:'EVERYTHING £1 · HOUSEHOLD · TOYS',room:'#f0f0e8'},
+  money:{bg:'#0a3a6a',fg:'#ffd84a',face:'grot',names:['MONEY TRANSFER'],sub:'SEND MONEY HOME · BUREAU · TOP UP',room:'#e6eaf0'},
+  butcher:{bg:'#7a1010',fg:'#ffffff',face:'cond',names:['HALAL BUTCHERS'],sub:'HALAL MEAT · POULTRY · LAMB',room:'#f4ece8'},
+  travel:{bg:'#f6f6f2',fg:'#0a4a8a',face:'grot',names:['TRAVEL'],sub:'FLIGHTS TO DHAKA & SYLHET · HAJJ',room:'#eef2f6'},
+  tailor:{bg:'#2a2a3a',fg:'#e8e0c8',face:'cond',names:['TAILORS'],sub:'ALTERATIONS · DRY CLEANING',room:'#e8e2d4'},
+  records:{bg:'#141414',fg:'#ff5a3a',face:'anton',names:['RECORDS'],sub:'VINYL · BOUGHT & SOLD',room:'#e0d8c8'},
+  plants:{bg:'#2e3a2a',fg:'#e8e0c0',face:'cond',names:['PLANTS'],sub:'HOUSEPLANTS · POTS · CUT FLOWERS',room:'#e0e8d4'},
+  gallery:{bg:'#f4f2ec',fg:'#1a1a1a',face:'grot',names:['GALLERY'],sub:'PRINTS · PAINTINGS',room:'#f6f6f2'},
+  antiques:{bg:'#3a2a1a',fg:'#e8d098',face:'cond',names:['ANTIQUES'],sub:'ANTIQUES · CURIOS · CLEARANCES',room:'#d8c8a8'},
+  deli:{bg:'#f0e8d0',fg:'#3a2a1a',face:'cond',names:['DELI'],sub:'CHEESE · DELI · WINE',room:'#f2e6d0'},
+  homeware:{bg:'#c8d8d0',fg:'#2a3a3a',face:'cond',names:['HOMEWARE'],sub:'CERAMICS · LINEN · GIFTS',room:'#eef0ea'},
+  workshop:{bg:'#2a2a2a',fg:'#e8e0d0',face:'grot',names:['WORKSHOP'],sub:'JOINERY · CABINET MAKERS',room:'#c8b8a0'},
+  garage:{bg:'#1a1a1a',fg:'#f2c200',face:'anton',names:['MOT CENTRE'],sub:'MOT · TYRES · EXHAUSTS · REPAIRS',room:'#9a9690'},
+  builders:{bg:'#e86a10',fg:'#1a1a1a',face:'anton',names:['BUILDERS MERCHANTS'],sub:'TIMBER · SAND · CEMENT',room:'#c8c0b0'},
+  fabric:{bg:'#4a1a4a',fg:'#f2dca8',face:'cond',names:['FABRICS'],sub:'SILKS · COTTONS · SARIS',room:'#efe2e8'},
+  optician:{bg:'#1a3a5a',fg:'#ffffff',face:'grot',names:['OPTICIANS'],sub:'EYE TESTS · NHS',room:'#eef2f4'},
+  tolet:{bg:'#f4f4f0',fg:'#c41a1a',face:'anton',names:['TO LET'],sub:'SHOP TO LET · 020 7739 0418',room:'#3a3a38'},
 };
 /* real chains and real cafés are out: these are generic names, but drop any that read as a real business */
 for(const k in TRADES) TRADES[k].names=TRADES[k].names.filter(n=>!/BETFRED|PADDY|ROKIT|BEYOND RETRO|OXFAM|CANCER RESEARCH|BRITISH HEART|PELLICCI|CHICKEN COTTAGE|TFC|DIXY/.test(n));
 function tradeRoom(k){ const T=TRADES[k]; if(T.tex) return T.tex; const r=hr(9000+Object.keys(TRADES).indexOf(k)*13);
-  T.tex=P2(256,128,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,mix(T.room,'#ffffff',.2)],[1,mix(T.room,'#000000',.15)]]); R(g,mix(T.room,'#000000',.4),0,h-18,w,18);
+  T.tex=P2S(256,128,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,mix(T.room,'#ffffff',.2)],[1,mix(T.room,'#000000',.15)]]); R(g,mix(T.room,'#000000',.4),0,h-18,w,18);
     if(k==='chicken'||k==='kebab'){ R(g,'#1a1a1a',8,8,240,40); for(let i=0;i<5;i++){ R(g,T.bg,12+i*48,12,42,32); ell(g,24+i*48,28,7,6,'#ffa02a'); } R(g,'#c8ccd0',10,70,236,14); R(g,T.bg,10,84,236,26); }
     else if(k==='offy'||k==='beigel'||k==='hardware'||k==='charity'||k==='vintage'){ for(let s=0;s<4;s++){ R(g,'#6a6058',0,20+s*22,w,2); for(let x=2;x<w;x+=5){ const ht=6+(r()*10|0); g.fillStyle=mix(['#c83a2a','#2a7a3a','#e8c040','#3a5ab8','#7a2a5a','#d8d4c8'][r()*6|0],'#000',r()*.3); g.fillRect(x,20+s*22-ht,4,ht); } } }
     else if(k==='phone'||k==='vape'){ for(let y=8;y<90;y+=12) for(let x=6;x<w;x+=10) R(g,mix(['#2a2a2a','#4ad0ff','#e8e8e8','#d080ff'][r()*4|0],T.room,.3),x,y,7,9); R(g,'#2a2a2a',60,96,140,14); }
@@ -2765,6 +2827,18 @@ function tradeRoom(k){ const T=TRADES[k]; if(T.tex) return T.tex; const r=hr(900
     else if(k==='gold'){ for(let i=0;i<6;i++) R(g,'#c8a040',10+i*40,40,30,20); R(g,'#1a1a1a',0,0,w,18); }
     else if(k==='bookie'){ for(let i=0;i<4;i++){ R(g,'#0a0a0a',10+i*60,10,54,36); R(g,'#2a6a3a',14+i*60,14,46,28); } R(g,'#e8e0c8',0,70,w,6); }
     else if(k==='flowers'){ for(let i=0;i<60;i++) ell(g,r()*w,60+r()*50,4,4,['#e84a6a','#f6d040','#ffffff','#c86ad8','#f08030'][r()*5|0]); }
+    else if(k==='piemash'){ for(let x=0;x<w;x+=8) for(let y=0;y<h-18;y+=8) R(g,(x+y)%16?'#d8e4d6':'#c4d4c2',x,y,7,7); R(g,'#2a5a3a',0,44,w,4); for(let i=0;i<4;i++){ R(g,'#f0ece4',14+i*60,78,46,5); R(g,'#3a2a20',22+i*60,83,6,24); R(g,'#3a2a20',48+i*60,83,6,24); } }
+    else if(k==='bakery'||k==='sweets'||k==='deli'){ R(g,'#3a2a1a',0,64,w,4); R(g,'#e8e4dc',8,70,w-16,30); for(let s=0;s<2;s++) for(let x=6;x<w-6;x+=12) ell(g,x+6,18+s*24,5,4,k==='sweets'?['#e84a8a','#f6d040','#ffffff','#f08030','#7ad04a'][r()*5|0]:k==='deli'?['#f0d890','#c88a40','#e8e0c0'][r()*3|0]:['#c8843a','#a86428','#e0b060'][r()*3|0]);
+      for(let x=12;x<w-12;x+=14) R(g,k==='sweets'?['#ffd040','#ff7aa0','#a0e070','#ffffff'][r()*4|0]:'#d8a050',x,76,10,8); }
+    else if(k==='cashcarry'||k==='pound'||k==='grocer'||k==='fabric'||k==='homeware'||k==='antiques'){ for(let s=0;s<4;s++){ R(g,'#6a6058',0,20+s*22,w,2); for(let x=2;x<w;x+=k==='fabric'?9:6){ const ht=k==='fabric'?18:6+(r()*12|0); g.fillStyle=mix(k==='fabric'?['#c82a6a','#2a4ab8','#e8b020','#2a8a5a','#8a2ab8'][r()*5|0]:['#c83a2a','#2a7a3a','#e8c040','#3a5ab8','#d8d4c8','#f0f0e8'][r()*6|0],'#000',r()*.3); g.fillRect(x,20+s*22-ht,k==='fabric'?8:5,ht); } } }
+    else if(k==='money'||k==='travel'||k==='optician'){ for(let i=0;i<4;i++){ R(g,'#c8d0dc',10+i*62,10,50,34); R(g,k==='travel'?['#2a8ac8','#e8b020','#2a9a5a','#c83a3a'][i]:'#ffffff',14+i*62,14,42,26); } R(g,'#4a5a6a',0,62,w,6); R(g,'#d8dce4',0,68,w,28); for(let i=0;i<4;i++) R(g,'#9aa8b8',20+i*62,40,30,22); }
+    else if(k==='butcher'){ for(let x=0;x<w;x+=8) for(let y=0;y<h-18;y+=8) R(g,(x+y)%16?'#f4f0ec':'#e4e0dc',x,y,7,7); R(g,'#8a8a8a',0,14,w,2); for(let x=10;x<w;x+=18){ R(g,'#8a8a8a',x+3,14,1,8); ell(g,x+4,30,6,9,['#a82a2a','#c84a3a','#e8c8b8'][r()*3|0]); } R(g,'#e8e8ec',0,70,w,28); for(let x=8;x<w;x+=16) R(g,'#b83a3a',x,74,12,8); }
+    else if(k==='tailor'){ R(g,'#3a3a3a',0,20,w,2); for(let x=4;x<w;x+=7){ R(g,['#2a2a3a','#5a4a3a','#e8e4dc','#3a4a6a','#1a1a1a'][r()*5|0],x,22,6,40+(r()*16|0)); } R(g,'#a89070',20,80,120,20); }
+    else if(k==='records'){ for(let i=0;i<6;i++){ R(g,'#2a2420',8+i*42,60,36,38); for(let j=0;j<6;j++) R(g,['#e84a2a','#1a1a1a','#f6d040','#3a8ac8','#f0f0e8'][r()*5|0],10+i*42+j*5,56-(r()*6|0),4,40); } for(let i=0;i<8;i++) R(g,['#c83a2a','#1a1a1a','#e8c040','#3a5ab8'][r()*4|0],6+i*31,8,26,26); }
+    else if(k==='plants'){ for(let i=0;i<70;i++){ const x=r()*w, y=30+r()*70; ell(g,x,y,6+r()*8,5+r()*7,['#2a5a2a','#3a7a3a','#4a8a3a','#1e4a22'][r()*4|0]); } for(let x=6;x<w;x+=24) R(g,'#a85a3a',x,96,16,12); }
+    else if(k==='gallery'){ for(let i=0;i<4;i++){ R(g,'#2a2a2a',16+i*60,22,40,30); R(g,['#c83a2a','#2a5ab8','#e8c040','#3a3a3a'][i],18+i*60,24,36,26); } R(g,'#d8d4cc',0,h-22,w,22); }
+    else if(k==='workshop'||k==='builders'||k==='garage'){ R(g,'#5a5048',0,0,w,h); for(let i=0;i<10;i++) R(g,k==='garage'?'#2a2a2a':'#b8945a',r()*w,40+r()*50,30+r()*40,4); if(k==='garage'){ R(g,'#3a5a8a',60,60,120,34); ell(g,80,96,12,12,'#111'); ell(g,160,96,12,12,'#111'); R(g,'#e8c040',0,10,w,6); } }
+    else if(k==='tolet'){ R(g,'#2a2a28',0,0,w,h); R(g,'#4a4a46',0,h-30,w,30); for(let i=0;i<6;i++) R(g,'#5a5a56',r()*w,80+r()*20,20,6); }
     specks(g,'rgba(0,0,0,.08)',300,9100,w,h); },0,1);
   T.mRoom=nightM(T.tex,{unlit:true},.0); return T.tex; }
 const SHUT=[0,1,2,3,4,5].map(i=>MM(shutterTex(8200+i*7)));
@@ -2793,6 +2867,153 @@ const tRailing=P2(32,32,(g,w,h)=>{ g.clearRect(0,0,w,h); R(g,'#121314',0,0,w,3);
 tRailing.nomip=true; const mRailing=(()=>{ const m=M(tRailing,{double:true,cut:true}); return m; })();
 function railing(x0,z0,x1,z1,h=1.1,y0=PAVE_Y,solid=true){ const L_=Math.hypot(x1-x0,z1-z0),U=[(x1-x0)/L_,0,(z1-z0)/L_]; eGrid(mRailing,[x0,y0,z0],U,Y_,L_,h,.62,h);
   if(solid) hsol(x0-.05,z0-.05,x1+.05,z1+.05,y0+h); }
+
+/* ==========================================================================================================
+   THE HAND KIT: one lit atlas page (KA) for house fronts, awning stripes, hoarding posters and plain colour swatches,
+   so a whole terrace of different doors, bricks and paint is one draw per chunk; a half-size unlit twin (KAL) for the
+   ground-floor windows that are lit at night; and one unlit page (RA) for every shop interior and its room colours.
+   ========================================================================================================== */
+const KA={W:2048,H:1424,cw:160,ch:104,cols:12,rows:12,n:0,sw:0,cache:new Map()}; /* 144 cells (about 110 in use) and 1408 swatches */
+KA.t=texS(KA.W,KA.H,null,g=>{ R(g,'#7a7a7a',0,0,KA.W,KA.H); }); KA.g=KA.t.c.getContext('2d'); KA.m=M(KA.t,{});
+const KAL={t:texS(KA.W/2,KA.H/2,null,g=>{ g.clearRect(0,0,KA.W/2,KA.H/2); })}; KAL.g=KAL.t.c.getContext('2d'); KAL.m=nightM(KAL.t,{unlit:true,cut:true});
+/* a cell: paint(g,w,h) on the lit page, lit(g,w,h) (optional) on the night twin at half size; returns [u0,v0,u1,v1] */
+function kaCell(key,paint,lit){ let c=KA.cache.get(key); if(c) return c; if(KA.n>=KA.cols*KA.rows){ console.warn('[london] kit atlas full'); return KA.cache.get(KA.first); }
+  const i=KA.n++, x=(i%KA.cols)*KA.cw, y=Math.floor(i/KA.cols)*KA.ch; if(!i) KA.first=key;
+  for(const [G,s,fn] of [[KA.g,1,paint],[KAL.g,.5,lit]]){ if(!fn) continue; G.save(); G.translate(x*s,y*s); G.scale(s,s); G.beginPath(); G.rect(0,0,KA.cw,KA.ch); G.clip(); fn(G,KA.cw,KA.ch); G.restore(); }
+  c=[(x+1)/KA.W,1-(y+KA.ch-1)/KA.H,(x+KA.cw-1)/KA.W,1-(y+1)/KA.H]; KA.cache.set(key,c); return c; }
+/* a plain colour: a 16 px swatch below the cells; quads sample its centre */
+function kaSw(c){ const k='#'+c; let s=KA.cache.get(k); if(s) return s; const i=Math.min(KA.sw++,128*11-1), x=(i%128)*16, y=KA.rows*KA.ch+Math.floor(i/128)*16;
+  R(KA.g,c,x,y,16,16); s=[(x+8)/KA.W,1-(y+8)/KA.H]; KA.cache.set(k,s); return s; }
+/* a quad showing the sub-rect [f0..f1] x [g0..g1] of a cell (m: KA.m or KAL.m) */
+function eKA(o,U,V,w,h,rc,f0=0,f1=1,g0=0,g1=1,m=KA.m){ const du=rc[2]-rc[0], dv=rc[3]-rc[1]; eGrid(m,o,U,V,w,h,w/(du*(f1-f0)),h/(dv*(g1-g0)),rc[0]+du*f0,rc[1]+dv*g0); }
+/* a quad of one plain colour */
+function eQK(o,U,V,w,h,c){ const s=kaSw(c); eGrid(KA.m,o,U,V,w,h,1e6,1e6,s[0],s[1]); }
+/* a box of one plain colour; faces from 'nsewtb' */
+function eBoxK(x0,z0,x1,z1,y0,y1,c,faces='nsewt'){ const s=kaSw(c), w=x1-x0,d=z1-z0,h=y1-y0, q=(o,U,V,a,b)=>eGrid(KA.m,o,U,V,a,b,1e6,1e6,s[0],s[1]);
+  if(faces.includes('s')) q([x0,y0,z1],X_,Y_,w,h); if(faces.includes('n')) q([x1,y0,z0],NX,Y_,w,h); if(faces.includes('e')) q([x1,y0,z1],NZ,Y_,d,h); if(faces.includes('w')) q([x0,y0,z0],Z_,Y_,d,h);
+  if(faces.includes('t')) q([x0,y1,z1],X_,NZ,w,d); if(faces.includes('b')) q([x0,y0,z0],X_,Z_,w,d); }
+/* an engine geometry painted one plain colour (for eGeo) */
+function swG(g,c){ const s=kaSw(c); for(let i=0;i<g.T.length;i+=2){ g.T[i]=s[0]; g.T[i+1]=s[1]; } return g; }
+/* a box in lot space: u along the front (from its left end, as you face it), o out from the wall, y up. faces: f(ront) b(ack) s(ides) t(op) u(nderside).
+   solid: false, true (from the ground) or the solid's bottom height */
+function lotBox(P0,U,out,u0,u1,o0,o1,y0,y1,c,faces='fbst',solid=false){ const xs=[P0[0]+U[0]*u0+out[0]*o0,P0[0]+U[0]*u1+out[0]*o1], zs=[P0[2]+U[2]*u0+out[2]*o0,P0[2]+U[2]*u1+out[2]*o1];
+  const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs); let f=''; const fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', bk={n:'s',s:'n',e:'w',w:'e'}[fk], side=fk==='n'||fk==='s'?'ew':'ns';
+  if(faces.includes('f')) f+=fk; if(faces.includes('b')) f+=bk; if(faces.includes('s')) f+=side; if(faces.includes('t')) f+='t'; if(faces.includes('u')) f+='b';
+  eBoxK(x0,z0,x1,z1,y0,y1,c,f); if(solid!==false) hsol(x0,z0,x1,z1,y1,solid===true?0:solid); return [x0,z0,x1,z1]; }
+
+/* ---------------- the room page: every trade's interior on one unlit texture, plus the room colours ---------------- */
+const RA={W:2048,H:1024,cw:256,ch:128,cols:8,rows:7,n:0,sw:0,cache:new Map()};
+RA.t=texS(RA.W,RA.H,null,g=>{ R(g,'#000',0,0,RA.W,RA.H); }); RA.g=RA.t.c.getContext('2d'); RA.m=nightM(RA.t,{unlit:true},0);
+/* the trade's painted room, toned down (rooms seen through glass are never as bright as the street thinks) with a darker floor and corners */
+function raRoom(k){ const T=TRADES[k]; if(T.ra) return T.ra; if(!T.tex) tradeRoom(k); if(RA.n>=RA.cols*RA.rows) return (T.ra=TRADES.cafe.ra||raRoom('cafe'));
+  const i=RA.n++, x=(i%RA.cols)*RA.cw, y=Math.floor(i/RA.cols)*RA.ch, g=RA.g; g.drawImage(T.tex.c,x,y,RA.cw,RA.ch);
+  g.save(); g.globalCompositeOperation='multiply'; g.fillStyle='#968b78'; g.fillRect(x,y,RA.cw,RA.ch); g.restore();
+  vfill(g,x,y+RA.ch*.72,RA.cw,RA.ch*.28,[[0,'rgba(0,0,0,0)'],[1,'rgba(10,8,6,.45)']]); vfill(g,x,y,RA.cw,RA.ch*.15,[[0,'rgba(10,8,6,.35)'],[1,'rgba(0,0,0,0)']]);
+  T.ra=[(x+1)/RA.W,1-(y+RA.ch-1)/RA.H,(x+RA.cw-1)/RA.W,1-(y+1)/RA.H]; return T.ra; }
+function raSw(c){ let s=RA.cache.get(c); if(s) return s; const i=Math.min(RA.sw++,128*8-1), x=(i%128)*16, y=RA.rows*RA.ch+Math.floor(i/128)*16; R(RA.g,c,x,y,16,16); s=[(x+8)/RA.W,1-(y+8)/RA.H]; RA.cache.set(c,s); return s; }
+/* a quad showing the sub-rect [f0..f1] x [g0..g1] of a room cell, and a quad of one room colour */
+function eRA(o,U,V,w,h,rc,f0=0,f1=1,g0=0,g1=1){ const du=rc[2]-rc[0], dv=rc[3]-rc[1]; eGrid(RA.m,o,U,V,w,h,w/(du*(f1-f0)),h/(dv*(g1-g0)),rc[0]+du*f0,rc[1]+dv*g0); }
+function eRQ(o,U,V,w,h,c){ const s=raSw(c); eGrid(RA.m,o,U,V,w,h,1e6,1e6,s[0],s[1]); }
+/* the pub's bar seen through its windows */
+const PUB_ROOM=(()=>{ const t=P2S(256,128,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#e8b070'],[1,'#8a4a18']]); R(g,'#3a1a0a',0,h-28,w,28); R(g,'#6a3a1a',0,h-34,w,6); for(let i=0;i<10;i++) R(g,'#5a2a10',8+i*24,60,14,34);
+  for(let i=0;i<14;i++) ell(g,10+i*18,48,4,6,'#2a1408'); for(let i=0;i<5;i++){ R(g,'#2a1408',12+i*50,8,40,26); R(g,['#c8a050','#8a3a2a','#3a5a3a'][i%3],14+i*50,10,36,22); } for(let x=6;x<w;x+=9) R(g,['#e8d8a0','#3a8a3a','#c83a2a','#e8e8e0'][x%4],x,40,5,10); },0,1);
+  TRADES.pubRoom={tex:t,names:[],sub:'',room:'#a05a20'}; return raRoom('pubRoom'); })();
+
+/* ---------------- house fronts: the ground floor of a Victorian terrace house, painted per brick, door colour and layout ---------------- */
+/* layouts in metres on a 5 x 3.25 m front: door [x0,x1,doorTop,fanlightTop], windows [x0,x1,sill,top], bay [x0,x1,height] */
+const HLAY={flat:{d:[.45,1.4,2.15,2.55],w:[[2.35,3.6,.85,2.6]]}, pair:{d:[.35,1.25,2.15,2.55],w:[[1.85,2.9,.85,2.55],[3.5,4.55,.85,2.55]]},
+  bay:{d:[.45,1.4,2.15,2.55],w:[[2.25,4.35,.75,2.5]],bay:[2.0,4.6,2.95]}, cottage:{d:[.5,1.38,1.95,2.3],w:[[2.4,3.55,.95,2.3]]}, conv:{d:[.3,1.2,2.15,2.55],w:[[1.75,4.7,.55,2.6]]}};
+function hlay(hv,mir){ const L=HLAY[hv]||HLAY.flat; if(!mir) return L; const f=([a,b,...r])=>[5-b,5-a,...r]; return {d:f(L.d),w:L.w.map(f),bay:L.bay&&f(L.bay)}; }
+/* the wall of a house front (no door: that is a separate strip, so a door colour costs no wall cell); mirrored houses flip the UVs. nv: nets variant */
+function houseCell(brick,hv,stuc,nv){ const L=hlay(hv,false); return kaCell(['h',brick,hv,stuc||'',nv].join('|'),(g,w,h)=>{ const S=32, Y=m=>h-m*S, B=BRICKS[brick]||BRICKS.stock, r=hr(4400+nv*7+brick.length*13);
+    if(stuc){ R(g,stuc,0,0,w,h); for(let y=h-9;y>0;y-=9) R(g,'rgba(0,0,0,.13)',0,y,w,1); specks(g,'rgba(0,0,0,.08)',120,4401,w,h); } else paintWall(g,B,w,h,r);
+    R(g,'rgba(0,0,0,.28)',0,Y(.32),w,.32*S); R(g,'rgba(255,255,255,.08)',0,Y(.32),w,1);
+    const stone=stuc?mix(stuc,'#ffffff',.25):B.paint?mix(B.base,'#ffffff',.3):'#d2ccbc', [d0,d1,dt,ft]=L.d;
+    /* the door's stucco surround and hood (the door itself sits back in its recess) */
+    R(g,stone,d0*S-6,Y(ft+.2),(d1-d0)*S+12,(ft+.2)*S); R(g,mix(stone,'#000000',.15),d0*S-9,Y(ft+.32),(d1-d0)*S+18,5); R(g,'#1a1612',d0*S,Y(ft),(d1-d0)*S,ft*S);
+    /* windows: lintel, sill, frame, glass, sash bars, nets or blinds */
+    if(L.bay){ const [b0,b1,bh]=L.bay; R(g,stone,b0*S,Y(bh),(b1-b0)*S,bh*S); R(g,mix(stone,'#000000',.2),b0*S,Y(bh),(b1-b0)*S,4); R(g,mix(stone,'#000000',.12),b0*S,Y(.6),(b1-b0)*S,.6*S); }
+    for(const [x0,x1,sl,tp] of L.w){ const ww=(x1-x0)*S, wh=(tp-sl)*S, X=x0*S, Yt=Y(tp);
+      if(!L.bay){ R(g,stone,X-4,Yt-6,ww+8,6); R(g,mix(stone,'#000000',.1),X-5,Y(sl),ww+10,5); }
+      R(g,'#e6e2d8',X-2,Yt-2,ww+4,wh+4); vfill(g,X,Yt,ww,wh,[[0,'#1c2430'],[1,'#0a0e14']]); R(g,'rgba(160,180,200,.18)',X+2,Yt+2,ww*.28,wh*.4);
+      if(nv===0){ g.fillStyle='rgba(226,222,212,.62)'; g.fillRect(X,Yt+wh*.5,ww,wh*.5); for(let x=X;x<X+ww;x+=4) R(g,'rgba(255,255,255,.18)',x,Yt+wh*.5,1,wh*.5); } else if(nv===1) R(g,'#c8b890',X,Yt,ww,wh*.4);
+      const n=Math.max(2,Math.round(ww/34)); for(let i=1;i<n;i++) R(g,'#e6e2d8',X+i*ww/n-1,Yt,2,wh); R(g,'#e6e2d8',X,Yt+wh*.5-1,ww,3); }
+    vfill(g,0,h-14,w,14,[[0,'rgba(20,16,12,0)'],[1,'rgba(20,16,12,.4)']]); },
+  /* the night twin: only the glass, warm, with curtains */
+  (g,w,h)=>{ const S=32, Y=m=>h-m*S; g.clearRect(0,0,w,h);
+    for(const [x0,x1,sl,tp] of L.w){ const ww=(x1-x0)*S, wh=(tp-sl)*S, X=x0*S, Yt=Y(tp), c=LITC[(nv*2+brick.length)%LITC.length];
+      vfill(g,X,Yt,ww,wh,[[0,c[0]],[1,c[1]]]); const cc=['rgba(120,40,30,.8)','rgba(40,60,90,.75)','rgba(150,120,60,.75)'][nv%3]; R(g,cc,X,Yt,ww*.2,wh); R(g,cc,X+ww*.8,Yt,ww*.2,wh);
+      if(nv===0){ g.fillStyle='rgba(240,232,214,.55)'; g.fillRect(X,Yt+wh*.5,ww,wh*.5); } const n=Math.max(2,Math.round(ww/34)); for(let i=1;i<n;i++) R(g,'rgba(30,24,20,.9)',X+i*ww/n-1,Yt,2,wh); R(g,'rgba(30,24,20,.9)',X,Yt+wh*.5-1,ww,3); } }); }
+/* front doors: five to a cell, each 1 m x 3.25 m: a panelled door, letterbox, knob, and the fanlight over it. cot: the cottage proportions */
+const DOOR_SLOTS=new Map(), DOOR_N={std:0,cot:0};
+function doorSlot(dc,cot){ const t=cot?'cot':'std', k=t+dc; if(DOOR_SLOTS.has(k)) return DOOR_SLOTS.get(k); const n=DOOR_N[t]++, ci=n/5|0, si=n%5, dt=cot?1.95:2.15, ft=cot?2.3:2.55;
+  const rc=kaCell('dr|'+t+'|'+ci,(g,w,h)=>{ R(g,'#1a1612',0,0,w,h); }); const px=Math.round(rc[0]*KA.W-1), py=Math.round((1-rc[3])*KA.H-1), g=KA.g, S=32, X=px+si*32, Y=m=>py+KA.ch-m*S;
+  R(g,dc,X,Y(dt),32,dt*S); const pd=mix(dc,'#000000',.28), pl=mix(dc,'#ffffff',.12);
+  for(const [qx,qy,qw,qh] of [[.14,.1,.32,.34],[.54,.1,.32,.34],[.14,.5,.32,.4],[.54,.5,.32,.4]]){ R(g,pd,X+qx*32,Y(dt)+qy*dt*S,qw*32,qh*dt*S); R(g,pl,X+qx*32,Y(dt)+qy*dt*S,qw*32,1); }
+  R(g,'#c8a040',X+11,Y(dt*.47),9,3); R(g,'#c8a040',X+26,Y(dt*.5),3,3); R(g,'#e8e4da',X+13,Y(dt*.78),6,4);
+  vfill(g,X,Y(ft),32,(ft-dt)*S,[[0,'#3a3a30'],[1,'#5a5444']]); for(let i=1;i<4;i++) R(g,'#e6e2d8',X+i*8,Y(ft),1,(ft-dt)*S); R(g,'#e6e2d8',X,Y(dt)-1,32,2);
+  const out={rc,f0:si/5+.004,f1:(si+1)/5-.004,ft}; DOOR_SLOTS.set(k,out); return out; }
+/* roller shutters (six graffitied variants) as kit cells, so a row of shut shops and lock-ups is no extra draw */
+function eShut(o,U,w,h,i){ const k=Math.abs(i|0)%6, rc=kaCell('sh|'+k,(g,cw,ch)=>{ g.drawImage(SHUT[k].tex.c,0,0,cw,ch); }); eKA(o,U,Y_,w,h,rc); }
+/* awning stripes and fly-posted hoardings */
+function awnCell(c1,c2){ return kaCell('a|'+c1+'|'+c2,(g,w,h)=>{ R(g,c1,0,0,w,h); if(c2) for(let x=0;x<w;x+=20) R(g,c2,x,0,10,h); for(let y=0;y<h;y+=3) R(g,'rgba(0,0,0,.05)',0,y,w,1); R(g,'rgba(0,0,0,.25)',0,h-10,w,10); }); }
+function posterCell(v){ return kaCell('p|'+v,(g,w,h)=>{ const r=hr(4600+v*11); R(g,['#6a5a44','#3a4a3a','#4a4a52'][v%3],0,0,w,h);
+  for(let i=0;i<9;i++){ const pw=26+r()*30, ph=34+r()*30, x=r()*(w-pw), y=r()*(h-ph); R(g,['#e8e0d0','#d82a2a','#f6d040','#2a2a2a','#3a8ac8','#f08ab0','#ffffff'][r()*7|0],x,y,pw,ph);
+    R(g,['#1a1a1a','#ffffff','#c81a1a'][r()*3|0],x+3,y+4,pw-6,ph*.28); R(g,'rgba(0,0,0,.25)',x+3,y+ph*.5,pw-6,2); R(g,'rgba(0,0,0,.25)',x+3,y+ph*.62,(pw-6)*.7,2); }
+  for(let i=0;i<3;i++){ g.strokeStyle=['#e8e8e0','#2a2a2a','#c83a7a'][i]; g.lineWidth=3; g.beginPath(); let x=r()*w,y=h*.6+r()*h*.3; g.moveTo(x,y); for(let k=0;k<4;k++) g.lineTo(x+=8+r()*10,y+=r()*10-5); g.stroke(); } }); }
+/* debris netting on scaffolds: a cut-out weave */
+const tNet=P2(32,32,(g,w,h)=>{ g.clearRect(0,0,w,h); for(let y=0;y<h;y+=2) for(let x=(y/2%2);x<w;x+=2) R(g,'rgba(40,70,80,1)',x,y,1,1); R(g,'#1a3038',0,0,w,1); },0,1); tNet.nomip=true;
+const mNet=(()=>{ const m=M(tNet,{double:true,cut:true}); return m; })();
+
+/* ---------------- ways up: scaffolds, fire escapes, viaduct stairs, roof furniture, awnings ---------------- */
+const STEEL='#26282a', TIMBER='#8a6a3e', GALV='#7e8284';
+const SCAFS=[], FIRE_ESC=[], RAIL_STAIRS=[]; /* also on window.__SCAFS / window.__FIRE, for the climbing bots */
+/* a tube scaffold on a facade: two rows of standards, a boarded lift every 2 m (each one you can stand on and pull up from), ladders, toe boards, some netting.
+   P0 the facade's left end at ground, w its width, top the roof (the last lift is a step below it) */
+function scaffold(P0,U,out,w,top,seed=0){ const r=hr(9700+seed), lifts=[], y0=PAVE_Y+2.0, y1=top-.5, n=Math.max(1,Math.ceil((y1-y0)/2.35)); for(let i=0;i<=n;i++) lifts.push(y0+(y1-y0)*i/n); /* evenly spaced, 1.9-2.35 m: room to stand, in reach of the next */
+  const nS=Math.max(1,Math.ceil((w-.3)/2.4)); for(let i=0;i<=nS;i++){ const u=.15+i*(w-.3)/nS; for(const o of [.2,1.3]) lotBox(P0,U,out,u-.03,u+.03,o-.03,o+.03,PAVE_Y,top+1.1,GALV,'fbs'); }
+  /* each lift is boarded except for the hatch over the ladder from the lift below: stand in the hatch, jump, grab its edge */
+  const ladU=i=>(i%2?w-1.6:.9);
+  lifts.forEach((y,i)=>{ const h0=i?ladU(i-1)-.15:w, h1=i?ladU(i-1)+.65:w, segs=i?[[0,h0,.1,1.4],[h1,w,.1,1.4],[h0,h1,.1,.6]]:[[0,w,.1,1.4]]; for(const [a,b,o0,o1] of segs) if(b-a>.1) lotBox(P0,U,out,a,b,o0,o1,y-.06,y,TIMBER,'fbstu',y-.06); lotBox(P0,U,out,0,w,1.36,1.4,y,y+.15,TIMBER,'fb');
+    for(const o of [.2,1.3]) lotBox(P0,U,out,0,w,o-.025,o+.025,y+.9,y+.95,GALV,'fbt');
+    if(i<lifts.length-1){ const lu=ladU(i); for(const du of [0,.45]) lotBox(P0,U,out,lu+du,lu+du+.05,.75,.8,y,lifts[i+1]+1,TIMBER,'fbs'); for(let ry=y+.3;ry<lifts[i+1];ry+=.3) lotBox(P0,U,out,lu,lu+.5,.76,.79,ry,ry+.04,TIMBER,'fbt'); } });
+  lotBox(P0,U,out,0,w,1.36,1.4,top+.9,top+1.1,GALV,'fbt');
+  if(r()<.7){ const a=r()*w*.4, b=Math.min(w,a+w*(.4+r()*.5)), y0=lifts[Math.min(1,lifts.length-1)]+.2; eGrid(mNet,[P0[0]+U[0]*a+out[0]*1.42,y0,P0[2]+U[2]*a+out[2]*1.42],U,Y_,b-a,top+1-y0,1.2,1.2); }
+  SCAFS.push([P0[0]+U[0]*w/2+out[0],P0[2]+U[2]*w/2+out[2],{P0,U,out,w,top,lifts,lad:lifts.map((_,i)=>ladU(i))}]); window.__SCAFS=SCAFS; }
+/* an external steel stair up the back of a building: per storey two half-flights, the inner band climbing one way and the outer band back,
+   a turn landing at the far end and a floor landing across both bands at each storey; rails on the outside. Every tread and landing is a solid.
+   P0 the back wall's left end (as you face the wall) at ground, out away from the wall, floors the storey heights */
+function fireEscape(P0,U,out,w,floors){ let y=PAVE_Y; const IN=[.05,1.0], OUT=[1.0,1.95], u0=Math.max(.2,(w-4.3)/2), rp=(uu,o)=>[P0[0]+U[0]*uu+out[0]*o,P0[2]+U[2]*uu+out[2]*o];
+  const land=(a,b,yy)=>{ lotBox(P0,U,out,a,b,IN[0],OUT[1],yy-.08,yy,STEEL,'fbstu',yy-.08); };
+  const flight=(ua,dir,band,yb,H)=>{ const n=Math.max(1,Math.ceil(H/.24)), rise=H/n, go=Math.min(.25,1.9/n); for(let i=0;i<n;i++){ const s0=ua+dir*i*go, s1=s0+dir*go, yy=yb+(i+1)*rise; lotBox(P0,U,out,Math.min(s0,s1),Math.max(s0,s1),band[0],band[1],yy-.05,yy,STEEL,'fbstu',yy-.3); } return ua+dir*n*go; };
+  for(const H of floors){ const h=H/2, ue=flight(u0+1.0,1,IN,y,h); land(ue,ue+1.0,y+h); railing(...rp(ue,OUT[1]),...rp(ue+1.0,OUT[1]),1.0,y+h,false); railing(...rp(ue+1.0,IN[0]),...rp(ue+1.0,OUT[1]),1.0,y+h,false);
+    flight(ue,-1,OUT,y+h,h); railing(...rp(u0+1.0,OUT[1]),...rp(ue,OUT[1]),1.0,y+h+.25,false); y+=H; land(u0,u0+1.0,y); railing(...rp(u0,OUT[1]),...rp(u0+1.0,OUT[1]),1.0,y,false); }
+  FIRE_ESC.push(rp(w/2,1)); FIRE_ESC[FIRE_ESC.length-1].d={P0,U,out,w,floors,u0}; window.__FIRE=FIRE_ESC; }
+/* a Network Rail access stair up the side of a viaduct: a straight steel flight along the wall to a landing at parapet height, a gate at its foot you can vault.
+   x,z the foot, U along the wall (the flight climbs this way), out away from the wall (the wall is behind -out) */
+function railStair(x,z,U,out,top){ const P0=[x,0,z], n=Math.ceil((top-PAVE_Y)/.24), rise=(top-PAVE_Y)/n, go=.24;
+  for(let i=0;i<n;i++){ const yy=PAVE_Y+(i+1)*rise; lotBox(P0,U,out,1.2+i*go,1.2+(i+1)*go,.05,1.0,yy-.05,yy,STEEL,'fbstu',yy-.3); }
+  const ue=1.2+n*go; lotBox(P0,U,out,ue,ue+1.3,.05,1.0,top-.08,top,STEEL,'fbstu',top-.08);
+  const rp=(uu,o,y)=>[P0[0]+U[0]*uu+out[0]*o,P0[2]+U[2]*uu+out[2]*o]; railing(...rp(1.2,1.0),...rp(ue,1.0),1.0,PAVE_Y+.9,false); railing(...rp(ue,1.0),...rp(ue+1.3,1.0),1.0,top,false);
+  /* the cage gate at the foot: a thin panel, solid, low enough to vault */ lotBox(P0,U,out,.3,.36,.05,1.0,PAVE_Y,PAVE_Y+1.15,'#3a5a3a','fbst',true);
+  lotBox(P0,U,out,.1,.4,.05,1.0,PAVE_Y,PAVE_Y+.04,'#d8b020','t');
+  const sp=[P0[0]+U[0]*.6+out[0]*1.3,P0[2]+U[2]*.6+out[2]*1.3]; eSign(atlasSign('#f4f4f0','#c41a1a','NO ACCESS','NETWORK RAIL · AUTHORISED PERSONNEL ONLY',{face:'grot',subC:'#1a1a1a'}),[P0[0]+U[0]*.33+out[0]*1.03,PAVE_Y+.75,P0[2]+U[2]*.33+out[2]*1.03],[out[2],0,-out[0]],.9,.24);
+  RAIL_STAIRS.push(sp); }
+/* things on a flat roof: tanks, hatches, skylights, AC boxes, aerials, vents. Anything taller than a step is a solid you can stand on.
+   stepAt: -1/1 = a taller neighbour on the left/right end, so a tank goes against that party wall to climb on */
+function roofKit(P0,U,out,fw,d,top,kind,r,stepAt){ const back=-d+.3, put=(u0,u1,o0,o1,h,c,solid=true)=>lotBox(P0,U,out,u0,u1,o0,o1,top,top+h,c,'fbst',solid?top:false);
+  if(stepAt){ const u=stepAt<0?.15:fw-1.55; put(u,u+1.4,back+1.2,back+2.4,1.3,'#5c6062'); lotBox(P0,U,out,u+.2,u+1.2,back+1.4,back+2.2,top+1.3,top+1.36,'#4a4e50','t'); }
+  const k=r();
+  if(kind==='shop'||kind==='pub'||kind==='works'){ if(k<.6) put(fw*.3,fw*.3+.9,back+1.6,back+2.2,.75,'#c8c8c2'); if(r()<.4) put(fw*.6,fw*.6+1.2,back+3,back+4.1,1.1,'#5a5e60'); if(r()<.5) put(fw*.5-.4,fw*.5+.4,-1.8,-1.1,.45,'#3a3c3e'); }
+  else { if(k<.3) put(fw*.55,fw*.55+.9,-2.6,-1.4,.12,'#4a5a68',false); else if(k<.5) put(fw*.4,fw*.4+.7,back+2,back+2.7,.4,'#3a3c3e');
+    if(r()<.22){ const u=fw*(.3+r()*.4); lotBox(P0,U,out,u-.02,u+.02,-1.5,-1.46,top,top+1.6,STEEL,'fbs'); lotBox(P0,U,out,u-.5,u+.5,-1.5,-1.46,top+1.4,top+1.44,STEEL,'fbt'); } }
+  if(r()<.35){ const u=fw*(.15+r()*.7); lotBox(P0,U,out,u-.05,u+.05,back+.4,back+.5,top,top+.9,'#2a2c2e','fbs'); } }
+/* a solid, standable awning over a shopfront: sloped canvas, valance, dark underside */
+function awning(P0,U,out,u0,u1,y,c1,c2){ const rc=awnCell(c1,c2), w=u1-u0, dep=1.35, drop=.5, o=[P0[0]+U[0]*u0,y,P0[2]+U[2]*u0], L_=Math.hypot(dep,drop), V=[out[0]*dep/L_,-drop/L_,out[2]*dep/L_];
+  eKA([o[0]+U[0]*w,y,o[2]+U[2]*w],[-U[0],0,-U[2]],V,w,L_,rc,0,1,.1,1); const vo=[o[0]+out[0]*dep,y-drop,o[2]+out[2]*dep]; eKA([vo[0],y-drop-.28,vo[2]],U,Y_,w,.28,rc,0,1,0,.12);
+  eKA([vo[0]+U[0]*w,y-drop-.28,vo[2]+U[2]*w],[-U[0],0,-U[2]],Y_,w,.28,rc,0,1,0,.12);
+  eQK(o,U,V,w,L_,mix(c1,'#000000',.45));
+  const xs=[o[0],o[0]+U[0]*w+out[0]*dep], zs=[o[2],o[2]+U[2]*w+out[2]*dep]; hsol(Math.min(...xs),Math.min(...zs),Math.max(...xs),Math.max(...zs),y-drop*.45,y-drop-.3); }
 
 /* ==========================================================================================================
    THE HUB PLAN: Bethnal Green, compressed but true to its shape. Every street, block character and landmark is placed
@@ -2908,46 +3129,69 @@ function buildBlock(B,bi){ const [x0,z0,x1,z1]=B.r, r=hr(5000+bi*7919), cx=(x0+x
   if(W<8||H<8){ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,4); return; } /* an apron by the railway */
   if(W<14||H<14){ /* a sliver: one plain building */ const ht=6+r()*3; eFacade(x0,z0,x1,z1,0,ht,facade(pick(r,Z.brick),'sash',0),'nsew'); eFlat(x0,z0,x1,z1,ht,mFelt,4,6); hsol(x0,z0,x1,z1,ht); return; }
   /* lots along each edge, corners belong to the n/s edges */
-  const lots=[];
+  const lots=[], gaps=[];
   for(const k of ['n','s','w','e']){ if(!D[k]) continue; const S=E[k], f=S[7], horiz=k==='n'||k==='s';
     let a=horiz?x0:z0, b=horiz?x1:z1; if(!horiz){ if(D.n) a=z0+D.n; if(D.s) b=z1-D.s; }
     let run=0, brick=pick(r,Z.brick), st=Z.st[0]+(r()<.4?1:0), fv=r()*3|0, door=r()*100|0;
     /* a hand-written frontage for this side of this block? */
     const side=S[1]==='x'?(k==='n'?'s':'n'):(k==='w'?'e':'w'), key=S[0]+':'+side+':'+Math.round(horiz?(x0+x1)/2:(z0+z1)/2);
     FRONTAGES.push({key,street:S[8],side,from:+a.toFixed(1),to:+b.toFixed(1),len:+(b-a).toFixed(1),depth:D[k],frontage:f,hand:!!HAND[key]});
-    if(HAND[key]){ const list=HAND[key], tot=list.reduce((q,it)=>q+it.w,0), sc=(b-a)/tot; let p=a; const forward=horiz?(side==='n'?1:1):1;
-      list.forEach((it,ii)=>{ const w=it.w*sc; if(it.t!=='gap') lots.push({shut:it.shut,k,a:p,b:p+w,f:it.t==='shop'?'shops':it.t==='pub'?f:'terrace',S,brick:it.brick||brick,st:it.st||(it.t==='shop'?3:2),fv:it.fv??(ii%3),door:it.door??(door+ii),corner:ii===0||ii===list.length-1,pub:it.t==='pub'?it.name:undefined,trade:it.trade,name:it.t==='shop'?it.name:undefined,doorC:it.doorC,hand:true}); p+=w; });
-      continue; }
+    if(HAND[key]){ handSide(HAND[key].flat(),k,a,b,S,f,lots,gaps,brick,door,Z.brick); continue; }
     for(let p=a;p<b-2;){ const shop=f==='shops'||f==='curry'||f==='market'||f==='vintage'; let w=shop?5+r()*3:4.6+r()*.9; if(b-p-w<4) w=b-p;
       if(--run<=0){ run=shop?2+(r()*3|0):5+(r()*9|0); brick=pick(r,Z.brick); st=(shop?Math.max(3,Z.st[1]+1):Z.st[0]+(r()<.45?1:0)); fv=r()*3|0; }
       lots.push({k,a:p,b:p+w,f,S,brick,st,fv,door:door++,corner:p===a||p+w>=b-.01}); p+=w; } }
   /* a pub on one good corner */
   if(!lots.some(L=>L.hand)) for(const L of lots){ if(L.corner&&(L.f==='shops'||L.f==='terrace')&&r()<.16&&PUBN<40){ L.pub=PUBS[PUBN++%PUBS.length]; break; } }
+  /* every hand-written block has a way up from the street: a scaffold, an infill's balconies, or a fire escape reached by an alley */
+  if(lots.some(L=>L.hand)){ const up=lots.some(L=>L.scaf)||lots.some(L=>L.t==='infill'&&L.b-L.a>=10)||(lots.some(L=>L.fe&&!(L.corner&&(L.k==='n'||L.k==='s')))&&gaps.some(G=>G.g==='alley'));
+    if(!up){ const c=lots.filter(L=>L.hand&&!L.corner&&L.t==='house'); const L=c[c.length>>1]||lots.find(L=>L.hand&&!L.corner)||lots[0]; if(L) L.scaf=true; } }
   for(const L of lots) buildLot(L,B.r,D,r,Z);
+  for(const G of gaps) buildGap(G,B.r,D);
   /* the yard inside: ground, a garden wall ring, sheds and garages, trees; an alley gate from the longest street side */
   const ix0=x0+(D.w||0)+7, iz0=z0+(D.n||0)+7, ix1=x1-(D.e||0)-7, iz1=z1-(D.s||0)-7;
   eFlat(x0,z0,x1,z1,PAVE_Y-.001,mYard,2,8);
   if(ix1-ix0>6&&iz1-iz0>6){ for(let n=(ix1-ix0)*(iz1-iz0)/420|0;n>0;n--){ const gx=ix0+2+r()*(ix1-ix0-6), gz=iz0+2+r()*(iz1-iz0-6), gw=3+r()*3, gd=5+r()*2, gh=2.4+r()*.3; if(reserved(gx-2,gz-2,gx+gw+2,gz+gd+2)) continue;
-      if(r()<.62){ eBoxF(gx,gz,gx+gw,gz+gd,PAVE_Y,PAVE_Y+gh,{n:mBrickW,s:SHUT[r()*6|0],e:mBrickW,w:mBrickW,t:mFelt},{tu:gw,tv:gh}); hsol(gx,gz,gx+gw,gz+gd,PAVE_Y+gh); }
+      if(r()<.62){ eBoxF(gx,gz,gx+gw,gz+gd,PAVE_Y,PAVE_Y+gh,{n:mBrickW,e:mBrickW,w:mBrickW,t:mFelt},{tu:gw,tv:gh}); eShut([gx,PAVE_Y,gz+gd],X_,gw,gh,r()*6|0); hsol(gx,gz,gx+gw,gz+gd,PAVE_Y+gh); }
       else { tree(gx+1.5,gz+1.5,.8+r()*.5); } } }
 }
+/* a hand-written side: items laid end to end, widths scaled to fit; each lot learns its neighbours' heights (party walls, roof steps, planks) */
+function lotGH(L){ return L.t==='works'?((L.it&&L.it.gh)||4.0):(L.t==='shop'||L.t==='pub')?3.6:3.2; }
+function lotTop(L){ return L.t==='infill'?PAVE_Y+L.st*2.85:PAVE_Y+lotGH(L)+(L.st-1)*HUB.FLOOR; }
+function handSide(list,k,a,b,S,f,lots,gaps,brick,door,ZB){ const tot=list.reduce((q,it)=>q+it.w,0), sc=(b-a)/tot; let p=a; const made=[];
+  list.forEach((it,ii)=>{ const w=it.w*sc;
+    if(it.t==='gap'){ const G={gap:true,k,a:p,b:p+w,S,g:it.g||'alley',it}; gaps.push(G); made.push(G); }
+    else { const t=it.t, L={k,a:p,b:p+w,S,t,it,hand:true,f:t==='shop'?'shops':t==='pub'?f:t==='house'?'terrace':t,brick:it.brick||(t==='house'?brick:ZB[((door>>2)+(ii>>1)*3)%ZB.length]),st:it.st||(t==='shop'||t==='pub'?3:t==='infill'?4:2),fv:it.fv??0,door:it.door??(door+ii),
+        corner:ii===0||ii===list.length-1,pub:t==='pub'?(it.name||'THE ROYAL OAK'):undefined,trade:it.trade,name:it.name,doorC:it.doorC,shut:it.shut,scaf:!!it.scaf,fe:!!it.fe,win:it.win||(t==='works'?'factory':undefined)};
+      L.top=lotTop(L); lots.push(L); made.push(L); }
+    p+=w; });
+  /* a neighbour across a narrow alley still counts for the roof steps: you jump the alley from the tank */
+  const tp=q=>q&&!q.gap?q.top:0, near=(i,d)=>{ const q=made[i+d]; if(q&&q.gap&&q.b-q.a<=2.6) return tp(made[i+2*d]); return tp(q); };
+  made.forEach((L,i)=>{ if(L.gap){ L.tA=tp(made[i-1]); L.tB=tp(made[i+1]); } else { L.nA=near(i,-1); L.nB=near(i,1); } }); }
 
 /* one lot: ground floor by trade, upper floors, roof, chimneys, a rear extension, and a garden wall */
+function lotRect(k,a,b,BR,d){ const [x0,z0,x1,z1]=BR; if(k==='n') return [a,z0,b,z0+d]; if(k==='s') return [a,z1-d,b,z1]; if(k==='w') return [x0,a,x0+d,b]; return [x1-d,a,x1,b]; }
+/* the front of a rect: centre, along-vector U (left to right as you face it), outward normal, width, and P0 its left end */
+function lotFront(k,lx0,lz0,lx1,lz1){ const U=k==='n'?NX:k==='s'?X_:k==='w'?Z_:NZ, out=k==='n'?[0,0,-1]:k==='s'?[0,0,1]:k==='w'?[-1,0,0]:[1,0,0];
+  const fx=k==='w'?lx0:k==='e'?lx1:(lx0+lx1)/2, fz=k==='n'?lz0:k==='s'?lz1:(lz0+lz1)/2, fw=(k==='n'||k==='s')?lx1-lx0:lz1-lz0; return {U,out,fx,fz,fw,P0:[fx-U[0]*fw/2,0,fz-U[2]*fw/2]}; }
 function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k==='n'||k==='s';
-  /* lot rect */ let lx0,lz0,lx1,lz1; if(k==='n'){ lx0=L.a; lx1=L.b; lz0=z0; lz1=z0+d; } else if(k==='s'){ lx0=L.a; lx1=L.b; lz0=z1-d; lz1=z1; } else if(k==='w'){ lz0=L.a; lz1=L.b; lx0=x0; lx1=x0+d; } else { lz0=L.a; lz1=L.b; lx0=x1-d; lx1=x1; }
+  let [lx0,lz0,lx1,lz1]=lotRect(k,L.a,L.b,BR,d);
   if(reserved(lx0-8,lz0-8,lx1+8,lz1+8)) return;
-  const shop=L.f==='shops'||L.f==='curry'||L.f==='market'||L.f==='vintage', st=L.pub?3:L.st, gH=shop||L.pub?3.6:3.2, top=PAVE_Y+gH+(st-1)*HUB.FLOOR, F=facade(L.brick,Z.win,L.fv);
-  const front={n:'n',s:'s',w:'w',e:'e'}[k], U=k==='n'?NX:k==='s'?X_:k==='w'?Z_:NZ, out=k==='n'?[0,0,-1]:k==='s'?[0,0,1]:k==='w'?[-1,0,0]:[1,0,0];
-  const fx=k==='w'?lx0:k==='e'?lx1:(lx0+lx1)/2, fz=k==='n'?lz0:k==='s'?lz1:(lz0+lz1)/2, fw=horiz?lx1-lx0:lz1-lz0;
+  if(L.t==='infill') return buildInfill(L,lx0,lz0,lx1,lz1,BR,d,r);
+  const shop=L.f==='shops'||L.f==='curry'||L.f==='market'||L.f==='vintage', st=L.hand?L.st:L.pub?3:L.st, gH=L.hand?lotGH(L):shop||L.pub?3.6:3.2, top=PAVE_Y+gH+(st-1)*HUB.FLOOR, F=facade(L.brick,L.win||Z.win,L.fv);
+  const front=k, {U,out,fx,fz,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1);
   /* upper floors (front face has windows, sides and back are plain brick of the same kind) */
-  const faces=front+(L.corner?(horiz?(lx0<=x0+.01?'w':lx1>=x1-.01?'e':''):(lz0<=z0+.01?'n':lz1>=z1-.01?'s':'')):'');
-  eFacade(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,faces,{ou:(r()*4|0)/4,ov:(r()*3|0)/3,skip:L.corner?'':(horiz?'ew':'ns')});
+  const cornerK=L.corner?(horiz?(lx0<=x0+.01?'w':lx1>=x1-.01?'e':''):(lz0<=z0+.01?'n':lz1>=z1-.01?'s':'')):'', sideK=horiz?'ew':'ns';
+  if(L.hand){ eFacade(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK,{atlas:true,seed:L.door*7919+Math.round(L.a*13),skip:[...sideK].filter(q=>q!==cornerK).join('')});
+    /* party walls, seen over a lower neighbour, beside a gap, from the roofs: plain common brick */
+    const pw={}; for(const q of sideK) if(q!==cornerK) pw[q]=mBrickW; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,top,pw,{tu:1.6,tv:1.5}); }
+  else eFacade(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK,{ou:(r()*4|0)/4,ov:(r()*3|0)/3,skip:L.corner?'':sideK});
   /* ground floor */
-  if(L.pub) groundPub(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r);
-  else if(shop){ L.F=F; groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r); }
+  L.F=F; if(L.pub) (L.hand?groundPubH:groundPub)(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r,P0);
+  else if(L.t==='works') groundWorks(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F);
+  else if(shop){ L.F=F; (L.hand?groundShopH:groundShop)(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r,P0); }
+  else if(L.hand) houseFrontH(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F,top,r);
   else { const hf=houseFront(L.brick,L.doorC!==undefined?DOORC.indexOf(L.doorC)>=0?DOORC.indexOf(L.doorC):L.door:L.door), hm=hf.mBase, back={n:'s',s:'n',w:'e',e:'w'}[front];
     { const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), sx=fx-U[0]*fw/2+U[0]*1.05, sz=fz-U[2]*fw/2+U[2]*1.05; HOUSE_DOORS.push({x:sx+out[0]*.7,z:sz+out[2]*.7,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(L.k==='n'||L.k==='w'?1:0)});
-      /* the front: a stone step, the drainpipe on the party wall, a wheelie bin, now and then a dish or a pot */
       const at=(u,o)=>[fx-U[0]*fw/2+U[0]*u+out[0]*o, fz-U[2]*fw/2+U[2]*u+out[2]*o];
       { const [a0,b0]=at(.45,0), [a1,b1]=at(1.65,.38); const sf={t:mCope}; sf[front]=mCope; eBoxF(Math.min(a0,a1),Math.min(b0,b1),Math.max(a0,a1),Math.max(b0,b1),PAVE_Y,PAVE_Y+.16,sf); }
       if(L.door%2){ const [px,pz]=at(.06,.06), pf={}; pf[front]=mPipe; eBoxF(px-.05,pz-.05,px+.05,pz+.05,PAVE_Y,top,pf); }
@@ -2955,29 +3199,190 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
       if(r()<.18){ const [dx,dz]=at(fw*.7,.12); eGeo(cyl(.32,.32,.05,8),mDish,dx,PAVE_Y+gH+1.6,dz,Math.atan2(out[0],out[2]),Math.PI/2); }
       if(r()<.2){ const [qx,qz]=at(1.85,.25); eBoxF(qx-.16,qz-.16,qx+.16,qz+.16,PAVE_Y,PAVE_Y+.32,{n:mPot,s:mPot,e:mPot,w:mPot}); eBoxF(qx-.22,qz-.22,qx+.22,qz+.22,PAVE_Y+.32,PAVE_Y+.7,{n:mBush,s:mBush,e:mBush,w:mBush,t:mBush}); } }
     eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,{[front]:hm},{tu:fw,tv:gH,vb:PAVE_Y,cell:3});
-    const rest={}; rest[back]=F.mBase; if(L.corner){ for(const q of (horiz?'ew':'ns')) rest[q]=F.mBase; } eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,rest,{tu:F.bays*HUB.BAY,tv:F.floors*HUB.FLOOR}); }
+    const rest={}; rest[back]=F.mBase; if(L.corner){ for(const q of sideK) rest[q]=F.mBase; } eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,rest,{tu:F.bays*HUB.BAY,tv:F.floors*HUB.FLOOR}); }
   /* parapet and coping, flat roof, chimney stack on the party wall */
-  { const cf={t:mCope}; cf[front]=mCope; eBoxF(lx0-(k==='e'?.15:0),lz0-(k==='s'?.15:0),lx1+(k==='w'?.15:0),lz1+(k==='n'?.15:0),top,top+.18,cf); }
-  eFlat(lx0,lz0,lx1,lz1,top+.01,mFelt,4,0);
-  if(!shop&&L.door%2===0){ const cxs=horiz?lx0+.4:(lx0+lx1)/2, czs=horiz?(lz0+lz1)/2:lz0+.4, cw=horiz?.8:1.6, cd=horiz?1.6:.8; eBoxF(cxs-cw/2,czs-cd/2,cxs+cw/2,czs+cd/2,top,top+1.3,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW,t:mCope},{tu:1.6,tv:1.5});
+  if(L.hand){ lotBox(P0,U,out,-.02,fw+.02,-.32,.12,top,top+.36,'#8a8680','fbst'); lotBox(P0,U,out,0,fw,-d,-d+.25,top+.17,top+.3,'#7a766e','fbt'); lotBox(P0,U,out,-.06,.06,-d,-.32,top+.17,top+.32,'#6a5a48','st'); eFlat(lx0,lz0,lx1,lz1,top+.17,mFelt,4,0); }
+  else { const cf={t:mCope}; cf[front]=mCope; eBoxF(lx0-(k==='e'?.15:0),lz0-(k==='s'?.15:0),lx1+(k==='w'?.15:0),lz1+(k==='n'?.15:0),top,top+.18,cf); eFlat(lx0,lz0,lx1,lz1,top+.01,mFelt,4,0); }
+  if(!shop&&L.door%2===0){ const cxs=horiz?lx0+.4:(lx0+lx1)/2, czs=horiz?(lz0+lz1)/2:lz0+.4, cw=horiz?.8:1.6, cd=horiz?1.6:.8; eBoxF(cxs-cw/2,czs-cd/2,cxs+cw/2,czs+cd/2,top,top+1.3,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW,t:mCope},{tu:1.6,tv:1.5}); if(L.hand) hsol(cxs-cw/2,czs-cd/2,cxs+cw/2,czs+cd/2,top+1.3);
     for(let i=0;i<(L.door%3===0?2:0);i++){ const px=cxs+(horiz?0:(i-.5)*.6), pz=czs+(horiz?(i-.5)*.6:0); eBoxF(px-.09,pz-.09,px+.09,pz+.09,top+1.3,top+1.7,{n:mPot,s:mPot,e:mPot,w:mPot}); } }
   hsol(lx0,lz0,lx1,lz1,top+.18);
+  if(L.hand){ /* roof furniture, a tank to climb on where the neighbour is a storey taller, scaffolds and fire escapes */
+    const u0a=k==='s'||k==='w', nU0=u0a?L.nA:L.nB, nU1=u0a?L.nB:L.nA; const stepAt=nU0-top>2.3?-1:nU1-top>2.3?1:0;
+    roofKit(P0,U,out,fw,d,top+.18,L.pub?'pub':L.t==='works'?'works':shop?'shop':'house',r,stepAt);
+    if(L.scaf) scaffold(P0,U,out,fw,top+.18,L.door);
+    if(L.fe&&!cornerK){ const Pb=[P0[0]-out[0]*d+U[0]*fw,0,P0[2]-out[2]*d+U[2]*fw], fl=[gH]; for(let i=1;i<st;i++) fl.push(HUB.FLOOR); fireEscape(Pb,[-U[0],0,-U[2]],[-out[0],0,-out[2]],fw,fl); } }
   /* rear extension: one storey, half the width, roof you can climb onto from the garden */
   const ew=(horiz?lx1-lx0:lz1-lz0)*.5, ed=3.2, eh=2.55; let ex0,ez0,ex1,ez1;
   if(k==='n'){ ex0=lx0; ex1=lx0+ew; ez0=lz1; ez1=lz1+ed; } else if(k==='s'){ ex0=lx1-ew; ex1=lx1; ez0=lz0-ed; ez1=lz0; } else if(k==='w'){ ez0=lz0; ez1=lz0+ew; ex0=lx1; ex1=lx1+ed; } else { ez0=lz1-ew; ez1=lz1; ex0=lx0-ed; ex1=lx0; }
-  if(!L.corner){ EXT_TOPS.push([(ex0+ex1)/2,PAVE_Y+eh,(ez0+ez1)/2]); eBoxF(ex0,ez0,ex1,ez1,PAVE_Y,PAVE_Y+eh,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW,t:mFelt},{tu:1.6,tv:1.5}); hsol(ex0,ez0,ex1,ez1,PAVE_Y+eh);
+  if(!L.corner){ if(!L.fe){ EXT_TOPS.push([(ex0+ex1)/2,PAVE_Y+eh,(ez0+ez1)/2]); eBoxF(ex0,ez0,ex1,ez1,PAVE_Y,PAVE_Y+eh,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW,t:mFelt},{tu:1.6,tv:1.5}); hsol(ex0,ez0,ex1,ez1,PAVE_Y+eh); }
     /* garden wall between this lot and the next, 7 m back */ const gw=1.8;
     if(k==='n') { eBoxF(lx1-.12,lz1,lx1+.12,lz1+7,PAVE_Y,PAVE_Y+gw,{e:mBrickW,w:mBrickW,t:mCope},{tu:1.6,tv:1.5}); hsol(lx1-.12,lz1,lx1+.12,lz1+7,PAVE_Y+gw); }
     if(k==='s') { eBoxF(lx1-.12,lz0-7,lx1+.12,lz0,PAVE_Y,PAVE_Y+gw,{e:mBrickW,w:mBrickW,t:mCope},{tu:1.6,tv:1.5}); hsol(lx1-.12,lz0-7,lx1+.12,lz0,PAVE_Y+gw); }
     if(k==='w') { eBoxF(lx1,lz1-.12,lx1+7,lz1+.12,PAVE_Y,PAVE_Y+gw,{n:mBrickW,s:mBrickW,t:mCope},{tu:1.6,tv:1.5}); hsol(lx1,lz1-.12,lx1+7,lz1+.12,PAVE_Y+gw); }
     if(k==='e') { eBoxF(lx0-7,lz1-.12,lx0,lz1+.12,PAVE_Y,PAVE_Y+gw,{n:mBrickW,s:mBrickW,t:mCope},{tu:1.6,tv:1.5}); hsol(lx0-7,lz1-.12,lx0,lz1+.12,PAVE_Y+gw); } }
 }
+
+/* ---------------- hand-written ground floors ---------------- */
+const BACKK={n:'s',s:'n',w:'e',e:'w'};
+/* the back wall of a hand-written ground floor, windows and all, on the facade atlas */
+function backGF(L,lx0,lz0,lx1,lz1,gH,F){ eFacade(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,F,'',{atlas:true,seed:L.door*53+1,skip:'nsew'.replace(BACKK[L.k],'')}); }
+/* a terrace house front: atlas-painted wall, the door in a real recess with reveals, a projecting bay where there is one, sills, a string course; the lit twin at night */
+function houseFrontH(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F,top,r){ const it=L.it, k=L.k, hv=it.hv||'flat', mir=it.mir??(L.door%2===1), dc=L.doorC||DOORC[L.door%DOORC.length], B=BRICKS[L.brick]||BRICKS.stock;
+  const cell=houseCell(L.brick,hv,it.stuc,L.door%3), lay=HLAY[hv]||HLAY.flat, sx=fw/5, sy=gH/3.25, [d0,d1,dt,ft]=lay.d, nOut=[-out[0],0,-out[2]];
+  const Pu=(u,o=0,y=PAVE_Y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o], wx=x=>(mir?5-x:x)*sx;
+  /* a piece of the cell [x0,x1] x [y0,y1] (cell metres) onto the front at depth o; mirrored houses flip it */
+  const Q=(x0,x1,y0,y1,o=0,m=KA.m,rc=cell,fa=0,fb=1)=>{ const u0=mir?wx(x1):wx(x0), w=(x1-x0)*sx, f=x=>fa+(fb-fa)*x/5; eKA(Pu(u0,o,PAVE_Y+y0*sy),U,Y_,w,(y1-y0)*sy,rc,mir?f(x1):f(x0),mir?f(x0):f(x1),y0/3.25,y1/3.25,m); };
+  const stone=it.stuc?mix(it.stuc,'#ffffff',.25):B.paint?mix(B.base,'#ffffff',.3):'#c8c2b2';
+  /* the wall either side of the door, and over it */ Q(0,d0,0,3.25); Q(d1,5,0,3.25); Q(d0,d1,ft,3.25);
+  /* the door, 22 cm back, with its reveals and soffit */ const dd=.22, ds=doorSlot(dc,hv==='cottage'), du0=Math.min(wx(d0),wx(d1)), dw=(d1-d0)*sx;
+  eKA(Pu(du0,-dd),U,Y_,dw,ft*sy,ds.rc,mir?ds.f1:ds.f0,mir?ds.f0:ds.f1,0,ft/3.25);
+  eQK(Pu(du0),nOut,Y_,dd,ft*sy,stone); eQK(Pu(du0+dw,-dd),out,Y_,dd,ft*sy,stone); eQK(Pu(du0,-dd,PAVE_Y+ft*sy),U,out,dw,dd,mix(stone,'#000000',.3));
+  lotBox(P0,U,out,du0-.1,du0+dw+.1,-dd,.32,PAVE_Y,PAVE_Y+.15,'#9e9a90','fst');
+  /* the bay: its own front shows the painted window, a lead roof on top, a solid you can climb */
+  const lit=hr(L.door*31+7)()<.36;
+  if(lay.bay){ const [b0,b1,bh]=lay.bay, bo=.55, h=bh*sy, bu0=Math.min(wx(b0),wx(b1)), bw=(b1-b0)*sx; Q(b0,b1,0,bh,bo); lotBox(P0,U,out,bu0,bu0+bw,0,bo,PAVE_Y,PAVE_Y+h,stone,'s');
+    lotBox(P0,U,out,bu0-.05,bu0+bw+.05,0,bo+.07,PAVE_Y+h,PAVE_Y+h+.14,'#3e4246','fst',PAVE_Y); if(lit) for(const [w0,w1,sl,tp] of lay.w) Q(w0,w1,sl,tp,bo+.02,KAL.m); }
+  else for(const [w0,w1,sl,tp] of lay.w){ const a=Math.min(wx(w0),wx(w1)); lotBox(P0,U,out,a-.07,a+(w1-w0)*sx+.07,0,.09,PAVE_Y+sl*sy-.07,PAVE_Y+sl*sy,stone,'fstu'); if(lit) Q(w0,w1,sl,tp,.02,KAL.m); }
+  /* a string course at first-floor level */ lotBox(P0,U,out,0,fw,0,.07,PAVE_Y+gH-.03,PAVE_Y+gH+.1,stone,'fstu');
+  /* the back of the ground-floor box */ backGF(L,lx0,lz0,lx1,lz1,gH,F);
+  /* door number for Ali's deliveries, the drainpipe, a bin, now and then a dish or a pot */
+  const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), [hx,,hz]=Pu(du0+dw/2,.7); HOUSE_DOORS.push({x:hx,z:hz,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(k==='n'||k==='w'?1:0)});
+  const pu=mir?.06:fw-.06; lotBox(P0,U,out,pu-.05,pu+.05,.02,.12,PAVE_Y,top,'#1e2022','fs');
+  if(r()<.5){ const bu=mir?.55:fw-.55, bc=['#1a1a1c','#2a4a2a','#2a3a6a','#5a3a2a','#1a1a1c'][L.door%5]; lotBox(P0,U,out,bu-.3,bu+.3,.12,.72,PAVE_Y,PAVE_Y+1.07,bc,'fbst',true); }
+  if(r()<.2){ const [dx,,dz]=Pu(fw*(mir?.3:.7),.12); eGeo(swG(cyl(.32,.32,.05,8),'#c8c8c4'),KA.m,dx,PAVE_Y+gH+1.6,dz,Math.atan2(out[0],out[2]),Math.PI/2); }
+  if(r()<.22){ const pu2=mir?du0-.35:du0+dw+.35; lotBox(P0,U,out,pu2-.16,pu2+.16,.1,.42,PAVE_Y,PAVE_Y+.32,'#8a5a3a','fbst'); lotBox(P0,U,out,pu2-.22,pu2+.22,.04,.48,PAVE_Y+.32,PAVE_Y+.72,'#2e4a24','fbst'); } }
+
+/* a shopfront: pilasters, stallriser, mullions, a fascia (lightbox on the high street, signwritten on Columbia and Cheshire), a cornice ledge you can stand on,
+   a room behind the glass with depth (shelved side walls, a back wall, ceiling, strip light, counter, floor); or a shutter. Awnings and pavement displays from the item */
+const SHOPPC=['#1e3a2a','#1c2438','#3a1a1a','#1a1a1c','#4a3a2a','#2a4a4a','#5a2a3a','#2a2a3a','#6a5a3a','#d8d0bc'];
+function groundShopH(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r,P0){ const it=L.it, tk=TRADES[L.trade]?L.trade:'cafe', T=TRADES[tk], shut=tk==='tolet'||!!L.shut, trad=it.sf?it.sf==='trad':(L.S[7]==='market'||L.S[7]==='vintage');
+  const pc=it.pc||(trad?SHOPPC[L.door%SHOPPC.length]:['#1c1d20','#8e9092','#1c1d20','#2a2c30'][L.door%4]), k=L.k, Pi=(u,o,y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o], nOut=[-out[0],0,-out[2]];
+  backGF(L,lx0,lz0,lx1,lz1,gH,L.F);
+  const pil=.3, cTop=PAVE_Y+gH-.85, sr=PAVE_Y+(trad?.6:.42), DEEP=2.6, u0=pil, u1=fw-pil, ow=u1-u0, ch=gH-.7;
+  if(!shut){ const rc=raRoom(tk), wc=mix(T.room,'#1a1612',.5);
+    eRA(Pi(u0,-DEEP,PAVE_Y),U,Y_,ow,ch,rc); eRA(Pi(u0,0,PAVE_Y),nOut,Y_,DEEP,ch,rc,0,.3); eRA(Pi(u1,-DEEP,PAVE_Y),out,Y_,DEEP,ch,rc,.7,1);
+    eRQ(Pi(u0,-DEEP,PAVE_Y+ch),U,out,ow,DEEP,mix(T.room,'#2a2622',.35)); eRQ(Pi(u0,0,PAVE_Y+.02),U,nOut,ow,DEEP,mix(T.room,'#1a1612',.7)); eRQ(Pi(u0+ow*.25,-DEEP*.55,PAVE_Y+ch-.02),U,out,ow*.5,.14,'#fff6dc');
+    const c0=u0+ow*(L.door%2?.06:.5), cl=ow*.44; eRQ(Pi(c0,-1.45,PAVE_Y),U,Y_,cl,.95,mix(wc,'#000000',.35)); eRQ(Pi(c0,-1.45,PAVE_Y+.95),U,nOut,cl,.55,mix(T.room,'#000000',.15));
+    for(const t of [0,.4,1]){ const uc=Math.min(u1-.035,Math.max(u0+.035,u0+ow*t)); lotBox(P0,U,out,uc-.035,uc+.035,0,.06,sr,cTop,pc,'fs'); }
+    lotBox(P0,U,out,u0,u1,0,.06,cTop-.42,cTop-.36,pc,'fstu'); if(trad) for(const t of [.2,.7]) lotBox(P0,U,out,u0+ow*t-.025,u0+ow*t+.025,0,.05,sr,cTop-.42,pc,'f');
+    lotBox(P0,U,out,u0,u1,0,.07,PAVE_Y,sr,trad?mix(pc,'#000000',.15):'#2a2a2c','fst');
+    if(L.door%3===0) STREET_LIGHT.pl.push([[fx+out[0]*1.2,PAVE_Y+2.4,fz+out[2]*1.2],[.9,.8,.62],6]); }
+  else { eShut(Pi(u0,.03,PAVE_Y),U,ow,cTop-PAVE_Y,L.door); lotBox(P0,U,out,u0,u1,0,.24,cTop-.32,cTop,'#4e5052','fstu'); }
+  /* pilasters, consoles, fascia, cornice ledge */
+  for(const [a,b] of [[0,pil],[fw-pil,fw]]){ lotBox(P0,U,out,a,b,0,.14,PAVE_Y,PAVE_Y+gH-.08,pc,'fs'); if(trad) lotBox(P0,U,out,a+.03,b-.03,.14,.3,cTop-.1,PAVE_Y+gH-.1,mix(pc,'#000000',.2),'fst'); }
+  lotBox(P0,U,out,pil,fw-pil,0,.18,cTop,PAVE_Y+gH-.08,trad?pc:'#141416','f');
+  lotBox(P0,U,out,-.04,fw+.04,0,.34,PAVE_Y+gH-.08,PAVE_Y+gH+.06,trad?mix(pc,'#000000',.25):'#3e4042','fstu',PAVE_Y+gH-.08);
+  const name=L.name||T.names[0]||T.sub.split(' · ')[0], sub=it.sub||T.sub;
+  const uv=tk==='tolet'?(it.was?atlasSign('#3a3836','#8a8478',it.was,null,{face:'cond'}):null):trad?atlasSign(pc,it.fg||(pc==='#d8d0bc'?'#2a2a2a':'#ead8a0'),name,sub,{face:it.face||'cond',subC:it.fg||(pc==='#d8d0bc'?'#2a2a2a':'#ead8a0')}):atlasSign(it.bg||T.bg,it.fg||T.fg,name,sub,{face:it.face||T.face,lit:true,subC:it.fg||T.fg});
+  if(uv) eSign(uv,Pi(fw/2,.185,(cTop+PAVE_Y+gH-.08)/2),U,fw-.7,.62);
+  if(tk==='tolet') eSign(atlasSign('#f6f6f2','#c41a1a','TO LET',it.agent||'SHOP & UPPERS · 020 7739 0418',{face:'anton',subC:'#1a1a1a'}),Pi(fw/2,.05,PAVE_Y+gH+1.1),U,Math.min(fw-.6,2.6),.38);
+  if(it.aw){ const [c1,c2]=it.aw.split('/'); awning(P0,U,out,u0,u1,cTop-.04,c1,c2); }
+  if(it.disp) shopDisplay(it.disp,P0,U,out,fw,L.door); }
+/* what spills onto the pavement: veg on astroturf, flower buckets, a clothes rail, an A-board, a junk table, plants, café chairs, a newspaper rack */
+function shopDisplay(kind,P0,U,out,fw,seed){ const r=hr(7300+seed*13), u0=.45, u1=Math.max(u0+1,fw-.45), B=(a,b,o0,o1,y0,y1,c,f='fbst',s=false)=>lotBox(P0,U,out,a,b,o0,o1,PAVE_Y+y0,PAVE_Y+y1,c,f,s===false?false:PAVE_Y);
+  const PROD=['#e8781a','#c81e1e','#5a9a2a','#e8c81e','#7a2a5a','#d8d0b0','#3a7a2a','#f0a030'];
+  if(kind==='veg'){ B(u0,u1,.12,1.1,0,.62,'#2e6a2a','fbst',true); for(let u=u0+.04;u<u1-.4;u+=.46){ for(const [o0,y] of [[.15,.62],[.6,.62]]){ B(u,u+.42,o0,o0+.4,y,y+.16,'#9a7448','fbs'); B(u+.03,u+.39,o0+.03,o0+.37,y+.16,y+.22,PROD[r()*PROD.length|0],'t'); } } }
+  else if(kind==='flowers'){ B(u0,u1,.15,.75,0,.45,'#3a3a36','fbst',true); B(u0,u1,.15,.45,.45,.85,'#3a3a36','fbst',PAVE_Y+.45); for(let u=u0+.05;u<u1-.3;u+=.36) for(const [o0,y] of [[.48,.45],[.18,.85]]){ B(u,u+.28,o0,o0+.24,y,y+.32,'#1a1a1c','fbs'); B(u-.03,u+.31,o0-.03,o0+.27,y+.32,y+.56,['#e84a6a','#f6d040','#f0f0e8','#c86ad8','#f08030','#d8303a','#3a7a2a'][r()*7|0],'fbst'); } }
+  else if(kind==='rail'){ const a=u0, b=Math.min(u1,u0+2.4); for(const u of [a,b]) B(u-.03,u+.03,.55,.61,0,1.6,'#9a9c9e','fbs'); B(a,b,.56,.6,1.55,1.6,'#9a9c9e','fbt'); for(let u=a+.1;u<b-.1;u+=.13) B(u,u+.1,.38,.78,.7+r()*.2,1.5,['#c83a2a','#2a3a6a','#e8d8b0','#3a6a3a','#1a1a1a','#a87a3a','#7a3a6a'][r()*7|0],'fbst'); }
+  else if(kind==='board'){ const u=fw*(seed%2?.25:.75); B(u-.3,u+.3,.9,1.0,0,.85,'#1a1a1c','fbst'); B(u-.24,u+.24,1.0,1.01,.12,.78,'#e8e4da','f'); }
+  else if(kind==='bric'){ B(u0,u1,.15,1.0,.7,.75,'#6a5440','fbstu',true); for(const u of [u0+.05,u1-.1]) B(u,u+.05,.2,.95,0,.7,'#4a3a2a','fbs'); for(let u=u0+.1;u<u1-.3;u+=.32+r()*.2) B(u,u+.2+r()*.15,.25+r()*.3,.5+r()*.4,.75,.85+r()*.3,['#c8b890','#5a4a3a','#8a8a8a','#2a4a6a','#a83a2a','#e8e0d0'][r()*6|0],'fbst'); }
+  else if(kind==='plants'){ B(u0,u1,.15,.8,0,.35,'#5a4a3a','fbst',true); for(let u=u0+.05;u<u1-.3;u+=.4){ const h=.3+r()*.6; B(u,u+.3,.3,.6,.35,.6,'#a85a3a','fbs'); B(u-.08,u+.38,.22,.68,.6,.6+h,['#2a5a2a','#3a7a3a','#1e4a22','#4a8a3a'][r()*4|0],'fbst'); } }
+  else if(kind==='chairs'){ for(const u of [fw*.3,fw*.72]){ B(u-.3,u+.3,.55,1.15,.72,.76,'#2a2a2a','fbstu'); B(u-.03,u+.03,.82,.88,0,.72,'#2a2a2a','fs'); for(const du of [-.55,.45]) { B(u+du,u+du+.1+.3,.65,1.05,.44,.48,'#8a6a3e','t'); B(u+du+(du<0?0:.36),u+du+.04+(du<0?0:.36),.65,1.05,.48,.9,'#8a6a3e','fbs'); } } }
+  else if(kind==='news'){ const u=fw*.7; B(u-.5,u+.5,.15,.6,0,1.1,'#1a3a6a','fbst'); for(let i=0;i<3;i++) B(u-.45,u+.45,.6,.62,.2+i*.3,.45+i*.3,['#e8e4da','#c81e1e','#e8e4da'][i],'f'); } }
+/* a hand-written pub: bays of the bar seen through deep windows between painted pilasters, a gilt fascia, a hanging sign, baskets, a lantern */
+const PUBPC={green:'#173a24',oxblood:'#4a1414',black:'#18181a',navy:'#17223e',cream:'#cfc4a4',tile:'#4a2a18',blue:'#1e3a5a',maroon:'#3a1424'};
+function pubSignCell(pc,v){ return kaCell('ps|'+pc+'|'+v%6,(g,w,h)=>{ R(g,'#c8a050',0,0,w,h); R(g,pc,6,6,w-12,h-12); g.fillStyle='#e8cc80'; g.strokeStyle='#e8cc80'; g.lineWidth=5; const cx=w/2, cy=h/2;
+  if(v%6===0){ g.beginPath(); g.moveTo(cx-34,cy+20); g.lineTo(cx-34,cy-14); g.lineTo(cx-17,cy+2); g.lineTo(cx,cy-24); g.lineTo(cx+17,cy+2); g.lineTo(cx+34,cy-14); g.lineTo(cx+34,cy+20); g.fill(); }
+  else if(v%6===1){ ell(g,cx,cy-10,34,26,'#2e5a24'); R(g,'#5a3a1a',cx-6,cy+10,12,26); }
+  else if(v%6===2){ for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?14:34; if(!i) g.beginPath(); g.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr); } g.closePath(); g.fill(); }
+  else if(v%6===3){ g.beginPath(); g.moveTo(cx-30,cy-26); g.lineTo(cx+30,cy+26); g.moveTo(cx+30,cy-26); g.lineTo(cx-30,cy+26); g.stroke(); ell(g,cx-30,cy-26,8,8,'#e8cc80'); ell(g,cx+30,cy-26,8,8,'#e8cc80'); }
+  else if(v%6===4){ ell(g,cx,cy,30,30,'#e8cc80'); ell(g,cx,cy,22,22,pc); ell(g,cx+8,cy-6,6,6,'#e8cc80'); }
+  else { ell(g,cx-6,cy,26,16,'#e8cc80'); ell(g,cx+20,cy-14,10,14,'#e8cc80'); R(g,'#e8cc80',cx-26,cy+10,6,22); R(g,'#e8cc80',cx+8,cy+10,6,22); } }); }
+function groundPubH(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r,P0){ const it=L.it, pc=PUBPC[it.pc]||it.pc||PUBPC.green, dark=mix(pc,'#000000',.4), gold=it.pc==='cream'?'#2a1a10':'#e8cc80', k=L.k, Pi=(u,o,y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o], nOut=[-out[0],0,-out[2]];
+  backGF(L,lx0,lz0,lx1,lz1,gH,L.F);
+  const nb=Math.max(2,Math.round(fw/2.6)), bw=fw/nb, cTop=PAVE_Y+gH-.85, wb=PAVE_Y+.85, dv=L.door%nb;
+  for(let i=0;i<nb;i++){ const a=i*bw+.17, b=(i+1)*bw-.17, w=b-a;
+    if(i===dv){ eQK(Pi(a,-.3,PAVE_Y),U,Y_,w,cTop-PAVE_Y,dark); eRA(Pi(a+.12,-.29,PAVE_Y+1.3),U,Y_,w-.24,cTop-PAVE_Y-1.45,PUB_ROOM,.2,.5,.3,1); lotBox(P0,U,out,a-.05,b+.05,-.3,.25,PAVE_Y,PAVE_Y+.13,'#8e8a82','fst'); }
+    else { const f0=((i*.37+L.door*.11)%.55); eRA(Pi(a,-.3,wb),U,Y_,w,cTop-wb,PUB_ROOM,f0,f0+.45); lotBox(P0,U,out,a,b,-.3,0,PAVE_Y,wb,dark,'f'); lotBox(P0,U,out,a,b,0,.06,wb-.06,wb,'#c8b890','fst'); lotBox(P0,U,out,a,b,-.3,-.26,(wb+cTop)/2-.03,(wb+cTop)/2+.03,dark,'f'); }
+    eQK(Pi(a,0,PAVE_Y),nOut,Y_,.3,cTop-PAVE_Y,dark); eQK(Pi(b,-.3,PAVE_Y),out,Y_,.3,cTop-PAVE_Y,dark); eQK(Pi(a,-.3,cTop),U,out,w,.3,mix(dark,'#000000',.3)); }
+  for(let i=0;i<=nb;i++){ const u=i*bw; lotBox(P0,U,out,Math.max(0,u-.2),Math.min(fw,u+.2),0,.16,PAVE_Y,PAVE_Y+gH-.08,pc,'fs'); }
+  lotBox(P0,U,out,0,fw,0,.2,cTop,PAVE_Y+gH-.08,pc,'f'); lotBox(P0,U,out,-.05,fw+.05,0,.36,PAVE_Y+gH-.08,PAVE_Y+gH+.08,dark,'fstu',PAVE_Y+gH-.08);
+  eSign(atlasSign(pc,gold,L.pub,it.sub||'ALES · LAGERS · SKY SPORTS',{face:'cond',subC:gold}),Pi(fw/2,.205,(cTop+PAVE_Y+gH-.08)/2),U,fw-.5,.66);
+  /* the hanging sign on its bracket, both faces painted */ const hu=L.door%2?.35:fw-.35, hy=PAVE_Y+gH+1.1, ps=pubSignCell(pc,L.door);
+  lotBox(P0,U,out,hu-.03,hu+.03,0,1.2,hy+1.0,hy+1.06,STEEL,'fbstu'); eKA(Pi(hu,.3,hy),out,Y_,.85,.95,ps); eKA(Pi(hu,1.15,hy),nOut,Y_,.85,.95,ps);
+  for(const u of [.55,fw-.55]){ lotBox(P0,U,out,u-.22,u+.22,.3,.74,PAVE_Y+gH+.1,PAVE_Y+gH+.48,'#2e5a24','fbstu'); for(let i=0;i<4;i++) lotBox(P0,U,out,u-.24+i*.12,u-.14+i*.12,.28,.36,PAVE_Y+gH+.18+(i%2)*.12,PAVE_Y+gH+.3+(i%2)*.12,['#d83a6a','#f0d040','#f0f0e8','#c84ad8'][i],'f'); lotBox(P0,U,out,u-.01,u+.01,.5,.52,PAVE_Y+gH+.48,PAVE_Y+gH+.9,STEEL,'fs'); }
+  { const lu=fw/2; lotBox(P0,U,out,lu-.13,lu+.13,.25,.5,PAVE_Y+gH+.25,PAVE_Y+gH+.62,'#1e1e1e','fbst'); eRQ(Pi(lu-.1,.505,PAVE_Y+gH+.3),U,Y_,.2,.27,'#ffd890'); lotBox(P0,U,out,lu-.02,lu+.02,0,.38,PAVE_Y+gH+.62,PAVE_Y+gH+.66,STEEL,'fbt'); }
+  STREET_LIGHT.pl.push([[fx+out[0]*1.4,PAVE_Y+2.4,fz+out[2]*1.4],[1.3,.85,.45],8]); PUB_SPOTS.push([fx+out[0]*1.6,fz+out[2]*1.6,Math.atan2(out[0],out[2])]); }
+/* a workshop or warehouse: common brick, a big opening with a roller shutter or painted timber doors, a signwritten name on the brickwork */
+function groundWorks(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F){ const it=L.it, wm=L.brick==='soot'?mSootW:mBrickW, k=L.k, Pi=(u,o,y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o], nOut=[-out[0],0,-out[2]];
+  backGF(L,lx0,lz0,lx1,lz1,gH,F);
+  const dw=Math.min(it.dw||3.6,fw-1.4), du0=it.dl!==undefined?Math.min(fw-dw-.4,it.dl):(fw-dw)/2, du1=du0+dw, dh=Math.min(gH-.9,3.2), ou=u=>(u/1.6)%1;
+  eGrid(wm,Pi(0,0,PAVE_Y),U,Y_,du0,gH,1.6,1.5,0,0,3,3); eGrid(wm,Pi(du1,0,PAVE_Y),U,Y_,fw-du1,gH,1.6,1.5,ou(du1),0,3,3); eGrid(wm,Pi(du0,0,PAVE_Y+dh),U,Y_,dw,gH-dh,1.6,1.5,ou(du0),dh/1.5,3,0);
+  const rec=.3; eQK(Pi(du0,0,PAVE_Y),nOut,Y_,rec,dh,'#3a302a'); eQK(Pi(du1,-rec,PAVE_Y),out,Y_,rec,dh,'#3a302a'); eQK(Pi(du0,-rec,PAVE_Y+dh),U,out,dw,rec,'#241e1a');
+  lotBox(P0,U,out,du0-.1,du1+.1,0,.1,PAVE_Y+dh,PAVE_Y+dh+.25,'#5a5a56','fstu');
+  if(it.doors){ eQK(Pi(du0,-rec,PAVE_Y),U,Y_,dw,dh,it.doors); for(let u=du0+.25;u<du1-.1;u+=.25) lotBox(P0,U,out,u-.015,u+.015,-rec,-rec+.02,PAVE_Y,PAVE_Y+dh,mix(it.doors,'#000000',.3),'f'); lotBox(P0,U,out,(du0+du1)/2-.03,(du0+du1)/2+.03,-rec,-rec+.04,PAVE_Y,PAVE_Y+dh,mix(it.doors,'#000000',.45),'f'); }
+  else if(it.open){ const rc=raRoom(L.trade&&TRADES[L.trade]?L.trade:'workshop'); eRA(Pi(du0,-4,PAVE_Y),U,Y_,dw,dh,rc); eRQ(Pi(du0,-rec,PAVE_Y),nOut,Y_,3.7,dh,'#3a3430'); eRQ(Pi(du1,-4,PAVE_Y),out,Y_,3.7,dh,'#3a3430'); eRQ(Pi(du0,-4,PAVE_Y+dh),U,out,dw,3.7,'#2a2622'); eRQ(Pi(du0,-rec,PAVE_Y+.02),U,nOut,dw,3.7,'#2e2a26'); }
+  else eShut(Pi(du0,-rec,PAVE_Y),U,dw,dh,L.door);
+  const T=TRADES[L.trade]||TRADES.workshop, name=L.name||T.names[0], sw=Math.min(fw-.8,6.5), sh=Math.min(.75,(gH-dh)*.75);
+  if(gH-dh>.5) eSign(atlasSign(it.bg||'#1a1a1a',it.fg||'#e8e0c8',name,it.sub||T.sub,{face:it.face||'cond',subC:it.fg||'#e8e0c8'}),Pi(fw/2,.03,PAVE_Y+dh+.25+(gH-dh-.25)/2),U,sw,sh); }
+
+/* ---------------- post-war council infill: set back behind a low wall and a strip of grass, flat-fronted, wide windows, concrete bands,
+   a canopy over the entrance, a balcony stack you can climb, a bin store, a lift room on the roof ---------------- */
+function buildInfill(L,lx0,lz0,lx1,lz1,BR,d,r){ const it=L.it, k=L.k, sb=it.sb??2.2, st=L.st, top=PAVE_Y+st*2.85;
+  const f0=lotFront(k,lx0,lz0,lx1,lz1); if(k==='n') lz0+=sb; else if(k==='s') lz1-=sb; else if(k==='w') lx0+=sb; else lx1-=sb;
+  const {U,out,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1), horiz=k==='n'||k==='s', sideK=horiz?'ew':'ns', F=facade(L.brick||'estbrick','estate',L.fv);
+  eFacade(lx0,lz0,lx1,lz1,PAVE_Y,top,F,k,{atlas:true,seed:L.door*31,skip:sideK}); { const pw={}; for(const q of sideK) pw[q]=mBrickW; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,top,pw,{tu:1.6,tv:1.5}); }
+  for(let f=1;f<st;f++) lotBox(P0,U,out,0,fw,0,.09,PAVE_Y+f*2.85-.14,PAVE_Y+f*2.85+.08,'#a29e94','fstu');
+  lotBox(P0,U,out,-.1,fw+.1,0,.2,top-.1,top+.25,'#a29e94','fst');
+  /* the entrance: a lit lobby door, a canopy you can stand on, the name */ const c=it.door??fw*.38;
+  lotBox(P0,U,out,c-.85,c+.85,0,.05,PAVE_Y,PAVE_Y+2.35,'#5a5c5e','f'); eRQ([P0[0]+U[0]*(c-.75)+out[0]*.055,PAVE_Y,P0[2]+U[2]*(c-.75)+out[2]*.055],U,Y_,1.5,2.25,'#b8ccd2');
+  lotBox(P0,U,out,c-.02,c+.02,.056,.07,PAVE_Y,PAVE_Y+2.25,'#3a3c3e','f'); lotBox(P0,U,out,c-1.3,c+1.3,0,1.3,PAVE_Y+2.6,PAVE_Y+2.78,'#8e8a82','fstu',PAVE_Y+2.6);
+  eSign(atlasSign('#1c2f5a','#f4f2ea',it.name||'1–24 PARFETT HOUSE',it.sub||'LONDON BOROUGH OF TOWER HAMLETS',{face:'grot',subC:'#c8d4ec'}),[P0[0]+U[0]*c+out[0]*.06,PAVE_Y+3.15,P0[2]+U[2]*c+out[2]*.06],U,2.4,.36);
+  /* a balcony stack: slab, solid parapet you can stand on, the next slab in reach; a bin store under the first */ const ba=it.bal??(fw>=9?fw-3.4:-1);
+  if(ba>=0){ lotBox(P0,U,out,ba,ba+2.8,0,1.6,PAVE_Y,PAVE_Y+1.45,'#7a7a72','fbst',true); lotBox(P0,U,out,ba+.1,ba+2.7,.02,1.62,PAVE_Y+.2,PAVE_Y+1.3,'#4a4c4a','f');
+    for(let f=1;f<st;f++){ const y=PAVE_Y+f*2.85; lotBox(P0,U,out,ba,ba+2.8,0,1.15,y-.15,y,'#9a968c','fbstu',y-.15); lotBox(P0,U,out,ba,ba+2.8,1.03,1.15,y,y+1.0,'#8e8a82','fbst',y); for(const u of [ba,ba+2.68]) lotBox(P0,U,out,u,u+.12,0,1.03,y,y+1.0,'#8e8a82','fs',y); } }
+  /* forecourt: grass, a low wall with a gap for the path */ const fp=f0.P0, fO=[out[0],0,out[2]];
+  { const g=[[0,c-.9],[c+.9,fw]]; const Pf=[fp[0],0,fp[2]]; for(const [a,b] of g) if(b-a>.2) lotBox(Pf,U,fO,a,b,-.25,0,PAVE_Y,PAVE_Y+.6,'#8a6a4e','fbst',true);
+    const gx=[Pf[0]-out[0]*sb, Pf[0]], gz=[Pf[2]-out[2]*sb, Pf[2]]; const xs=[...gx,...gx.map(v=>v+U[0]*fw)], zs=[...gz,...gz.map(v=>v+U[2]*fw)];
+    eFlat(Math.min(...xs),Math.min(...zs),Math.max(...xs),Math.max(...zs),PAVE_Y-.005,mGrass,2,4);
+    const px=[Pf[0]+U[0]*(c-.8),Pf[0]+U[0]*(c+.8)-out[0]*sb], pz=[Pf[2]+U[2]*(c-.8),Pf[2]+U[2]*(c+.8)-out[2]*sb]; eFlat(Math.min(...px),Math.min(...pz),Math.max(...px),Math.max(...pz),PAVE_Y+.004,mPath,2,0); }
+  /* the roof: felt, coping, a lift motor room and a tank you can climb on */
+  eFlat(lx0,lz0,lx1,lz1,top+.01,mFelt,4,0); hsol(lx0,lz0,lx1,lz1,top+.25); lotBox(P0,U,out,fw*.3,fw*.3+2.6,-d+sb+1.5,-d+sb+4,top+.25,top+2.2,'#8a8680','fbst',top);
+  roofKit(P0,U,out,fw,d-sb,top+.25,'works',r,0); }
+
+/* ---------------- the gaps in a hand-written side ---------------- */
+function buildGap(G,BR,D){ const k=G.k, d=D[k], it=G.it, [lx0,lz0,lx1,lz1]=lotRect(k,G.a,G.b,BR,d), {U,out,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1), r=hr(Math.round(G.a*7+G.b*3)|0), Pi=(u,o,y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o];
+  const wall=(a,b,h,o0=-.35,o1=0)=>{ const xs=[P0[0]+U[0]*a+out[0]*o0,P0[0]+U[0]*b+out[0]*o1], zs=[P0[2]+U[2]*a+out[2]*o0,P0[2]+U[2]*b+out[2]*o1], q=[Math.min(...xs),Math.min(...zs),Math.max(...xs),Math.max(...zs)];
+    eBoxF(q[0],q[1],q[2],q[3],PAVE_Y,PAVE_Y+h,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW},{tu:1.6,tv:1.5}); lotBox(P0,U,out,a-.03,b+.03,o0-.04,o1+.04,PAVE_Y+h,PAVE_Y+h+.08,'#8a8680','fbst'); hsol(q[0],q[1],q[2],q[3],PAVE_Y+h+.08); };
+  const g=G.g; if(g==='none'||reserved(Math.min(lx0,lx1)-1,Math.min(lz0,lz1)-1,Math.max(lx0,lx1)+1,Math.max(lz0,lz1)+1)) return;
+  if(g==='gate'){ const gw=Math.min(fw-.8,it.gw||3.0), g0=(fw-gw)/2, gc=it.c||'#2a3a2a'; wall(0,g0,2.3); wall(g0+gw,fw,2.3);
+    lotBox(P0,U,out,g0,g0+gw,-.3,-.24,PAVE_Y,PAVE_Y+2.1,gc,'fbst',true); for(let u=g0+.2;u<g0+gw;u+=.2) lotBox(P0,U,out,u-.012,u+.012,-.24,-.22,PAVE_Y+.05,PAVE_Y+2.05,mix(gc,'#000000',.3),'f');
+    lotBox(P0,U,out,g0+gw/2-.02,g0+gw/2+.02,-.24,-.21,PAVE_Y,PAVE_Y+2.1,mix(gc,'#000000',.5),'f'); if(it.sign!==false) eSign(atlasSign('#f4f2ea','#c41a1a','NO PARKING',it.sign||'GATES IN CONSTANT USE',{face:'grot',subC:'#1a1a1a'}),Pi(g0+gw/2,-.21,PAVE_Y+1.5),U,1.1,.18); }
+  else if(g==='wall'){ wall(0,fw,1.9); if(fw>3){ const t=Pi(fw/2,-3.5,0); tree(t[0],t[2],.9); } }
+  else if(g==='garage'){ const n=Math.max(1,Math.round(fw/3.2)), gw=fw/n, gd=Math.min(6,d-.5), gh=2.5;
+    for(let i=0;i<n;i++){ const a=i*gw; eShut(Pi(a+.2,.0,PAVE_Y),U,gw-.4,2.2,i+Math.round(G.a)); lotBox(P0,U,out,a,a+.2,-gd,0,PAVE_Y,PAVE_Y+gh,'#8a7a64','fs'); lotBox(P0,U,out,a+gw-.2,a+gw,-gd,0,PAVE_Y,PAVE_Y+gh,'#8a7a64','fs'); lotBox(P0,U,out,a+.2,a+gw-.2,-.05,0,PAVE_Y+2.2,PAVE_Y+gh,'#8a7a64','f'); }
+    const q=lotBox(P0,U,out,0,fw,-gd,0,PAVE_Y+gh,PAVE_Y+gh+.1,'#2c2d30','fbst'); hsol(q[0],q[1],q[2],q[3],PAVE_Y+gh+.1); eSign(atlasSign('#1c2f5a','#f4f2ea','GARAGES',it.sign||'RESIDENTS ONLY · NO PARKING',{face:'grot',subC:'#c8d4ec'}),Pi(fw/2,.02,PAVE_Y+2.36),U,Math.min(fw-.5,1.6),.22); }
+  else if(g==='yard'){ const pc=posterCell(Math.round(G.a)%7&3); eKA(Pi(0,0,PAVE_Y),U,Y_,fw,2.4,pc); eKA(Pi(fw,-.06,PAVE_Y),[-U[0],0,-U[2]],Y_,fw,2.4,pc,0,1,0,1); lotBox(P0,U,out,0,fw,-.06,0,PAVE_Y+2.4,PAVE_Y+2.45,'#5a4a34','t',true);
+    lotBox(P0,U,out,fw*.2,fw*.2+3.2,-5.5,-3.6,PAVE_Y,PAVE_Y+1.3,'#e0a81a','fbst',true); lotBox(P0,U,out,fw*.2+.1,fw*.2+3.1,-5.4,-3.7,PAVE_Y+1.3,PAVE_Y+1.36,'#5a4a3a','t'); }
+  else if(g==='garden'){ lotBox(P0,U,out,0,fw,-.3,0,PAVE_Y,PAVE_Y+.6,'#7a5a40','fbst',true); { const a=Pi(0,-.15,0), b=Pi(fw,-.15,0); railing(a[0],a[2],b[0],b[2],.7,PAVE_Y+.6,false); }
+    const q=[Pi(0,-.3,0),Pi(fw,-d,0)]; eFlat(Math.min(q[0][0],q[1][0]),Math.min(q[0][2],q[1][2]),Math.max(q[0][0],q[1][0]),Math.max(q[0][2],q[1][2]),PAVE_Y+.003,mGrass,2,4); const t=Pi(fw/2,-d*.55,0); tree(t[0],t[2],1.0); if(fw>4){ const b=Pi(fw*.25,-1.4,0); bench(b[0],b[2],Math.atan2(out[0],out[2])); } }
+  else { /* an alley: brick piers at the mouth, setts running back into the yard, a bollard */ for(const [a,b] of [[0,.42],[fw-.42,fw]]) lotBox(P0,U,out,a,b,-.42,0,PAVE_Y,PAVE_Y+2.4,'#6a5a44','fbst',true);
+    const q=[Pi(.42,0,0),Pi(fw-.42,-d-3,0)]; eFlat(Math.min(q[0][0],q[1][0]),Math.min(q[0][2],q[1][2]),Math.max(q[0][0],q[1][0]),Math.max(q[0][2],q[1][2]),PAVE_Y+.004,mPath,1.2,3); const bp=Pi(fw/2,-.3,0); if(fw>1.8) bollard(bp[0],bp[2]); }
+  /* boards across the gap at roof level, for the rooftop runs */
+  if(it.plank&&G.tA&&G.tB&&Math.abs(G.tA-G.tB)<.6){ const y=Math.min(G.tA,G.tB)+.18; lotBox(P0,U,out,-.7,fw+.7,-d*.5-.28,-d*.5+.28,y-.06,y,TIMBER,'fbstu',y-.06); } }
+
+/* ---------------- Network Rail stairs up the viaduct sides, so the tracks are a run of their own ---------------- */
+function buildRailStairs(){ const V=VIADUCTS[0], Vz=VIADUCTS[1], top=V[5]+1.1;
+  for(const x of [-128,58,246]) railStair(x,V[1],X_,[0,0,-1],top);
+  for(const x of [-64,118]) railStair(x,V[3],X_,[0,0,1],top);
+  for(const z of [-128,44]) railStair(Vz[2],z,Z_,[1,0,0],top); }
+
 /* a shop front: riser, recessed lit room, frame, fascia sign from the atlas; some shuttered for the night */
 function groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const trades=L.f==='curry'?['curry','curry','beigel','kebab','offy','vintage']:L.f==='market'?['flowers','cafe','vintage','flowers','barber','charity']:L.f==='vintage'?['vintage','cafe','barber','vintage','hardware']:
     ['chicken','offy','phone','barber','laundry','cafe','nails','chemist','agent','gold','vape','kebab','bookie','hardware','charity','chicken','offy','phone'];
   let tk=L.trade&&TRADES[L.trade]?L.trade:pick(r,trades); if(!L.trade) for(let k=0;k<6&&tk===LAST_TRADE;k++) tk=pick(r,trades); LAST_TRADE=tk; const T=TRADES[tk]; tradeRoom(tk); const shut=L.shut??(L.hand?false:r()<.2);
   /* the walls of the ground floor (sides and back plain) */
-  const sideM=L.F?L.F.mBase:mDark, fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', GF={n:sideM,s:sideM,e:sideM,w:sideM,t:null}; GF[fk]=null; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,GF,{tu:2,tv:2});
+  const sideM=mBrickW, fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', GF={n:sideM,s:sideM,e:sideM,w:sideM,t:null}; GF[fk]=null; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,GF,{tu:1.6,tv:1.5});
   /* the reveal: side walls and ceiling of the recess, so the glass sits in a real opening */
   const DEEP=1.0, wallM=shut?mDark:(T.mWall||(T.mWall=nightM(null,{color:parseInt(mix(T.room,'#000000',.12).slice(1),16),unlit:true},0)));
   { const gwh=(fw-.6)/2, bx=fx-U[0]*gwh, bz=fz-U[2]*gwh, ex=fx+U[0]*gwh, ez=fz+U[2]*gwh, ix=-out[0]*DEEP, iz=-out[2]*DEEP;
@@ -3001,12 +3406,26 @@ function groundPub(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const green=r()<.5, w
   const fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', GF={n:wood,s:wood,e:wood,w:wood,t:null}; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,GF,{tu:2,tv:2,cell:3});
   /* the pub front stands proud of the wall, so its windows (a step behind) aren't hidden */ 
   const gw=fw-.6, ox=fx+out[0]*.03-U[0]*gw/2, oz=fz+out[2]*.03-U[2]*gw/2; tradeRoom('cafe');
-  const pubRoom=TRADES.pubRoom||(TRADES.pubRoom={m:nightM(P2(128,64,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#ffcc80'],[1,'#a05a20']]); R(g,'#3a1a0a',0,h-14,w,14); for(let i=0;i<5;i++) R(g,'#5a2a10',8+i*24,30,14,20); for(let i=0;i<7;i++) ell(g,10+i*18,24,4,6,'#2a1408'); },0,1),{unlit:true},0)});
+  const pubRoom=TRADES.pubRoomG||(TRADES.pubRoomG={m:nightM(P2(128,64,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#ffcc80'],[1,'#a05a20']]); R(g,'#3a1a0a',0,h-14,w,14); for(let i=0;i<5;i++) R(g,'#5a2a10',8+i*24,30,14,20); for(let i=0;i<7;i++) ell(g,10+i*18,24,4,6,'#2a1408'); },0,1),{unlit:true},0)});
   for(let i=0;i<3;i++){ const pw_=gw/3-.25, o0=((L.door*7+i*3)%5)/5; eGrid(pubRoom.m,[ox+U[0]*(i*gw/3+.12)+out[0]*.04,PAVE_Y+.9,oz+U[2]*(i*gw/3+.12)+out[2]*.04],U,Y_,pw_,1.6,pw_*1.6,1.6,o0,0); }
   const uv=atlasSign(green?'#14301e':'#3a1414','#f0d48a',L.pub,'ALES · LAGERS · SKY SPORTS',{face:'cond',lit:true,subC:'#e8d8b0'});
   eSign(uv,[fx+out[0]*.22,PAVE_Y+gH-.4,fz+out[2]*.22],U,fw-.2,.7);
   STREET_LIGHT.pl.push([[fx+out[0]*1.4,PAVE_Y+2.4,fz+out[2]*1.4],[1.3,.85,.45],8]); PUB_SPOTS.push([fx+out[0]*1.6,fz+out[2]*1.6,Math.atan2(out[0],out[2])]); }
 const PUB_SPOTS=[], FRONTAGES=[]; var HAND=HAND||{}; let LAST_TRADE='', LAST_NAME=''; const USED_NAMES={}; const HOUSE_DOORS=[], HOUSE_NO={}, EXT_TOPS=[];
+/* HAND-HELPERS: writing a street side by hand (48c1-3). Widths are relative (scaled to fit the side); a house is about 5 m.
+   Door letters: k black, n navy, r red, g green, y yellow, p plum, w white, t teal, o orange, b blue, s sage, m maroon, x oak, l pale blue, c cream;
+   an UPPER-case letter is a house with a bay; '|' an alley (1.4 m), '/' a gated yard entry (2.6 m) */
+const DOORK={k:'#141414',n:'#1c2a4a',r:'#7a1a1a',g:'#1e3a26',y:'#c8a020',p:'#3a2a4a',w:'#f2efe6',t:'#2a5a6a',o:'#b8561c',b:'#3a6aa0',s:'#7a8a6a',m:'#5a1e30',x:'#7a5a3a',l:'#8ab0c0',c:'#d8c8a0'};
+/* a run of terrace houses; o: {hv, w, stuc (painted ground floor), scaf: index of the house with a scaffold, cot: cottage layout} */
+function hT(brick,st,doors,o={}){ const out=[]; [...doors].forEach((ch,i)=>{ if(ch==='|'){ out.push({t:'gap',w:1.4,g:'alley'}); return; } if(ch==='/'){ out.push({t:'gap',w:2.6,g:'gate'}); return; } if(ch===' ') return;
+  const low=ch.toLowerCase(); out.push({t:'house',w:o.w||5,brick,st,doorC:DOORK[low]||'#141414',hv:ch!==low?'bay':(o.hv||'flat'),stuc:o.stuc,scaf:o.scaf===i,mir:o.mir}); }); return out; }
+const hH=(brick,st,door,o={})=>Object.assign({t:'house',w:5,brick,st,doorC:DOORK[door]||door,hv:'flat'},o);
+const hS=(trade,name,o={})=>Object.assign({t:'shop',w:5.5,trade,name},o);
+const hP=(name,pc,o={})=>Object.assign({t:'pub',w:8,name,pc,fe:true},o);
+const hG=(g,w,o={})=>Object.assign({t:'gap',w,g},o);
+const hI=(name,brick,st,w,o={})=>Object.assign({t:'infill',w,name,brick,st},o);
+const hW=(name,trade,o={})=>Object.assign({t:'works',w:8,name,trade,brick:'soot',st:2},o);
+/* /HAND-HELPERS */
 
 /* ---------------- the viaducts: brick body, arches on both faces, bridges over the streets ---------------- */
 const ARCHT=(()=>{ const out=[]; for(let v=0;v<4;v++){ const r=hr(8400+v), w=5*PXM, h=7.4*PXM; const fill=['lock','shut','brick','lit'][v];
@@ -3051,15 +3470,398 @@ function buildLamps(){ for(const S of STREETS){ const [id,ax,c,a,b,rw]=S; const 
     for(let p=a+12;p<b-6;p+=step){ side^=1; const s=side?-1:1, off=rw/2+.45; const x=ax==='x'?p:c+s*off, z=ax==='x'?c+s*off:p;
       if(inCore(x,z,3)||onRoad(x,z)) continue; if(VIADUCTS.some(v=>x>v[0]-2&&x<v[2]+2&&z>v[1]-2&&z<v[3]+2)) continue;
       lamp(x,z,ax==='x'?0:-s,ax==='x'?-s:0); } } }
-function buildHub(){ const t0=performance.now();
-  buildGround(); buildViaducts(); const blocks=findBlocks(); let nb=0;
+function buildHub(){ const t0=performance.now();  buildGround(); buildViaducts(); const blocks=findBlocks(); let nb=0;
   blocks.forEach((B,i)=>{ const [x0,z0,x1,z1]=B.r; const cx=(x0+x1)/2,cz=(z0+z1)/2; if(LANDMARK_BLOCKS.some(L=>cx>L[1]&&cx<L[3]&&cz>L[2]&&cz<L[4])) return; if(!B.rect) { B.r=[x0,z0,x1,z1]; } buildBlock(B,i); nb++; });
-  buildLamps(); if(typeof buildLandmarks==='function') buildLandmarks();
+  buildLamps(); buildRailStairs(); if(typeof buildLandmarks==='function') buildLandmarks();
   /* the old street's west end was a dead-end arch: it's a crossing now, so the arch goes, and the estate gets a proper boundary wall */
   ARCH.vis=false; sky.vis=false; eBox(-16.6,-27,-16.0,-3.2,PAVE_Y,PAVE_Y+2.4,mBrickW,{tu:1.6,tv:1.5}); hsol(-16.6,-27,-16.0,-3.2,PAVE_Y+2.4);
   HUBX={ floor:(x,z)=>onRoad(x,z)?0:PAVE_Y, walk:(x,z,rad)=>x>HUB.x0+rad&&x<HUB.x1-rad&&z>HUB.z0+rad&&z<HUB.z1-rad&&!inCore(x,z,0), blocks, built:nb, ms:performance.now()-t0 };
-  console.log('[london] hub: blocks',blocks.length,'built',nb,'verts',EMIT.verts,'solids',GAME.SOL.length,'lights',STREET_LIGHT.pl.length,'ms',Math.round(HUBX.ms)); }
+  console.log('[london] hub: blocks',blocks.length,'built',nb,'verts',EMIT.verts,'solids',GAME.SOL.length,'lights',STREET_LIGHT.pl.length,'ms',Math.round(HUBX.ms),'atlas kit',KA.n+'/'+KA.cols*KA.rows,'facades',FA.n+'/'+FA.cols*FA.rows,'swatches',KA.sw,'rooms',RA.n,'sign pages',SA.pages.length,'signs',SA.all.length,'scaffolds',SCAFS.length,'fire escapes',FIRE_ESC.length); }
 /* built at the end of 48d, once the landmarks are defined */
+
+/* ==========================================================================================================
+   HAND-WRITTEN FRONTAGES, WEST: Brick Lane end to Gosset Street (x streets with their middle west of -100, and
+   Vallance Road, Mape Street, Gosset Street). Every street side is written as the real street reads: Bethnal Green
+   Road's scruffy high street, Columbia Road's little painted shops, Cheshire Street's vintage and workshops, Three
+   Colts Lane's garages, and the Victorian terraces round them with their corner shops, pubs, alleys and post-war infill.
+   Items run west to east (x streets) or north to south (z streets); helpers and door letters in 48c-hub-plan.js.
+   All names are made up.
+   ========================================================================================================== */
+var HAND=HAND||{};
+/* ---------------- BETHNAL GREEN ROAD: chicken, phones, sweet centres, cash & carries, bookies, a pie shop, a pub on the corner ---------------- */
+HAND['bgr:n:-353']=[
+  hS('cashcarry','BENGAL CASH & CARRY',{w:9,disp:'veg',aw:'#c81e1e/#f0ece0',brick:'yellow'}), hS('phone','UNLOCK EXPRESS',{w:4.6}), hS('nails','PRETTY POLISH',{w:4.6,brick:'paintW'}),
+  hS('kebab','ANTEP OCAKBASI',{w:6}), hS('curry','SHAPLA TANDOORI',{w:6.5,sub:'BANGLADESHI CUISINE · LICENSED'}),
+];
+HAND['bgr:s:-353']=[
+  hS('offy','VALLANCE FOOD & WINE',{w:5.5,disp:'news'}), hS('laundry','BUBBLES LAUNDERETTE',{w:6.5}), hS('butcher','AL-MADINA HALAL MEAT',{w:5.5}), hS('travel','SURMA TRAVEL',{w:5}),
+  hP('THE QUEEN ADELAIDE','oxblood',{w:9,brick:'red'}),
+];
+HAND['bgr:n:-254']=[
+  hS('chemist','VALLANCE PHARMACY',{w:7}), hS('chicken','CHICKEN PALACE'), hS('agent','CROWN & CO ESTATES'), hS('cafe','THE CABIN CAFE',{disp:'chairs',aw:'#2a4a6a/#e8e4d8'}),
+  hS('piemash','A. HARDING PIE & MASH',{w:7,sf:'trad',pc:'#1e4a2e',fg:'#f2e6c8',sub:'EST. 1902 · PIE · MASH · LIQUOR · EELS',brick:'yellow',st:3}), hS('gold','EAST END GOLD'), hG('alley',1.8),
+  hS('pound','POUND KING',{w:6,disp:'bric'}), hS('vape','CLOUD CITY VAPES',{w:4.5}), hS('money','SONALI REMIT',{w:4.5}), hS('grocer','SURMA FISH & MEAT',{w:7.5,disp:'veg',aw:'#1e5a2a'}),
+  hS('sweets','RAJ MAHAL SWEETS',{aw:'#e8b020'}), hS('tolet',null,{was:'KWIK PHONES',scaf:true}), hS('barber','BOSPHORUS BARBERS'), hS('kebab','KAZ KEBAB HOUSE'),
+  hS('optician','BETHNAL EYECARE'), hS('fabric','ROSHNI FABRICS',{disp:'rail'}), hS('bookie','GOLDEN HORSESHOE BETS'), hS('tailor','NOOR TAILORS',{w:4.5}),
+  hS('bakery','ISTANBUL PATISSERIE'), hS('phone','PHONE DOCTOR'), hS('travel','SHAHJALAL TRAVEL'), hS('cashcarry','EASTERN CASH & CARRY',{w:8,disp:'veg'}),
+  hP('THE DUKE OF YORK','navy',{w:8.5,brick:'stock'}),
+];
+HAND['bgr:n:-140']=[
+  hP('THE MARQUIS OF GRANBY','green',{w:8.5,sub:'TRUMAN\'S ALES · FREE HOUSE'}),
+  hS('chicken','PERI PERI KINGS',{w:5}), hS('phone','FIXIT MOBILE',{w:4.4}), hS('sweets','SYLHET SWEET CENTRE',{w:6,aw:'#c81e1e'}),
+  hS('money','DESH EXPRESS',{w:4.6}), hS('tolet',null,{was:'SUNNY VIDEO & DVD'}), hG('alley',1.7),
+  hS('bakery','ANATOLIA BAKERY',{disp:'board'}), hS('barber','ISTANBUL GENTS',{w:4.4}),
+  hS('grocer','BARAKAH SUPERSTORE',{w:8,disp:'veg',aw:'#1e5a2a/#e8e4d8'}), hS('charity','ST MARGARET\'S HOSPICE SHOP',{w:6}), hS('bookie','LUCKY 7 BETS'),
+];
+HAND['bgr:s:-140']=[
+  hS('kebab','HACI BABA',{w:5}), hS('agent','HARVEY KANE LETTINGS'), hS('chicken','FLAMIN\' CHICKEN'), hS('laundry','KLEEN-A-MATIC',{w:6}), hS('nails','LUXE NAILS & BROWS'),
+  hS('cashcarry','TAJ CASH & CARRY',{w:8,disp:'veg',aw:'#c81e1e'}), hS('phone','MOBILE ZONE'), hS('cafe','ROSIE\'S CAFE',{disp:'chairs',aw:'#c81e1e/#f0ece0'}), hS('tolet',null,{was:'JAYS DISCOUNT'}),
+  hS('hardware','ABBEY DIY & KEYS',{w:6,disp:'bric'}), hS('offy','GREEN FOOD & WINE',{disp:'news'}),
+];
+
+/* ---------------- COLUMBIA ROAD: one even run of little Victorian shops, painted fronts and signwriting, the flower market's florists ---------------- */
+HAND['columbia:s:-254']=[
+  hP('THE FLORIST\'S ARMS','green',{w:8,brick:'stock'}),
+  hS('flowers','PETAL & STEM',{w:4.6,disp:'flowers',pc:'#1e3a2a',brick:'stock'}), hS('plants','THE POTTING SHED',{w:4.6,disp:'plants',pc:'#2a2a3a',brick:'stock'}), hS('gallery','MAGPIE GALLERY',{w:4.6,pc:'#d8d0bc',brick:'paintW'}),
+  hS('cafe','THE TEA ROOM',{w:4.6,disp:'chairs',pc:'#5a2a3a',aw:'#5a2a3a/#e8e0d0',brick:'stock'}), hS('antiques','OLD SPITAL ANTIQUES',{w:4.6,pc:'#3a1a1a',disp:'bric',brick:'yellow'}), hS('homeware','LILY & BONE',{w:4.6,pc:'#2a4a4a',brick:'yellow'}),
+  hS('tailor','HAT & HEART MILLINERY',{w:4.6,pc:'#1a1a1c',sub:'HATS MADE TO MEASURE',brick:'yellow'}), hS('flowers','FERN & FROND',{w:4.6,disp:'flowers',pc:'#2a4a2a',brick:'red'}), hS('deli','COLUMBIA DELI',{w:4.6,pc:'#6a5a3a',aw:'#2a3a2a/#e8e0c8',brick:'red'}),
+  hS('homeware','NICE THINGS',{w:4.6,pc:'#c8d8d0',fg:'#2a3a3a',brick:'paintBl'}), hS('gallery','IVY HOUSE PRINTS',{w:4.6,pc:'#1c2438',brick:'stock'}), hS('bakery','BELL\'S BAKERY',{w:4.6,pc:'#4a3a2a',disp:'board',brick:'stock'}),
+  hS('plants','MOSS',{w:4.6,pc:'#1e3a2a',disp:'plants',brick:'stock'}), hS('tolet',null,{w:4.6,was:'A. GOLD BOOTMAKER',pc:'#3a3a3a',brick:'soot'}), hS('homeware','CANAL CERAMICS',{w:4.6,pc:'#d8d0bc',brick:'paintCr'}),
+  hS('flowers','BUNCH',{w:4.6,disp:'flowers',pc:'#5a2a3a',brick:'stock'}), hS('records','THE WREN RECORDS',{w:4.6,pc:'#1a1a1c',brick:'stock'}), hS('deli','THE HONEY POT',{w:4.6,pc:'#c8a020',fg:'#1a1a1a',brick:'yellow'}),
+  hS('vintage','WINIFRED\'S',{w:4.6,disp:'rail',pc:'#3a2a4a',brick:'yellow'}), hS('plants','NETTLE & THYME',{w:4.6,disp:'plants',pc:'#2a4a2a',brick:'yellow'}), hS('cafe','MARIGOLD CAFE',{w:4.6,pc:'#c8581a',aw:'#c8581a/#f0e8d8',disp:'chairs',brick:'red'}),
+  hS('gallery','PAPER & PEN',{w:4.6,pc:'#2a2a3a',brick:'red'}), hS('flowers','THE FLOWER BARROW',{w:4.6,disp:'flowers',pc:'#1e3a2a',brick:'stock'}), hS('homeware','SOFT GOODS',{w:4.6,pc:'#7e8e72',brick:'paintGr'}),
+  hS('sweets','TILLY\'S SWEETS',{w:4.6,pc:'#d8a0b0',fg:'#5a1a2a',brick:'stock',sub:'SWEETS IN JARS · FUDGE · ROCK'}), hS('antiques','BRASS & BOOK',{w:4.6,pc:'#3a2a1a',disp:'bric',brick:'stock'}), hS('plants','SPROUT',{w:4.6,pc:'#2e3a2a',disp:'plants',brick:'stock',scaf:true}),
+];
+HAND['columbia:s:-101']=[
+  hS('offy','COLUMBIA STORES',{w:6,pc:'#0e3a2a',sf:'trad',disp:'news',brick:'yellow'}),
+  hS('flowers','FOX & FERN',{w:4.6,disp:'flowers',pc:'#1c2438',brick:'yellow'}), hS('gallery','THE LONG ROOM',{w:4.6,pc:'#f0ece0',fg:'#1a1a1a',brick:'paintW'}), hS('cafe','ELSIE\'S',{w:4.6,disp:'chairs',pc:'#2a4a4a',aw:'#2a4a4a/#e8e4d8',brick:'stock'}),
+  hS('homeware','STONE & STRAW',{w:4.6,pc:'#6a5a3a',brick:'stock'}), hS('flowers','STEMS',{w:4.6,disp:'flowers',pc:'#3a1a1a',brick:'stock'}), hS('vintage','THE BUTTON BOX',{w:4.6,pc:'#3a2a4a',disp:'rail',brick:'stock'}),
+  hS('plants','THE GLASSHOUSE',{w:4.6,pc:'#1e3a2a',disp:'plants',brick:'red'}), hS('deli','PARMA & PEPPER',{w:4.6,pc:'#4a1a1a',aw:'#4a1a1a/#e8e0c8',brick:'red'}), hS('antiques','CURIOUS OF E2',{w:4.6,pc:'#1a1a1c',disp:'bric',brick:'red'}),
+  hG('gate',3.2,{c:'#1e3a2a',sign:'EZRA YARD · MARKET TRADERS ONLY'}),
+  hS('flowers','ROSEBAY',{w:4.6,disp:'flowers',pc:'#5a2a3a',brick:'stock'}), hS('bakery','THE BREAD STALL',{w:4.6,pc:'#d8d0bc',fg:'#3a2a1a',disp:'board',brick:'paintCr'}), hS('homeware','WICKER & WOOL',{w:4.6,pc:'#7a5a3a',brick:'stock'}),
+  hS('tolet',null,{w:4.6,was:'CASTELLO BROS',pc:'#3a3a3a',brick:'soot'}), hS('records','SLOW SPIN',{w:4.6,pc:'#1a1a1c',brick:'stock'}), hS('flowers','GOODCHILD FLOWERS',{w:4.6,disp:'flowers',pc:'#2a4a2a',brick:'stock'}),
+  hS('gallery','NORTH LIGHT',{w:4.6,pc:'#2a2a3a',brick:'yellow'}), hS('cafe','THE MILK BAR',{w:4.6,pc:'#e8e0c8',fg:'#2a2a2a',disp:'chairs',aw:'#3a6aa0/#f0f0e8',brick:'paintW'}), hS('plants','LEAF & LOAM',{w:4.6,pc:'#2e3a2a',disp:'plants',brick:'yellow'}),
+  hS('homeware','THE SOAP KITCHEN',{w:4.6,pc:'#c8d8d0',fg:'#2a3a3a',brick:'paintBl',sub:'SOAPS · CANDLES · SCENTS'}), hS('flowers','HAWTHORN & HOLLY',{w:4.6,disp:'flowers',pc:'#1e3a2a',brick:'stock'}), hS('antiques','OLD TIN ANTIQUES',{w:4.6,pc:'#4a3a2a',disp:'bric',brick:'stock'}),
+  hS('vintage','SUNDAY BEST',{w:4.6,pc:'#5a2a3a',disp:'rail',brick:'stock'}), hS('deli','THE CHEESE CELLAR',{w:4.6,pc:'#d8c8a0',fg:'#3a2a1a',brick:'paintCr'}), hS('flowers','BLOOMING MARVELLOUS',{w:4.6,disp:'flowers',pc:'#3a1a1a',brick:'red'}),
+  hS('barber','JOE\'S GENTS HAIRDRESSER',{w:4.6,pc:'#1a1a1c',fg:'#f0f0e8',brick:'red',sub:'GENTS HAIRDRESSER · EST. 1961'}), hS('plants','THE CACTUS ROOM',{w:4.6,pc:'#c8a020',fg:'#1a1a1a',disp:'plants',brick:'red'}), hS('gallery','KITE GALLERY',{w:4.6,pc:'#f0ece0',fg:'#1a1a1a',brick:'paintW'}),
+  hP('THE PRINCE REGENT','maroon',{w:8,brick:'stock'}),
+];
+
+/* ---------------- CHESHIRE STREET (west): vintage, records, workshops, a couple of shut units ---------------- */
+HAND['cheshire:n:-353']=[
+  hS('vintage','RAG & BONE VINTAGE',{w:7,disp:'rail',brick:'soot'}), hS('records','DEAD WAX RECORDS',{w:5,brick:'stock'}),
+  hW('J. SALMON & SON','workshop',{w:10,sub:'FRENCH POLISHERS · EST. 1932',doors:'#2a3a2a'}), hS('tolet',null,{w:5,was:'MANNY\'S',brick:'yellow'}), hS('cafe','THE BRICK CAFE',{w:5,disp:'board',brick:'yellow'}),
+];
+HAND['cheshire:n:-140']=[
+  hP('THE WEAVERS\' ARMS','black',{w:8,brick:'soot'}), hS('vintage','KILO VINTAGE',{disp:'rail',brick:'stock'}), hS('antiques','HOBBS & DAUGHTER',{disp:'bric',brick:'stock'}), hS('records','SIDE B RECORDS',{brick:'stock'}),
+  hW('E2 PRINTWORKS','workshop',{w:9,sub:'SCREEN PRINTING · T-SHIRTS · POSTERS',open:true,brick:'soot'}), hS('tolet',null,{was:'LEVY & SONS',brick:'soot'}), hS('cafe','SUNDAY COFFEE',{disp:'chairs',brick:'yellow'}),
+  hS('vintage','SECOND SKIN',{disp:'rail',brick:'yellow'}), hS('gallery','CHESHIRE ST GALLERY',{brick:'paintW'}), hG('gate',3,{c:'#3a2a1a'}), hS('homeware','BAZAAR E2',{brick:'red'}),
+];
+
+/* ---------------- THREE COLTS LANE (west of Vallance): garages and yards facing the arches ---------------- */
+HAND['colts:s:-353']=[
+  hW('VALLANCE MOTORS','garage',{w:10,open:true,dw:4.2,st:1,gh:4.4,brick:'soot'}), hG('yard',6), hW('ACE TYRES','garage',{w:8,st:2,bg:'#f2c200',fg:'#1a1a1a',face:'anton'}), hG('garage',7),
+];
+
+/* ---------------- OLD BETHNAL GREEN ROAD (north side, west of the Overground): the long terrace, with its pubs, a corner shop, a council infill ---------------- */
+HAND['oldbg:n:-353']=[ ...hT('stock',2,'krgn'), hS('offy','OLD BETHNAL STORES',{w:6,disp:'news'}), ...hT('stock',2,'y') ];
+HAND['oldbg:s:-353']=[ hP('THE HARE & HOUNDS','green',{w:8.5}), ...hT('yellow',2,'wkr'), hG('alley',1.5), ...hT('yellow',2,'n') ];
+HAND['oldbg:n:-147']=[
+  hP('THE LORD NELSON','navy',{w:8.5,brick:'yellow'}), ...hT('yellow',2,'kngrywbt'), hG('alley',1.4,{plank:true}), ...hT('yellow',2,'rkgnp'),
+  ...hT('stock',3,'BKRGN',{scaf:2}), hG('gate',3,{c:'#1a2a4a'}), ...hT('red',2,'wkytrn'), hI('1–15 GREENWOOD HOUSE','estbrick',4,16),
+  ...hT('stock',2,'kgbr'), hS('offy','NELSON NEWS & WINE',{w:6,disp:'news'}), hG('alley',1.6), ...hT('soot',2,'ntrgk',{hv:'cottage'}),
+  ...hT('paintW',2,'k',{}), hG('garage',6.5), ...hT('brown',2,'kmtrg'), hP('THE BRICKLAYERS ARMS','tile',{w:8.5,brick:'red'}),
+  ...hT('yellow',3,'NKRWYG'), hG('alley',1.4,{plank:true}), ...hT('yellow',3,'GKBR'),
+  ...hT('stock',2,'kyrnwg',{stuc:'#d8d0c0'}), hS('tolet',null,{w:5.5,was:'C. MARKS HABERDASHER'}), hG('gate',2.8),
+  ...hT('red',2,'gy'), hS('cafe','THE KETTLE',{w:5.5,disp:'board'}),
+];
+
+/* ---------------- DERBYSHIRE STREET: two-storey cottages off Columbia Road ---------------- */
+HAND['derby:n:-254']=[
+  hS('offy','DERBY FOOD & WINE',{w:6,disp:'news'}), ...hT('yellow',2,'kngrYwbt'), hG('alley',1.4), ...hT('stock',2,'rktgn',{hv:'cottage'}),
+  hI('1–9 MOLLOY HOUSE','lbuff',3,13), ...hT('red',2,'bwkr'), hG('gate',2.6), ...hT('stock',2,'gyn'), hP('THE ALBION','black',{w:8}),
+];
+HAND['derby:s:-254']=[
+  ...hT('stock',2,'rkgnwy',{hv:'cottage'}), hG('alley',1.4), ...hT('stock',2,'tbkr',{hv:'cottage'}), ...hT('paintCr',2,'g'), ...hT('yellow',2,'knrpyk',{scaf:3}),
+  hG('garden',6), ...hT('yellow',2,'wgbr'), ...hT('soot',2,'kyn'), hS('offy','DERBYSHIRE STORES',{w:6}),
+];
+HAND['derby:n:-101']=[
+  ...hT('stock',2,'kgrnwy',{hv:'cottage'}), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bktr',{hv:'cottage'}), ...hT('paintPk',2,'k'), ...hT('red',3,'GNKRB'),
+  hG('gate',3), ...hT('yellow',2,'nkyrgw'), hI('1–12 FOURNIER HOUSE','estbrick',4,15), ...hT('stock',2,'rgkn'), hS('cafe','DERBY CAFE',{w:5.5,disp:'chairs'}),
+];
+HAND['derby:s:-140']=[ hP('THE CROWN & ANCHOR','oxblood',{w:8}), ...hT('yellow',2,'kgrny'), hG('alley',1.4), ...hT('yellow',2,'wbktr',{scaf:1}), ...hT('red',2,'gk') ];
+
+/* ---------------- HEREFORD STREET (west) ---------------- */
+HAND['hereford:n:-140']=[
+  hS('offy','HEREFORD FOOD & WINE',{w:6,disp:'news'}), ...hT('yellow',2,'kn'), hG('gate',3), ...hT('red',3,'BK',{scaf:1}),
+  hI('1–12 COLVILLE HOUSE','estbrick',4,13), ...hT('paintW',2,'n',{}), hG('alley',1.6), ...hT('soot',2,'ygr'),
+];
+HAND['hereford:s:-140']=[ ...hT('stock',2,'rkgnwyb'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'tkrg'), ...hT('brown',2,'nwk'), hP('THE OLD KING JOHN','green',{w:8}) ];
+
+/* ---------------- BUCKHURST STREET (west of Vallance) ---------------- */
+HAND['buckhurst:n:-353']=[ ...hT('stock',2,'krgnb'), hS('offy','BUCKHURST STORES',{w:6,disp:'news'}) ];
+HAND['buckhurst:s:-353']=[ ...hT('yellow',2,'ytk'), hG('alley',1.5), ...hT('yellow',2,'rng') ];
+
+/* ---------------- VALLANCE ROAD: a wide road of terraces, a laundrette and a café on the west side, council blocks ---------------- */
+HAND['vallance:w:-233']=[ hS('laundry','VALLANCE LAUNDERETTE',{w:6.5}), ...hT('stock',3,'KRG') ];
+HAND['vallance:e:-233']=[ ...hT('stock',3,'NBW'), hS('cafe','THE VALLANCE CAFE',{w:6,disp:'chairs',aw:'#2a4a2a/#e8e4d8'}) ];
+HAND['vallance:w:-103']=[
+  hS('offy','VAL\'S FOOD & WINE',{w:6,disp:'news'}), ...hT('yellow',3,'KRNGYW',{scaf:3}), hG('alley',1.6), ...hT('yellow',2,'knrg'), hI('1–20 PEMELL HOUSE','estbrick',5,18),
+  ...hT('stock',2,'rgkwny',{stuc:'#cfc6b2'}), hG('gate',3), ...hT('red',2,'bkyrg'), ...hT('red',3,'GKB'),
+  hG('garage',6.5), ...hT('stock',2,'ynk'), hP('THE ROSE & CROWN','oxblood',{w:8.5}),
+];
+HAND['vallance:e:-82']=[ ...hT('yellow',3,'KRGN') ];
+HAND['vallance:e:-26']=[ ...hT('stock',2,'nrgk'), hS('offy','EAST STORES',{w:5.5}) ];
+HAND['vallance:w:64']=[
+  hS('chicken','VALLANCE FRIED CHICKEN',{w:5.5}), hS('barber','KUTZ BARBERS',{w:5}), ...hT('stock',3,'RKNG'), hG('alley',1.5), ...hT('yellow',2,'kg'),
+  hI('1–12 KINDER HOUSE','lbuff',4,14), ...hT('stock',2,'bkrg'),
+];
+HAND['vallance:w:185']=[ ...hT('soot',2,'krgn'), hG('gate',3), hH('soot',2,'y') ];
+HAND['vallance:e:185']=[ hH('stock',2,'r'), ...hT('stock',2,'kgnw'), hG('alley',1.5) ];
+HAND['vallance:w:230']=[ hS('offy','BUCKHURST FOOD & WINE',{w:8.5}) ];
+HAND['vallance:e:230']=[ hH('yellow',2,'k',{w:4.25}), hH('yellow',2,'g',{w:4.25}) ];
+
+/* ---------------- MAPE STREET ---------------- */
+HAND['mape:w:-82']=[ ...hT('stock',2,'kgrn') ];
+HAND['mape:e:-82']=[ ...hT('yellow',2,'rkyw') ];
+HAND['mape:w:-26']=[ ...hT('red',2,'bkrg'), hG('alley',1.4) ];
+HAND['mape:e:-26']=[ hS('cafe','MAPE ST CAFE',{w:6,disp:'board'}), ...hT('stock',2,'nkry') ];
+HAND['mape:e:40']=[ ...hT('stock',2,'krgnwt') ];
+HAND['mape:e:96']=[ ...hT('yellow',2,'rk'), hG('gate',3) ];
+
+/* ---------------- GOSSET STREET ---------------- */
+HAND['gosset:w:-26']=[ ...hT('yellow',2,'kngrw') ];
+HAND['gosset:e:-26']=[ ...hT('stock',2,'rgk'), hG('alley',1.4), ...hT('stock',2,'nw') ];
+HAND['gosset:w:40']=[ ...hT('red',3,'KRGNB',{w:5.5}), hH('red',3,'w') ];
+HAND['gosset:e:40']=[ hS('offy','GOSSET MINI MARKET',{w:6,disp:'news'}), ...hT('stock',2,'kgrny') ];
+HAND['gosset:w:96']=[ ...hT('yellow',2,'kr'), hG('alley',1.5) ];
+HAND['gosset:e:96']=[ ...hT('soot',2,'gnk') ];
+
+/* ==========================================================================================================
+   HAND-WRITTEN FRONTAGES, CENTRE: Gosset Street to Florida Street (x streets with their middle between -100 and 105,
+   and Wilmot Street, Pollard Row, Florida Street). Bethnal Green Road either side of the start, Cheshire Street's
+   middle, the long Buckhurst Street terraces and Three Colts Lane's garages and workshops facing the arches, and the
+   streets of little terraces between. Items run west to east (x streets) or north to south (z streets). Names made up.
+   ========================================================================================================== */
+var HAND=HAND||{};
+
+/* ---------------- BETHNAL GREEN ROAD, either side of the start ---------------- */
+HAND['bgr:n:-61']=[
+  hS('offy','GOSSET FOOD & WINE',{w:6,disp:'news',brick:'stock'}), hS('kebab','SULTAN GRILL',{w:5.5,brick:'stock'}), hS('agent','ALDGATE & EAST',{w:5,brick:'yellow'}),
+  hS('cafe','THE GREEN CAFE',{w:5.5,disp:'chairs',aw:'#1e3a2a/#e8e4d8',brick:'yellow'}), hS('bookie','STAR BETS',{w:6,brick:'red'}), hS('tolet',null,{w:5,was:'BARGAIN BOOZE & NEWS',brick:'red',scaf:true}),
+  hS('sweets','DHAKA SWEETS & SAVOURIES',{w:6,aw:'#e8b020',brick:'stock'}), hG('alley',1.6), hS('phone','PHONE CLINIC',{w:4.5,brick:'stock'}), hS('vape','VAPOUR ROOM',{w:4.5,brick:'soot'}),
+  hS('money','PADMA MONEY TRANSFER',{w:5,brick:'soot'}), hS('pound','EVERYTHING £1',{w:6,disp:'bric',brick:'yellow'}), hS('laundry','WILMOT LAUNDERETTE',{w:6,brick:'yellow'}),
+];
+HAND['bgr:s:-61']=[
+  hP('THE GEORGE IV','oxblood',{w:8.5,brick:'red'}), hS('chicken','CHICKEN SPOT',{w:5,brick:'stock'}), hS('grocer','PADMA SUPERSTORE',{w:8,disp:'veg',aw:'#1e5a2a/#e8e4d8',brick:'stock'}),
+  hS('gold','BG GOLD & PAWN',{w:5,brick:'stock'}), hS('barber','KINGSLAND BARBERS',{w:5,brick:'yellow'}), hS('chemist','GREEN CROSS PHARMACY',{w:6.5,brick:'yellow'}),
+  hS('curry','TASTE OF SYLHET',{w:6.5,brick:'red',sub:'BALTI · BIRYANI · TAKEAWAY'}), hS('nails','GLAM NAILS',{w:4.5,brick:'paintPk'}), hS('agent','MARSH & CO',{w:5,brick:'stock'}),
+  hS('kebab','DIYAR KEBAB',{w:5,brick:'stock'}), hS('offy','24 HOUR FOOD & WINE',{w:5.5,disp:'news',brick:'stock'}),
+];
+HAND['bgr:n:73']=[
+  hS('cashcarry','POLLARD CASH & CARRY',{w:9,disp:'veg',aw:'#c81e1e/#f0ece0',brick:'soot'}), hS('chicken','KFRY CHICKEN',{w:5,brick:'stock'}), hS('travel','SYLHET AIR TRAVEL',{w:5,brick:'stock'}),
+  hS('bakery','EUROPA BAKERY',{w:5.5,disp:'board',brick:'yellow'}), hS('tolet',null,{w:5,was:'TOP CUTS',brick:'yellow'}), hS('butcher','BISMILLAH HALAL BUTCHERS',{w:6,brick:'red'}),
+  hS('phone','iFIX E2',{w:4.5,brick:'red'}), hS('charity','EAST END HOSPICE SHOP',{w:6,brick:'stock'}), hP('THE PRINCESS ALICE','navy',{w:8,brick:'stock'}),
+];
+
+/* ---------------- CHESHIRE STREET (middle) ---------------- */
+HAND['cheshire:n:-61']=[
+  hS('vintage','THE JUMBLE ROOM',{disp:'rail',brick:'stock'}), hS('records','TWELVE INCH',{brick:'stock'}), hW('B. NATHAN','workshop',{w:9,sub:'UPHOLSTERY · CANE · RUSH',doors:'#5a1e30',brick:'soot'}),
+  hS('tolet',null,{was:'HARRY\'S BARGAINS',brick:'soot'}), hS('vintage','MOTH & MOTHBALL',{disp:'rail',brick:'yellow'}), hG('alley',1.6), hS('gallery','BETHNAL PROJECT SPACE',{brick:'paintW'}),
+  hS('cafe','DOUBLE SHOT',{disp:'chairs',brick:'yellow'}), hS('antiques','JUNK & DISORDERLY',{disp:'bric',brick:'red'}), hS('vintage','DENIM & DUST',{disp:'rail',brick:'red'}), hS('homeware','THE RUG ROOM',{brick:'stock'}),
+];
+HAND['cheshire:n:7']=[
+  hS('records','BACK TO MONO',{brick:'soot'}), hW('CHESHIRE ST CYCLES','workshop',{w:8,open:true,sub:'REPAIRS · FRAMES · PARTS',bg:'#2a4a6a',brick:'soot'}), hS('vintage','DEAD MEN\'S SHOES',{disp:'rail',brick:'stock'}),
+  hS('tolet',null,{was:'CHESHIRE CAFE',brick:'stock'}), hG('gate',3,{c:'#1a1a1c'}), hS('vintage','THE LOFT',{disp:'rail',brick:'stock'}), hS('cafe','THE ROLLING PIN',{disp:'board',brick:'yellow'}),
+];
+HAND['cheshire:n:73']=[
+  hP('THE GREEN MAN','black',{w:8,brick:'stock'}), hS('vintage','REWIND VINTAGE',{disp:'rail',brick:'stock'}), hS('records','SEVENTY EIGHT',{brick:'stock'}),
+  hW('KESSLER & CO','workshop',{w:9,sub:'SHEET METAL · FABRICATION',brick:'soot'}), hS('antiques','HOUSE CLEARANCE E2',{disp:'bric',brick:'soot'}), hS('gallery','SPACE 77',{brick:'paintW'}),
+  hS('vintage','MOD & ROCKER',{disp:'rail',brick:'red'}), hS('cafe','THE YARD CAFE',{disp:'chairs',brick:'red'}),
+];
+
+/* ---------------- HEREFORD STREET (middle) ---------------- */
+HAND['hereford:n:-61']=[ ...hT('stock',2,'kgrn'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bk'), hI('1–9 ALLEN HOUSE','estbrick',3,12), ...hT('red',2,'gnk'), hS('offy','HEREFORD STORES',{w:5.5,disp:'news'}) ];
+HAND['hereford:s:-61']=[ hP('THE BLACK HORSE','black',{w:8}), ...hT('yellow',2,'krnygwb',{scaf:4}), hG('gate',3), ...hT('yellow',3,'GKRN') ];
+HAND['hereford:n:7']=[ ...hT('soot',2,'kgrny'), hG('alley',1.4), ...hT('stock',2,'wbkr') ];
+HAND['hereford:s:7']=[ ...hT('stock',2,'rkgn',{hv:'cottage'}), ...hT('paintW',2,'k'), ...hT('stock',2,'ygr',{hv:'cottage'}), hG('garage',5) ];
+HAND['hereford:s:73']=[ hS('offy','KIRKWALL FOOD & WINE',{w:6,disp:'news'}), ...hT('red',3,'KRNGB'), hG('alley',1.5), ...hT('red',2,'wkrg') ];
+
+/* ---------------- DERBYSHIRE STREET (east end) ---------------- */
+HAND['derby:s:-61']=[ ...hT('yellow',2,'kgrnwy',{hv:'cottage'}), hG('alley',1.4,{plank:true}), ...hT('yellow',2,'bkrtg',{hv:'cottage'}), hP('THE FIVE BELLS','green',{w:8}) ];
+
+/* ---------------- OLD BETHNAL GREEN ROAD (south side, middle) ---------------- */
+HAND['oldbg:s:7']=[ hS('offy','OLD BG MINI MARKET',{w:6,disp:'news'}), ...hT('stock',3,'KRGNB'), hG('alley',1.4), ...hT('stock',2,'kyr') ];
+HAND['oldbg:s:73']=[ ...hT('yellow',2,'kgrnwy'), hG('gate',3), ...hT('yellow',2,'bk'), hP('THE BUTCHER\'S ARMS','oxblood',{w:8}) ];
+
+/* ---------------- TEESDALE STREET, KIRKWALL PLACE ---------------- */
+HAND['teesdale:n:73']=[ ...hT('stock',2,'krgnwyb',{hv:'cottage'}), hG('alley',1.4,{plank:true}), ...hT('stock',2,'tkrg',{hv:'cottage'}) ];
+HAND['teesdale:s:73']=[ ...hT('red',2,'gkrny'), hI('1–8 TEESDALE HOUSE','lbuff',3,12), ...hT('red',2,'wkr'), hS('cafe','TEESDALE CAFE',{w:5.5,disp:'chairs'}) ];
+HAND['kirkwall:n:73']=[ ...hT('yellow',2,'kgrnyw'), hG('alley',1.4), ...hT('yellow',2,'brkt') ];
+HAND['kirkwall:s:73']=[ hS('offy','KIRKWALL STORES',{w:5.5}), ...hT('stock',3,'RKGN',{scaf:2}), hG('gate',3), ...hT('stock',2,'kwygr') ];
+
+/* ---------------- WILMOT STREET: a long west side of terraces, with infill and a pub ---------------- */
+HAND['wilmot:e:-115']=[
+  ...hT('stock',2,'kgrnwyb'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'tkrgny'), hP('THE WHITE HART','cream',{w:8}), ...hT('yellow',3,'KRGNBW',{scaf:2}),
+  hI('1–18 WILMOT HOUSE','estbrick',4,17), ...hT('red',2,'gkyrnw'), hG('garage',6), ...hT('stock',2,'bkrg'),
+];
+HAND['wilmot:e:41']=[ ...hT('yellow',2,'kgrn'), hG('alley',1.4), ...hT('yellow',2,'wyk'), hS('offy','WILMOT FOOD & WINE',{w:5}) ];
+HAND['wilmot:e:96']=[ ...hT('stock',2,'kr'), hG('gate',3) ];
+HAND['wilmot:w:-82']=[ ...hT('red',2,'gkrn') ];
+HAND['wilmot:w:-26']=[ ...hT('stock',2,'krgn'), hS('cafe','WILMOT CAFE',{w:5,disp:'board'}) ];
+HAND['wilmot:w:40']=[ ...hT('soot',2,'kgrny'), hG('alley',1.4) ];
+HAND['wilmot:w:96']=[ ...hT('yellow',2,'nk'), hH('yellow',2,'r',{w:3.5}) ];
+
+/* ---------------- POLLARD ROW: facing the Overground's arches; lock-ups, workshops, low council blocks ---------------- */
+HAND['pollard:e:-152']=[
+  hG('garage',10), hW('POLLARD JOINERY','workshop',{w:9,doors:'#2a3a2a',sub:'SASH WINDOWS · DOORS · STAIRS'}), hI('1–24 POLLARD HOUSE','estbrick',4,22),
+  hG('yard',8), hW('ARCH AUTOS','garage',{w:9,open:true}), ...hT('stock',2,'kgrn'), hG('garage',7),
+];
+HAND['pollard:e:-71']=[ hW('E2 UPHOLSTERY','workshop',{w:9,sub:'RE-COVERS · FOAM CUT TO SIZE',bg:'#3a1a1a'}), hG('alley',1.5), hH('soot',2,'k') ];
+HAND['pollard:e:-22']=[ hI('1–8 ROWLEY HOUSE','lbuff',3,13), hG('garage',5) ];
+HAND['pollard:e:96']=[ hW('KWIK SCAFF','builders',{w:9,sub:'SCAFFOLDING · HIRE · ERECTION',open:true}), hG('yard',4.5) ];
+
+/* ---------------- FLORIDA STREET ---------------- */
+HAND['florida:w:-152']=[ ...hT('stock',2,'kgrnwy'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bkrtgn'), hG('gate',3), ...hT('red',3,'KRG'), hS('offy','FLORIDA STORES',{w:5.5,disp:'news'}) ];
+HAND['florida:e:-152']=[ hP('THE NAG\'S HEAD','green',{w:8}), ...hT('yellow',2,'kgrny'), hI('1–15 FLORIDA HOUSE','estbrick',4,16), ...hT('yellow',2,'wbkrg',{scaf:2}), hG('alley',1.4), ...hT('stock',2,'ky') ];
+HAND['florida:w:-71']=[ ...hT('stock',2,'kgr') ];
+HAND['florida:e:-71']=[ ...hT('red',2,'nwk') ];
+HAND['florida:w:-22']=[ ...hT('yellow',2,'rkg') ];
+HAND['florida:e:-22']=[ ...hT('stock',2,'gn'), hG('alley',1.5), hH('stock',2,'y',{w:4}) ];
+HAND['florida:w:96']=[ ...hT('soot',2,'kr'), hG('gate',3) ];
+HAND['florida:e:96']=[ ...hT('stock',2,'gnk') ];
+
+/* ---------------- THREE COLTS LANE: garages, a hand car wash, builders' merchants and workshops facing the arches, a few houses and a pub ---------------- */
+HAND['colts:s:-74']=[
+  hP('THE THREE COLTS','tile',{w:9,brick:'soot'}), hW('COLTS MOT CENTRE','garage',{w:10,open:true,st:1,gh:4.6}), hG('yard',7), hW('BRADY BUILDERS MERCHANTS','builders',{w:14,open:true,st:2,dw:5}),
+  ...hT('soot',2,'kgrn'), hG('garage',9.5), hW('S. KAPOOR & SONS','cashcarry',{w:12,sub:'WHOLESALE WAREHOUSE · TRADE ONLY',bg:'#d8201a',fg:'#ffffff',face:'anton',st:3}),
+  hW('LANE HAND CAR WASH','garage',{w:10,open:true,st:1,gh:4.4,sub:'HAND CAR WASH · VALETING · £5',bg:'#2a6ac8'}), hG('yard',6), ...hT('stock',2,'krnyg',{hv:'cottage'}), hI('1–12 COLT HOUSE','estbrick',4,15),
+  hW('M. GOLDSTEIN','workshop',{w:9,sub:'CABINET MAKERS · EST. 1928',doors:'#1e3a26'}), hW('PRESTIGE COACHWORKS','garage',{w:10,open:true,st:1,gh:4.6,sub:'ACCIDENT REPAIR · RESPRAYS'}),
+  hG('garage',12.5), hW('EAST LONDON SCAFFOLDING','builders',{w:12,open:true,st:1,gh:4.4}), ...hT('yellow',2,'kgrwy',{scaf:2}), hS('cafe','THE COLTS CAFE',{w:6,disp:'chairs',aw:'#c81e1e/#f0ece0'}),
+  hW('SIDDIQUI TEXTILES','workshop',{w:12,sub:'CUTTING · MAKING · TRIMMING',st:3,bg:'#4a1a4a'}), hG('yard',8), hW('TYRES 4 LESS','garage',{w:9,open:true,st:1,gh:4.4,bg:'#f2c200',fg:'#1a1a1a'}),
+  ...hT('stock',2,'bkrg'), hP('THE GOODS YARD','black',{w:8.5}), hW('ROTHER PRINTERS','workshop',{w:11,sub:'LITHO · DIGITAL · BINDING',st:3}), hG('garage',9),
+  hW('ACE MOTORS','garage',{w:10,open:true,st:1,gh:4.6}), hG('yard',7), ...hT('soot',2,'kgrny'), hW('T. MURPHY & SON','builders',{w:12,open:true,sub:'DEMOLITION · SKIP HIRE · GROUNDWORKS',bg:'#1e3a26'}),
+  ...hT('stock',2,'rgnkybwt'), hW('J. & M. FISHER','workshop',{w:11,sub:'PIANO RESTORERS · EST. 1949',doors:'#3a2a4a'}), hG('yard',8), ...hT('yellow',3,'KRGNB'),
+  hW('DOCKLANDS VAN HIRE','garage',{w:12,open:true,st:1,gh:4.4,bg:'#e86a10',fg:'#1a1a1a'}), hG('garage',10), hS('tolet',null,{w:5.5,was:'COLTS DINER'}),
+  hI('1–9 VIADUCT HOUSE','lbuff',3,13), hW('BETHNAL GREEN MOTOR SPARES','garage',{w:10,st:2}), hS('offy','COLTS LANE STORES',{w:6,disp:'news'}),
+];
+
+/* ---------------- BUCKHURST STREET: the long terraces, both sides, with infill, pubs and the odd shop ---------------- */
+HAND['buckhurst:n:-74']=[
+  hP('THE THREE CROWNS','green',{w:8.5}), ...hT('stock',2,'kngrywbtkr'), hG('alley',1.4,{plank:true}), ...hT('yellow',3,'BKRGNWYB',{scaf:3}), hI('1–20 HARVEY HOUSE','estbrick',4,18),
+  ...hT('red',2,'gkyrnwtb'), hG('gate',3), ...hT('stock',2,'krgnybwk',{hv:'cottage'}), hS('offy','BUCKHURST MINI MARKET',{w:6,disp:'news'}), ...hT('paintW',2,'k'), ...hT('stock',2,'rgnyk'),
+  hG('garage',7), ...hT('yellow',2,'nkrgwytb'), hP('THE WHEATSHEAF','black',{w:8.5}), ...hT('soot',3,'GKRNB'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'kyrgnwbt'),
+  hI('1–16 CHEVIOT HOUSE','lbuff',4,16), ...hT('red',2,'rkgnyw'), hG('garden',7), ...hT('stock',2,'bknrgy'), ...hT('yellow',2,'krgnyw',{stuc:'#d0c8b4'}), hS('cafe','BUCKHURST CAFE',{w:5.5,disp:'chairs'}),
+];
+HAND['buckhurst:s:-74']=[
+  hS('offy','DUNBRIDGE FOOD & WINE',{w:6,disp:'news'}), ...hT('yellow',2,'kgrnwybt',{hv:'cottage'}), hG('alley',1.4,{plank:true}), ...hT('yellow',2,'rkgnyw',{hv:'cottage'}), ...hT('paintBl',2,'k',{hv:'cottage'}),
+  ...hT('stock',2,'gnrkybw'), hI('1–12 ALDGATE HOUSE','estbrick',3,15), ...hT('stock',2,'krgnw',{scaf:2}), hG('gate',3), ...hT('red',3,'GKRNBW'), hP('THE GREYHOUND','oxblood',{w:8.5}),
+  ...hT('stock',2,'kyrgnbwt'), hG('alley',1.4,{plank:true}), ...hT('soot',2,'kgrn',{hv:'cottage'}), ...hT('paintCr',2,'g',{hv:'cottage'}), ...hT('stock',2,'rkynwg',{hv:'cottage'}),
+  hG('garage',7), ...hT('stock',2,'kgrnwybtk'), ...hT('yellow',3,'NKRGBWYK'), ...hT('yellow',2,'bkrgny'), hI('13–24 ALDGATE HOUSE','lbuff',3,15), ...hT('yellow',2,'krgwny'), hG('alley',1.4), ...hT('red',2,'gkbyr'), hS('tolet',null,{w:5.5,was:'S. COHEN NEWSAGENT'}),
+];
+
+/* ==========================================================================================================
+   HAND-WRITTEN FRONTAGES, EAST: Florida Street to Cambridge Heath Road (x streets with their middle east of 105,
+   Barnet Grove and Cambridge Heath Road). The main road's taller shop parades by the Tube, Bethnal Green Road's east
+   end, Cheshire Street's last workshops, Three Colts Lane by the gasholders, and the terraces of Barnet Grove,
+   Teesdale and Kirkwall. Items run west to east (x streets) or north to south (z streets). Names made up.
+   ========================================================================================================== */
+var HAND=HAND||{};
+
+/* ---------------- BETHNAL GREEN ROAD (east end) ---------------- */
+HAND['bgr:n:143']=[
+  hP('THE VICTORIA','cream',{w:8.5,brick:'stucco'}), hS('chicken','CHICKEN XPRESS',{w:5,brick:'stock'}), hS('kebab','MANGAL 2',{w:5.5,brick:'stock'}), hS('money','BENGAL EXCHANGE',{w:4.5,brick:'yellow'}),
+  hS('grocer','FAMILY FOOD CENTRE',{w:8,disp:'veg',aw:'#1e3a6a/#e8e4d8',brick:'yellow'}), hS('barber','SHARP LINES',{w:4.5,brick:'red'}), hS('phone','CELL CITY',{w:4.5,brick:'red'}),
+  hS('tolet',null,{w:5,was:'ABBEY NATIONAL',brick:'stock'}), hS('cafe','E2 CAFE',{w:5.5,disp:'chairs',aw:'#3a1a1a/#e8e0c8',brick:'stock'}), hS('optician','SEE CLEARLY',{w:5,brick:'paintW'}),
+  hS('bookie','PRINCE BETS',{w:6,brick:'brown'}),
+];
+HAND['bgr:n:355']=[ hS('offy','HEATH FOOD & WINE',{w:6,disp:'news',st:4}), hS('chicken','HEATH CHICKEN',{w:5,st:4}), hS('travel','GREEN LINE TRAVEL',{w:5,st:4}), hS('cafe','CAFE ROMA',{w:6,disp:'chairs',st:4,aw:'#1e3a2a/#e8e4d8'}), hS('nails','NAIL BAR',{w:5,st:4}) ];
+HAND['bgr:s:355']=[ hS('chemist','HEATH PHARMACY',{w:6.5,st:4}), hS('agent','PARADISE ESTATES',{w:5.5,st:4}), hS('curry','BENGAL BRASSERIE',{w:6.5,st:4}), hS('vape','VAPE STOP',{w:4.5,st:4}), hS('laundry','HEATH LAUNDERETTE',{w:6,st:4}) ];
+
+/* ---------------- CAMBRIDGE HEATH ROAD: a wide main road, taller parades over shops, the station end ---------------- */
+HAND['camheath:e:-233']=[ hS('cafe','HACKNEY ROAD CAFE',{w:6,disp:'chairs',st:4}), hS('kebab','ANADOLU OCAKBASI',{w:7,st:4}), hS('phone','PHONEWORLD',{w:5,st:4}), hS('offy','24-7 STORES',{w:5,st:4}) ];
+HAND['camheath:w:-233']=[ /* the petrol station (48d) stands here */ hG('none',22.5) ];
+HAND['camheath:e:-103']=[
+  hS('cashcarry','HEATH CASH & CARRY',{w:9,disp:'veg',st:4,brick:'soot'}), hS('travel','SHAPLA TRAVEL',{w:5,st:4,brick:'soot'}), hS('cafe','THE PARADISE CAFE',{w:6,disp:'chairs',aw:'#2a4a2a/#e8e4d8',st:4,brick:'stock'}),
+  hS('chemist','CAMBRIDGE PHARMACY',{w:6.5,st:4,brick:'stock'}), hS('agent','EASTSIDE PROPERTY',{w:5.5,st:4,brick:'stock'}), hS('fabric','SARI PALACE',{w:6,disp:'rail',st:4,brick:'red'}), hG('alley',1.8),
+  hS('chicken','ROYAL FRIED CHICKEN',{w:5,st:4,brick:'red'}), hS('money','SONALI EXCHANGE',{w:4.5,st:4,brick:'red'}), hS('hardware','HEATH HARDWARE',{w:6.5,disp:'bric',st:4,brick:'yellow'}),
+  hP('THE PARADISE ARMS','oxblood',{w:9,st:4,brick:'yellow'}), hS('curry','THE BENGAL LANCER',{w:7,st:4,brick:'stucco',sub:'INDIAN & BANGLADESHI · EST. 1976'}), hS('nails','DIAMOND NAILS',{w:4.5,st:4,brick:'stucco'}),
+  hS('pound','POUNDS & PENCE',{w:6,disp:'bric',st:4,brick:'stock'}), hS('tolet',null,{w:5,was:'HEATH VIDEO',st:4,brick:'stock',scaf:true}), hS('records','HEATH RECORDS',{w:5,st:4,brick:'stock'}),
+  hS('bakery','LA PATISSERIE',{w:5.5,disp:'board',st:4,brick:'brown'}), hS('laundry','CAMBRIDGE DRY CLEANERS',{w:6,st:4,brick:'brown'}), hS('kebab','ISTANBUL MANGAL',{w:6,st:4,brick:'brown'}),
+  hS('optician','HEATH OPTICIANS',{w:5,st:4,brick:'red'}), hS('grocer','PARADISE SUPERSTORE',{w:8,disp:'veg',aw:'#1e5a2a/#e8e4d8',st:4,brick:'red'}), hS('vape','HEATH VAPES',{w:4.5,st:4,brick:'red'}),
+  hS('gold','ROYAL GOLD',{w:5,st:4,brick:'stock'}), hS('bookie','ROYAL BETS',{w:6,st:4,brick:'stock'}), hS('cafe','MO\'S CAFE',{w:5.5,disp:'chairs',st:4,brick:'stock'}), hS('offy','PARADISE FOOD & WINE',{w:6,disp:'news',st:4,brick:'stock'}),
+];
+HAND['camheath:e:64']=[
+  hS('cafe','STATION CAFE',{w:6,disp:'chairs',st:4,aw:'#c81e1e/#f0ece0'}), hS('phone','UNDERGROUND MOBILE',{w:5,st:4}), hS('offy','STATION NEWS',{w:5,disp:'news',st:4}), hS('chicken','CENTRAL CHICKEN',{w:5,st:4}),
+  hS('travel','MUSEUM TRAVEL',{w:5,st:4}), hS('barber','CENTRAL BARBERS',{w:5,st:4}), hP('THE MUSEUM TAVERN','green',{w:9,st:4,brick:'red'}), hS('charity','CHILDREN\'S HOSPICE SHOP',{w:6,st:4}),
+  hS('agent','HEATH & GREEN',{w:5.5,st:4}), hS('tolet',null,{w:5,st:4}), hS('bakery','HEATH BAKERY',{w:5.5,st:4}), hS('sweets','RUPCHANDA SWEETS',{w:6,st:4,aw:'#e8b020'}),
+];
+HAND['camheath:w:96']=[ hS('cafe','GARDEN CAFE',{w:6.5,disp:'chairs',st:4}), hS('offy','MUSEUM FOOD & WINE',{w:6.5,st:4}) ];
+HAND['camheath:e:185']=[ hS('cashcarry','TOWER CASH & CARRY',{w:9,st:4}), hS('kebab','TOWER GRILL',{w:5.5,st:4}), hS('laundry','TOWER LAUNDERETTE',{w:6.5,st:4}), hS('offy','MILE END STORES',{w:6.5,st:4}) ];
+HAND['camheath:w:185']=[ hP('THE WHITE HORSE','black',{w:9,st:4}), hS('tolet',null,{w:5,st:4}), hS('cafe','THE GASWORKS CAFE',{w:6.5,disp:'chairs',st:4}), hS('phone','FIX IT FAST',{w:5,st:4}) ];
+HAND['camheath:e:230']=[ hS('chicken','SOUTHERN STAR CHICKEN',{w:8.5,st:4}) ];
+HAND['camheath:w:230']=[ hS('offy','MILE END WINES',{w:8.5,st:4}) ];
+
+/* ---------------- CHESHIRE STREET (east end): the last workshops before the gasworks ---------------- */
+HAND['cheshire:n:143']=[
+  hS('vintage','THE WARDROBE',{disp:'rail',brick:'stock'}), hW('A. LEVY & SONS','workshop',{w:10,sub:'CABINET MAKERS · EST. 1921',doors:'#1e3a26',brick:'soot'}), hS('records','LOCKED GROOVE',{brick:'stock'}),
+  hS('tolet',null,{was:'BLOOM\'S BAGELS',brick:'stock'}), hG('gate',3,{c:'#3a1a1a'}), hS('antiques','THE SALVAGE YARD',{w:7,disp:'bric',brick:'soot'}), hS('cafe','GASWORKS COFFEE',{disp:'chairs',brick:'yellow'}),
+  hS('vintage','HAND ME DOWN',{disp:'rail',brick:'yellow'}), hP('THE ELEPHANT\'S HEAD','tile',{w:8,brick:'red'}),
+];
+HAND['cheshire:n:253']=[
+  hS('offy','CHESHIRE FOOD & WINE',{w:6,disp:'news'}), hS('vintage','PAPER MOON VINTAGE',{disp:'rail'}), hW('COHEN BROS','workshop',{w:10,sub:'FURRIERS & LEATHER',doors:'#2a2a3a'}),
+  hS('gallery','THE ENGINE SHED',{w:7}), hS('records','RUFF CUTS',{}), hS('tolet',null,{was:'MAX\'S RADIO & TV'}), hS('vintage','GOOD AS NEW',{disp:'rail'}), hG('alley',1.6),
+  ...hT('soot',3,'KRGN'), hW('GASWORKS STUDIOS','workshop',{w:12,sub:'ARTISTS\' STUDIOS · NO ENTRY',open:true,st:3}), hS('cafe','BEIGEL & BREW',{disp:'chairs'}), ...hT('stock',2,'kgrny',{scaf:2}),
+  hS('antiques','BRIC-A-BRAC',{disp:'bric'}), hS('vintage','THE SWAP SHOP',{disp:'rail'}), hP('THE BELL FOUNDRY','green',{w:8}),
+];
+HAND['cheshire:n:355']=[ hS('vintage','LAST STOP VINTAGE',{w:6,disp:'rail'}), hW('HEATH METALWORKS','workshop',{w:10}), hS('cafe','CORNER CAFE',{w:6,disp:'board'}), hS('tolet',null,{w:6}) ];
+
+/* ---------------- THREE COLTS LANE (east): by the gasholders ---------------- */
+HAND['colts:s:253']=[
+  hW('GASHOLDER MOTORS','garage',{w:10,open:true,st:1,gh:4.6}), hG('yard',8), hW('KING\'S TIMBER','builders',{w:14,open:true,sub:'TIMBER · SHEET · CUT TO SIZE'}), ...hT('soot',2,'kgrnw'),
+  hG('garage',10), hW('ACE MINICABS','garage',{w:8,st:2,sub:'24 HOURS · AIRPORTS · 020 7739 1111',bg:'#1a1a1a',fg:'#f2c200'}), hI('1–12 GASKELL HOUSE','lbuff',4,15), hW('RIVETT & SONS','workshop',{w:10,sub:'LIFT ENGINEERS'}),
+  ...hT('stock',2,'bkry'), hG('yard',7), hP('THE BRUNSWICK','oxblood',{w:8.5}),
+];
+HAND['colts:s:355']=[ hW('HEATH TYRES','garage',{w:10,open:true,st:1,gh:4.4,bg:'#f2c200',fg:'#1a1a1a'}), hG('garage',8), hW('MILE END SCAFFOLD','builders',{w:10,open:true,st:1,gh:4.2}) ];
+
+/* ---------------- OLD BETHNAL GREEN ROAD (east of the Overground) ---------------- */
+HAND['oldbg:n:177']=[
+  ...hT('stock',2,'kgrn'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bkrtgn'), hP('THE GLOBE','green',{w:8.5}), ...hT('yellow',3,'KRGNBWY',{scaf:3}), hI('1–20 MINTERN HOUSE','estbrick',5,18),
+  ...hT('red',2,'gkyrnw'), hG('gate',3), ...hT('stock',2,'krgnyb',{hv:'cottage'}), hS('offy','GLOBE FOOD & WINE',{w:6,disp:'news'}), ...hT('paintBl',2,'k'), hP('THE CAMBRIDGE ARMS','navy',{w:9,st:4}),
+  /* the petrol station's forecourt (48d) takes the rest of the side */ hG('none',90),
+];
+HAND['oldbg:n:355']=[ hS('cafe','HACKNEY RD CAFE',{w:6,disp:'chairs',st:4}), hS('kebab','HACKNEY KEBAB',{w:5.5,st:4}), hS('offy','NORTH STORES',{w:5.5,st:4}), hS('barber','TOP CUTS',{w:5,st:4}), hS('tolet',null,{w:5,st:4}) ];
+HAND['oldbg:s:143']=[ ...hT('stock',2,'kgrnwy'), hG('alley',1.4), ...hT('stock',2,'bkrtg'), hS('offy','TEESDALE FOOD & WINE',{w:5.5,disp:'news'}) ];
+HAND['oldbg:s:355']=[ hS('curry','THE GREAT EASTERN',{w:7,st:4}), hS('phone','HACKNEY FIX',{w:5,st:4}), hS('chicken','PERI HOUSE',{w:5,st:4}), hS('nails','GLOSS',{w:5,st:4}), hS('offy','HEATH STORES',{w:6,st:4}) ];
+
+/* ---------------- HEREFORD STREET (east), TEESDALE STREET, KIRKWALL PLACE ---------------- */
+HAND['hereford:s:143']=[ hP('THE FLYING SCUD','oxblood',{w:8}), ...hT('yellow',2,'kgrnwy'), hG('gate',3), ...hT('yellow',2,'bkrg'), ...hT('red',3,'KN') ];
+HAND['hereford:s:253']=[
+  hS('offy','HEREFORD MINI MARKET',{w:6,disp:'news'}), ...hT('stock',2,'kgrnwybt'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'rkgnyw',{hv:'cottage'}), hI('1–10 HEREFORD HOUSE','estbrick',4,15),
+  ...hT('red',3,'GKRNB'), hG('garden',6), ...hT('soot',2,'kygr'), hS('cafe','THE HEREFORD CAFE',{w:5.5,disp:'chairs'}),
+];
+HAND['teesdale:n:143']=[ ...hT('stock',2,'kgrnwy',{hv:'cottage'}), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bkrtgn',{hv:'cottage'}) ];
+HAND['teesdale:s:143']=[ hS('offy','TEESDALE STORES',{w:5.5}), ...hT('red',2,'gkrnw'), hG('gate',3), ...hT('red',2,'ykbrg') ];
+HAND['kirkwall:n:143']=[ ...hT('yellow',2,'kgrnyw'), hI('1–6 KIRKWALL HOUSE','lbuff',3,12), ...hT('yellow',2,'brkt') ];
+HAND['kirkwall:s:143']=[ ...hT('stock',3,'KRGN',{scaf:1}), hG('alley',1.5), ...hT('stock',2,'kwygrnbt') ];
+
+/* ---------------- BUCKHURST STREET (east) ---------------- */
+HAND['buckhurst:n:253']=[ hP('THE OLD GASWORKS','tile',{w:8.5}), ...hT('stock',2,'kgrnwybt'), hG('alley',1.4,{plank:true}), ...hT('yellow',3,'KRGNB'), hI('1–14 GAS HOUSE','estbrick',4,16), ...hT('stock',2,'rgnykw'), hS('offy','BARNET STORES',{w:5.5}) ];
+HAND['buckhurst:s:253']=[ ...hT('yellow',2,'kgrnwybt',{hv:'cottage'}), hG('gate',3), ...hT('yellow',2,'rkgnyw',{hv:'cottage'}), ...hT('paintGr',2,'k',{hv:'cottage'}), ...hT('stock',2,'gnrkyb'), hG('alley',1.4), ...hT('red',2,'kgrnw') ];
+HAND['buckhurst:n:355']=[ ...hT('stock',3,'KRGN',{w:5.6}), hS('offy','HEATH CORNER STORES',{w:6.5,st:3}) ];
+HAND['buckhurst:s:355']=[ ...hT('stock',3,'NKRG',{w:5.6}), hS('cafe','MILE END CAFE',{w:6.5,st:3}) ];
+
+/* ---------------- BARNET GROVE ---------------- */
+HAND['barnet:w:-152']=[ hS('offy','BARNET FOOD & WINE',{w:6,disp:'news'}), ...hT('stock',2,'kgrnwy'), hG('alley',1.4,{plank:true}), ...hT('stock',2,'bkrtg'), ...hT('red',3,'GKR') ];
+HAND['barnet:w:-71']=[ ...hT('yellow',2,'kgr') ];
+HAND['barnet:w:-22']=[ ...hT('stock',2,'nkr'), hG('alley',1.5) ];
+HAND['barnet:w:96']=[ ...hT('soot',2,'kg'), hH('soot',2,'r',{w:3.5}) ];
+HAND['barnet:e:96']=[ ...hT('stock',2,'ny'), hG('gate',3.5) ];
+HAND['barnet:w:185']=[ ...hT('stock',2,'kgrn'), hG('alley',1.5), hH('stock',2,'w',{w:4}) ];
+HAND['barnet:e:185']=[ hS('offy','GROVE STORES',{w:5.5}), ...hT('yellow',2,'kgrny') ];
+HAND['barnet:w:230']=[ hH('stock',2,'k',{w:4.25}), hH('stock',2,'r',{w:4.25}) ];
+HAND['barnet:e:230']=[ hH('red',2,'g',{w:4.25}), hH('red',2,'n',{w:4.25}) ];
+
 
 /* ==========================================================================================================
    SKY AND LANDMARKS. The sky is a box and a skyline ring that ride with the eye (they're "at infinity"): the City's
