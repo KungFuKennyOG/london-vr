@@ -23,10 +23,10 @@ Object.assign(GAME.LINES,{
 
 /* ---------- the boxing club: an open arch on the main line, lit, with Lenny outside ---------- */
 const BOXCLUB={x:-552,z:143.2};
-{ const x=BOXCLUB.x, zf=146-.02, warm=nightM(P2(128,96,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#ffd8a0'],[1,'#c87838']]); R(g,'#3a1a10',0,h-18,w,18);
-      R(g,'#c81a1a',20,40,88,4); R(g,'#e8e8e0',20,50,88,3); R(g,'#2a5ab8',20,60,88,3); for(const px of [20,108]) R(g,'#1a1a1a',px-2,36,4,40);
-      for(const bx of [8,116]){ R(g,'#3a3a3a',bx,10,2,20); ell(g,bx+1,46,6,14,'#8a1a1a'); } },0,1),{unlit:true},0);
-  eGrid(warm,[x+2.3,0,zf],NX,Y_,4.6,4.4,4.6,4.4); eSign(atlasSign('#141414','#f2c24a','EAST END ABC','BOXING · EST. 1884 · ALL WELCOME',{face:'anton',subC:'#e8e2d4'}),[x,5.2,zf-.05],NX,5,.9);
+{ const x=BOXCLUB.x, zf=146-.02, warm=(()=>{ const m=nightM(P2(128,128,(g,w,h)=>{ g.clearRect(0,0,w,h); g.save(); g.beginPath(); g.moveTo(8,h); g.lineTo(8,58); g.arc(64,58,56,Math.PI,0); g.lineTo(120,h); g.clip();
+      vfill(g,0,0,w,h,[[0,'#ffd8a0'],[1,'#c87838']]); R(g,'#3a1a10',0,h-18,w,18); R(g,'#c81a1a',20,72,88,4); R(g,'#e8e8e0',20,82,88,3); R(g,'#2a5ab8',20,92,88,3); for(const px of [20,108]) R(g,'#1a1a1a',px-2,68,4,42);
+      for(const bx of [14,112]){ R(g,'#3a3a3a',bx,30,2,24); ell(g,bx+1,70,6,16,'#8a1a1a'); } R(g,'#2a1a10',52,64,24,46); R(g,'#ffcf8a',55,67,18,18); g.restore(); },0,1),{unlit:true,cut:true},0); return m; })();
+  eGrid(warm,[x+2.4,0,zf-.01],NX,Y_,4.8,4.8,4.8,4.8); eSign(atlasSign('#141414','#f2c24a','EAST END ABC','BOXING · EST. 1884 · ALL WELCOME',{face:'anton',subC:'#e8e2d4'}),[x,5.2,zf-.05],NX,5,.9);
   STREET_LIGHT.pl.push([[x,3,zf-2],[1.6,1.1,.6],9]); }
 const LENNY_ID='ped9'; let LENNY=null;
 function makeLenny(){ const n=N(LIFE.root,BOXCLUB.x+1.4,PAVE_Y,BOXCLUB.z-.6); n.dyn=true; const C=makeChar(LENNY_ID,n,'cast'); applyPose(C,'watch'); n.r=[0,Math.PI,0]; skinUpdate(C); C.node=n; LENNY={C,n}; }
