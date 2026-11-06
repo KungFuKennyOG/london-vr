@@ -30,6 +30,16 @@ const tPeople=P2(256,256,(g)=>{ R(g,'#000',0,0,256,256);
   cell(48,g=>{ vfill(g,0,0,32,32,[[0,'#ffe0a0'],[1,'#e8b060']]); R(g,'#3a2a1a',0,26,32,6); });                                          /* 48 lit bus window */
   cell(49,g=>{ R(g,'#2a6aff',0,0,32,32); });                                                                                             /* 49 blue light */
   cell(50,g=>{ R(g,'#e8e8e0',0,0,32,32); for(let i=0;i<4;i++){ R(g,i%2?'#2a5ab8':'#d8c040',i*8,0,8,32); } });                          /* 50 battenburg */
+  /* the crowd's kit: tartan trolley bags, dogs, the flower buckets, umbrellas */
+  const tartan=(g,a,b,c)=>{ R(g,a,0,0,32,32); for(let i=0;i<32;i+=8){ R(g,b,i,0,3,32); R(g,b,0,i,32,3); R(g,c,i+5,0,1,32); R(g,c,0,i+5,32,1); } };
+  cell(51,g=>tartan(g,'#a81a1a','#1a2a1a','#e8d040')); cell(52,g=>tartan(g,'#1a3a6a','#1a5a3a','#e8e4dc'));                         /* 51,52 tartan */
+  cell(53,g=>{ R(g,'#6a4a2a',0,0,32,32); for(let k=0;k<60;k++) R(g,'#2a1a10',(k*7)%32,(k*11)%32,1,3); });                                /* 53 brindle */
+  cell(54,g=>{ R(g,'#5a5e66',0,0,32,32); for(let k=0;k<40;k++) R(g,'#4a4e56',(k*5)%32,(k*13)%32,2,1); });                                /* 54 blue staffie */
+  cell(55,g=>R(g,'#e8e4dc',0,0,32,32)); cell(56,g=>R(g,'#141414',0,0,32,32)); cell(57,g=>R(g,'#3a3a3e',0,0,32,32));                      /* 55 white, 56 black, 57 grey */
+  cell(58,g=>{ R(g,'#2a4a1a',0,0,32,32); for(let k=0;k<70;k++) R(g,['#e8d020','#e84a6a','#f0f0f0','#9a4ac8','#e86a20'][k%5],(k*7)%31,(k*13)%31,2,2); }); /* 58 flowers */
+  cell(59,g=>{ R(g,'#3a4a3a',0,0,32,32); R(g,'#5a6a5a',0,0,32,3); });                                                                 /* 59 zinc bucket */
+  cell(60,g=>{ R(g,'#16171a',0,0,32,32); R(g,'#2a2b30',0,0,32,2); }); cell(61,g=>{ R(g,'#1c2a5a',0,0,32,32); for(let i=0;i<32;i+=8) R(g,'#c8c8c0',i,0,1,32); }); /* 60,61 brollies */
+  cell(62,g=>R(g,'#c8231c',0,0,32,32)); cell(63,g=>{ R(g,'#c89a6a',0,0,32,32); });                                                    /* 62 lead red, 63 fawn */
 },0,1);
 const mPeople=M(tPeople,{emissive:0x0a0a0a}), mCarLights=nightM(tPeople,{unlit:true},.6);
 /* a box whose six faces each sample one atlas cell (fc: [right,left,top,bottom,front,back] cells) */
@@ -37,61 +47,9 @@ function abox(w,h,d,fc,at=[0,0,0]){ const g=box(w,h,d,{at}); for(let fi=0;fi<6;f
 const all6=c=>[c,c,c,c,c,c];
 function mergeG(list){ const g=new Geo(); for(const q of list){ const b=g.P.length/3; g.P.push(...q.P); g.Nm.push(...q.Nm); g.T.push(...q.T); for(const i of q.I) g.I.push(i+b); } return g; }
 
-/* ---------------- a person: one of the crowd on the Stairwell rig ---------------- */
-function makePed(i){ const id=CROWD[i%CROWD.length], root=N(LIFE.root); root.dyn=true; const C=makeChar(id,root,'cast'); applyPose(C,'idle');
-  const E={J:C.J,o:C.o,hd:0,pos:[0,0],walkAmt:0,runAmt:0,hp:{legL:1,legR:1,armL:1,armR:1},wpnHeld:false,kind:'civ',aware:false};
-  const r=hr(9300+i*31), kind=['local','local','local','elder','jogger','drunk','local'][r()*7|0];
-  return {root,C,E,id,kind,ph:r()*6,speed:kind==='jogger'?2.4:kind==='elder'?.85:kind==='drunk'?.9:1.1+r()*.3,line:null,s:0,dir:1,lane:0,idle:null,x:0,z:0,yaw:0,alive:false,pause:0,skinT:0,pose:'idle'}; }
-/* ---------------- where people walk: a line down the middle of every pavement ---------------- */
-const PLINES=[]; /* {ax:'x'|'z', c (fixed coord), a, b} */
-for(const S of STREETS){ const [id,ax,c,a,b,rw,pw]=S; let pn=pw,ps=pw; if(id==='bgr'){ pn=5.6; ps=3.0; }
-  const o1=c-rw/2-pn/2, o2=c+rw/2+ps/2;
-  for(const off of [o1,o2]){ /* split round the old street */ const cut=id==='bgr'?[[-17,37]]:[];
-    let segs=[[a,b]]; for(const [p,q] of cut) segs=segs.flatMap(([u,v])=>q<=u||p>=v?[[u,v]]:[[u,p],[q,v]].filter(([s0,s1])=>s1-s0>3));
-    for(const [u,v] of segs) PLINES.push({ax,c:off,a:u,b:v,id}); } }
-function lineXZ(L,s){ return L.ax==='x'?[s,L.c]:[L.c,s]; }
-/* what's nearby to hop onto at a line's end */
-function nextLine(L,end){ const [ex,ez]=lineXZ(L,end), out=[];
-  for(const M2 of PLINES){ if(M2===L) continue; const s=clamp(M2.ax==='x'?ex:ez,M2.a,M2.b), [px,pz]=lineXZ(M2,s), d=Math.hypot(px-ex,pz-ez); if(d<14) out.push([M2,s,d]); }
-  return out.length?out[Math.random()*out.length|0]:null; }
-
-/* idlers: smokers outside pubs, people waiting by the Tube and the chicken shops */
-const IDLE_SPOTS=[];
-function collectIdle(){ for(const [x,z,yaw] of PUB_SPOTS){ IDLE_SPOTS.push([x,z,yaw,'smoke'],[x+.9,z+.3,yaw+.6,'drink']); } for(const [x,z] of TUBES) IDLE_SPOTS.push([x+1.2,z-1,0,'phone']); }
-
-/* ---------------- placing people round the player ---------------- */
-const PED_N=24, PED_POOL=[]; for(let i=0;i<PED_N;i++){ const p=makePed(i); p.root.vis=false; PED_POOL.push(p); }
-function spawnPed(p,px,pz,near){ /* a pavement point 25-55 m away (or anywhere in range at the start) */
-  for(let tries=0;tries<30;tries++){ const L=PLINES[Math.random()*PLINES.length|0], s=L.a+Math.random()*(L.b-L.a), [x,z]=lineXZ(L,s), d=Math.hypot(x-px,z-pz);
-    if(d<(near?6:26)||d>55||inCore(x,z,1)) continue; p.line=L; p.s=s; p.dir=Math.random()<.5?1:-1; p.lane=(Math.random()-.5)*1.4; p.idle=null; p.alive=true; p.root.vis=true; p.x=x; p.z=z; p.pause=0; return true; }
-  return false; }
-function spawnIdler(p,px,pz){ const c=IDLE_SPOTS.filter(q=>{ const d=Math.hypot(q[0]-px,q[1]-pz); return d>12&&d<50&&!PED_POOL.some(o=>o.alive&&o.idle===q); }); if(!c.length) return false;
-  const q=c[Math.random()*c.length|0]; p.idle=q; p.line=null; p.x=q[0]; p.z=q[1]; p.yaw=q[2]; p.alive=true; p.root.vis=true; return true; }
-
-function pedTick(p,dt,px,pz){ const far=Math.hypot(p.x-px,p.z-pz); if(far>62){ p.alive=false; p.root.vis=false; return; }
-  let moving=false;
-  if(!p.idle){ /* walk the line; slow for whoever's ahead; step round the player */
-    let sp=p.speed*(p.pause>0?0:1); p.pause=Math.max(0,p.pause-dt);
-    const dp=Math.hypot(P_x()-p.x,P_z()-p.z); if(dp<1.6){ p.lane=clamp(p.lane+(p.lane>0?1:-1)*dt*1.5,-1.2,1.2); if(dp<.9) sp*=.3; }
-    if(GAME.G.stars>0&&dp<9&&p.kind!=='drunk'){ sp=p.speed*2.2; p.flee=1; } /* a chase on: people scarper */
-    p.s+=p.dir*sp*dt; moving=sp>.05;
-    if(p.s<p.line.a||p.s>p.line.b){ const end=p.s<p.line.a?p.line.a:p.line.b, nl=nextLine(p.line,end);
-      if(nl&&Math.random()<.85){ p.line=nl[0]; p.s=nl[1]; p.dir=p.s-nl[0].a<1?1:p.s>nl[0].b-1?-1:(Math.random()<.5?1:-1); } else { p.dir*=-1; p.s=clamp(p.s,p.line.a,p.line.b); } if(Math.random()<.2) p.pause=2+Math.random()*4; }
-    const [lx,lz]=lineXZ(p.line,p.s), ox=p.line.ax==='x'?0:p.lane, oz=p.line.ax==='x'?p.lane:0, tx=lx+ox, tz=lz+oz;
-    const dx=tx-p.x, dz=tz-p.z, dd=Math.hypot(dx,dz); if(dd>.01){ const k=Math.min(1,dt*6); p.x+=dx*k; p.z+=dz*k; }
-    const want=p.line.ax==='x'?(p.dir>0?Math.PI/2:-Math.PI/2):(p.dir>0?0:Math.PI); p.yaw+=Math.atan2(Math.sin(want-p.yaw),Math.cos(want-p.yaw))*Math.min(1,dt*5); }
-  /* the body: a pose for the idlers, the gait (planted feet) for walkers; skinned near the player every frame, further off less often */
-  const C=p.C, J=C.J, want=p.idle?(p.idle[3]==='phone'?'phone':p.idle[3]==='smoke'||p.idle[3]==='drink'?'watch':'lean'):'idle';
-  if(p.pose!==want){ applyPose(C,want); p.pose=want; }
-  for(const k of JOINTS) if(J[k]&&C.base[k]) J[k].r=C.base[k].slice(); J.hips.p=[0,C.hy0,0];
-  p.root.p=[p.x,floorAt(p.x,p.z),p.z]; p.root.r=[0,p.yaw,0];
-  if(p.idle){ const bt=LIFE.t*.8+p.ph; J.head.r=[J.head.r[0],J.head.r[1]+Math.sin(bt*.6)*.4,J.head.r[2]]; }
-  else { p.E.hd=p.yaw; p.E.pos=[p.x,p.z]; p.E.walkAmt=moving?1:0; p.E.runAmt=p.kind==='jogger'||p.flee?1:0; gait(p.E,LIFE.t+p.ph,dt);
-    if(p.kind==='drunk') J.spine.r=[J.spine.r[0],J.spine.r[1],J.spine.r[2]+Math.sin(LIFE.t*1.3+p.ph)*.12]; }
-  /* look at the player when he's close */ const pdx=GAME.P.x-p.x, pdz=GAME.P.z-p.z, pd=Math.hypot(pdx,pdz); if(pd<5){ const a=Math.atan2(pdx,pdz)-p.yaw, w=Math.atan2(Math.sin(a),Math.cos(a)); J.head.r[1]=clamp(w,-1,1); }
-  p.skinT-=dt; if(p.skinT<=0){ skinUpdate(C); p.skinT=far<14?0:far<28?.06:.14; } }
 const P_x=()=>GAME.P.x, P_z=()=>GAME.P.z;
 function floorAt(x,z){ return HUBX&&!inCore(x,z)?HUBX.floor(x,z):(z>KERB_Z&&z<ROAD_Z1?0:PAVE_Y); }
+/* the people themselves (pool, schedule, behaviours, reactions) live in 48f2-crowd.js */
 
 /* ---------------- traffic ---------------- */
 /* lanes: drive on the left. A street along x: eastbound keeps to the north half */
@@ -128,6 +86,7 @@ function carTick(v,dt,px,pz){ if(Math.hypot(v.x-px,v.z-pz)>110){ v.alive=false; 
     for(const o of CAR_POOL){ if(o===v||!o.alive) continue; const a=ahead(o.x,o.z,14); if(a!==null) want=Math.min(want,Math.max(0,(a-o.len/2-v.len/2-2.5)*1.2)); }
     const ap=ahead(GAME.P.x,GAME.P.z,12); if(ap!==null){ want=Math.min(want,Math.max(0,(ap-v.len/2-2)*1.0)); if(ap<v.len/2+4) v.honk=Math.max(v.honk,.6); }
     for(const p of PED_POOL){ if(!p.alive) continue; const a=ahead(p.x,p.z,9); if(a!==null) want=Math.min(want,Math.max(0,(a-v.len/2-1.5))); }
+    if(v.kind==='bus') want=Math.min(want,busStopWant(v,dt));
     /* the junction ahead: slow, then go straight or turn onto the crossing street */
     const js=L.j.filter(j=>v.dir>0?j.s>v.s+.5:j.s<v.s-.5); const nj=js.length?(v.dir>0?js[0]:js[js.length-1]):null;
     const endS=v.dir>0?L.b:L.a, dj=nj?Math.abs(nj.s-v.s):Math.abs(endS-v.s);
@@ -146,9 +105,8 @@ function carTick(v,dt,px,pz){ if(Math.hypot(v.x-px,v.z-pz)>110){ v.alive=false; 
 /* ---------------- the tick ---------------- */
 let lifeInit=false;
 function lifeTick(dt,eye){ if(!LIFE.on||!HUBX) return; LIFE.t+=dt; const px=GAME.P.x, pz=GAME.P.z;
-  if(!lifeInit){ lifeInit=true; collectIdle(); for(const p of PED_POOL) spawnPed(p,px,pz,true); for(const v of CAR_POOL) spawnCar(v,px,pz); }
-  const wantPeds=Math.round(PED_N*LIFE.density), alivePeds=PED_POOL.filter(p=>p.alive).length;
-  for(const p of PED_POOL){ if(p.alive) pedTick(p,dt,px,pz); else if(alivePeds<wantPeds&&Math.random()<dt*2){ if(!(Math.random()<.3&&spawnIdler(p,px,pz))) spawnPed(p,px,pz,false); break; } }
+  if(!lifeInit){ lifeInit=true; for(const v of CAR_POOL) spawnCar(v,px,pz); }
+  crowdTick(dt,eye);
   const wantCars=Math.round(CAR_N*Math.min(1,LIFE.density*1.4));
   let aliveCars=0; for(const v of CAR_POOL){ if(v.alive){ aliveCars++; carTick(v,dt,px,pz); } }
   if(aliveCars<wantCars) for(const v of CAR_POOL) if(!v.alive){ spawnCar(v,px,pz); break; } }
