@@ -54,6 +54,13 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
   - `tools/london_play.py <outdir> <near|far|alley|chase|run>` replays a route headless and logs every state change.
 - **Shelved:** the three.js rebuild (`/home/claude/london-threejs-shelved`, local only, not pushed). It had sculpted BAYHEM-style bodies, PBR, real shadows and wet reflections, and a fresh reviewer scored it 5.0/10, but Kenny judged it "so ugly". Also gone: the London character kit v1 and the ink test.
 
+## Status (Nov 6, 00:40): compact hand-built hub, published v18
+- **Artifact:** https://claude.ai/artifact/BGT1GV3DbRqRtPFoADar1o (v18, "Bethnal Green Road"). Repo `main` at the latest merge; all bots pass (near nicked, estate done, chase nicked, climb done, leg2 Job done).
+- **Measured (headless SwiftShader):** load ~4 s (software canvases in `tex()`), 99–191 draws per view, 25–57k tris, ~640k hub vertices. Not yet run on a Quest: fps, memory (+60–80 MB textures) and comfort are the open questions.
+- **In:** 740 x 490 m hub, all 123 street sides hand-written (`48c1/2/3-hand-*.js`), gable ends on exposed sides, verticality everywhere (scaffolds, fire escapes, roof runs, planks, 7 viaduct stairs, walkable viaduct decks, church tower ledges), dressed hub edges with the street continuing past them (`48d2`), stand-in LOD city to ~145 m + haze that thins with height (`48k`), real skyline at true bearings (`SKYL`), 50 adult locals with schedules and reactions (one draw each), the vehicle kit (`48b2`, `48f3` riders), Arnold Circus as built, phone clock button (hold to fast-forward), SVG objective arrow + faint objective thread past 35 m.
+- **In progress (agents):** vault/climb audit and fixes (`tools/london_parkour_audit.py`), dogs rebuilt as real Staffies, side quests ("as many as possible": rooftop runs, ghost signs, fencing, bookies, market, pub errands, courier, wallets, tagging...).
+- **Next:** merge those, republish, then the fresh reviewer round (see the stop rule below), then Kenny's Quest test.
+
 ## Status (Nov 5, evening): the hub is playable
 - **Repo:** github.com/KungFuKennyOG/london-vr (`main`), cloned at `/home/claude/london-vr`. London is its own project now; `src/engine/` is the forked Stairwell engine. The old `stairwell` repo keeps history up to `df1c051`. The shelved three.js rebuild moved to `/home/claude/london-threejs-shelved`.
 - **Artifact:** https://claude.ai/artifact/BGT1GV3DbRqRtPFoADar1o (v13).
