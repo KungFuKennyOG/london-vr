@@ -161,7 +161,7 @@ LM.boundary=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2; eFlat(x0,z0,x1,
   for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2)*19,cz+Math.sin(k/6*Math.PI*2)*19);
   STREET_LIGHT.pl.push([[cx,top+2.4,cz],[1.6,1.2,.8],12]); BANDSTAND.push([cx,top,cz]);
 };
-const BANDSTAND=[];
+const BANDSTAND=[], CHURCH_TOWER=[];
 
 /* THE SCHOOL: a tall Victorian board school, its playground in a cage */
 WIN.school={w:1.6,h:2.3,sill:.6,lintel:true};
@@ -216,7 +216,7 @@ LM.church=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mGrass,2,6); railRect(x0+.
   farBox(cx-3.4,tz-3.4,cx+3.4,tz+3.4,PAVE_Y+20,PAVE_Y+27,sB); farBox(cx-2.4,tz-2.4,cx+2.4,tz+2.4,PAVE_Y+27,PAVE_Y+31,sB);
   const clock=nightM(P2(64,64,(g,w,h)=>{ g.clearRect(0,0,w,h); ell(g,32,32,30,30,'#f2ecd8'); ell(g,32,32,27,27,'#fffaf0'); for(let k=0;k<12;k++){ const a=k/12*Math.PI*2; R(g,'#1a1a1a',32+Math.cos(a)*23-1,32+Math.sin(a)*23-1,3,3); } g.strokeStyle='#1a1a1a'; g.lineWidth=3; g.beginPath(); g.moveTo(32,32); g.lineTo(32,12); g.moveTo(32,32); g.lineTo(44,38); g.stroke(); },0,1),{unlit:true,cut:true,nofog:true},.0);
   for(const [U,o] of [[X_,[cx-1.6,PAVE_Y+22,tz+3.42]],[NX,[cx+1.6,PAVE_Y+22,tz-3.42]],[Z_,[cx-3.42,PAVE_Y+22,tz-1.6]],[NZ,[cx+3.42,PAVE_Y+22,tz+1.6]]]){ const g=new Geo(); const n=[U[1]*0-U[2],0,U[0]]; for(const [s_,t] of [[0,0],[1,0],[1,1],[0,1]]) g.v([o[0]+U[0]*3.2*s_,o[1]+3.2*t,o[2]+U[2]*3.2*s_],n,[s_,t]); g.I.push(0,1,2,0,2,3); g.noDist=true; mk(g,clock,FAR); }
-  const cup=new Geo(); { const t=cyl(1.6,.15,3.2,8); cup.P=t.P; cup.Nm=t.Nm; cup.T=t.T; cup.I=t.I; cup.groups=t.groups; } cup.noDist=true; mk(cup,sB,FAR,cx,PAVE_Y+32.6,tz); hsol(cx-4,tz-4,cx+4,tz+4,PAVE_Y+31);
+  const cup=new Geo(); { const t=cyl(1.6,.15,3.2,8); cup.P=t.P; cup.Nm=t.Nm; cup.T=t.T; cup.I=t.I; cup.groups=t.groups; } cup.noDist=true; mk(cup,sB,FAR,cx,PAVE_Y+32.6,tz); hsol(cx-4,tz-4,cx+4,tz+4,PAVE_Y+20); hsol(cx-3.4,tz-3.4,cx+3.4,tz+3.4,PAVE_Y+27); hsol(cx-2.4,tz-2.4,cx+2.4,tz+2.4,PAVE_Y+31); CHURCH_TOWER.push([cx,tz,pz]);
   const r=hr(6803); for(let i=0;i<40;i++){ const gx=x0+4+r()*(x1-x0-8), gz=z0+4+r()*(z1-z0-8); if(Math.abs(gx-cx)<18&&gz>z0+14) continue; eBox(gx-.35,gz-.08,gx+.35,gz+.08,PAVE_Y,PAVE_Y+.7+r()*.5,stone); }
   for(let i=0;i<10;i++) tree(x0+6+r()*(x1-x0-12),z0+5+r()*12,1.2); parkLamp(x0+8,z1-12); parkLamp(x1-8,z1-12);
   tubeEntrance(x1-6,z1-6,'z'); STREET_LIGHT.pl.push([[cx,PAVE_Y+1,z1-12],[1.4,1.3,1.1],22]);
