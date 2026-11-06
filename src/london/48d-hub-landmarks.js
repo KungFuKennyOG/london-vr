@@ -166,12 +166,12 @@ function carPark(x,z,i,yaw=0,y0=PAVE_Y){ i=Math.abs(Math.floor(i))||0; const c=c
   const quad=(m,a,b,cc,d,n)=>{ tri(m,a,b,cc,n); tri(m,a,cc,d,n); };
   /* the two sides: a fan from the profile's middle */
   const cz_=0, cy_=.8;
-  for(const sd of [-1,1]){ const lx=sd*W/2, n=Nw(sd,0,0); for(let k=0;k<P_.length;k++){ const p=P_[k], q=P_[(k+1)%P_.length]; const A=Wp(lx,cy_,cz_), Bq=Wp(lx,p[1],p[0]), Cq=Wp(lx,q[1],q[0]); sd>0?tri(c,A,Cq,Bq,n):tri(c,A,Bq,Cq,n); } }
+  for(const sd of [-1,1]){ const lx=sd*W/2, n=Nw(sd,0,0); for(let k=0;k<P_.length;k++){ const p=P_[k], q=P_[(k+1)%P_.length]; const A=Wp(lx,cy_,cz_), Bq=Wp(lx,p[1],p[0]), Cq=Wp(lx,q[1],q[0]); sd>0?tri(c,A,Bq,Cq,n):tri(c,A,Cq,Bq,n); } }
   /* round the profile: each edge a strip across the width; the glasshouse edges are glass */
   const top=P_.length-1;
   for(let k=0;k<top;k++){ const p=P_[k], q=P_[k+1], dz=q[0]-p[0], dy=q[1]-p[1], l=Math.hypot(dz,dy), n=Nw(0,-dz/l*-1*0+dz/l,-dy/l); /* outward normal of a clockwise-from-rear profile */
     const nn=Nw(0,dz/l,-dy/l), glass=(p[1]>1.2||q[1]>1.2)&&Math.abs(dy)>.3, m=glass?mCarGlass:c;
-    quad(m,Wp(-W/2,p[1],p[0]),Wp(W/2,p[1],p[0]),Wp(W/2,q[1],q[0]),Wp(-W/2,q[1],q[0]),nn); }
+    quad(m,Wp(-W/2,p[1],p[0]),Wp(-W/2,q[1],q[0]),Wp(W/2,q[1],q[0]),Wp(W/2,p[1],p[0]),nn); }
   /* side windows: a dark band on the glasshouse, a hair proud of each side */
   const gl=P_.filter(p=>p[1]>1.3), zr=Math.min(...gl.map(p=>p[0])), zf=Math.max(...gl.map(p=>p[0])), yb=.98, yt=Math.min(...gl.map(p=>p[1]))-.06;
   for(const sd of [-1,1]){ const lx=sd*(W/2+.01), n=Nw(sd,0,0), a=Wp(lx,yb,zr-.25), b=Wp(lx,yb,zf+.45), cc=Wp(lx,yt,zf+.02), d=Wp(lx,yt,zr+.08); sd>0?quad(mCarGlass,a,d,cc,b,n):quad(mCarGlass,a,b,cc,d,n); }
