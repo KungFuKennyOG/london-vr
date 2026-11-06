@@ -149,7 +149,9 @@ function handSide(list,k,a,b,S,f,lots,gaps,brick,door,ZB){ const tot=list.reduce
     p+=w; });
   /* a neighbour across a narrow alley still counts for the roof steps: you jump the alley from the tank */
   const tp=q=>q&&!q.gap?q.top:0, near=(i,d)=>{ const q=made[i+d]; if(q&&q.gap&&q.b-q.a<=2.6) return tp(made[i+2*d]); return tp(q); };
-  made.forEach((L,i)=>{ if(L.gap){ L.tA=tp(made[i-1]); L.tB=tp(made[i+1]); } else { L.nA=near(i,-1); L.nB=near(i,1); } }); }
+  /* and the direct neighbours, for the side walls: a gap, the end of the run or a set-back council block leaves the wall exposed */
+  const dt=q=>q&&!q.gap&&q.t!=='infill'?q.top:0;
+  made.forEach((L,i)=>{ if(L.gap){ L.tA=tp(made[i-1]); L.tB=tp(made[i+1]); } else { L.nA=near(i,-1); L.nB=near(i,1); L.dA=dt(made[i-1]); L.dB=dt(made[i+1]); } }); }
 
 /* one lot: ground floor by trade, upper floors, roof, chimneys, a rear extension, and a garden wall */
 function lotRect(k,a,b,BR,d){ const [x0,z0,x1,z1]=BR; if(k==='n') return [a,z0,b,z0+d]; if(k==='s') return [a,z1-d,b,z1]; if(k==='w') return [x0,a,x0+d,b]; return [x1-d,a,x1,b]; }
@@ -164,9 +166,9 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
   const front=k, {U,out,fx,fz,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1);
   /* upper floors (front face has windows, sides and back are plain brick of the same kind) */
   const cornerK=L.corner?(horiz?(lx0<=x0+.01?'w':lx1>=x1-.01?'e':''):(lz0<=z0+.01?'n':lz1>=z1-.01?'s':'')):'', sideK=horiz?'ew':'ns';
-  if(L.hand){ eFacade(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK,{atlas:true,seed:L.door*7919+Math.round(L.a*13),skip:[...sideK].filter(q=>q!==cornerK).join('')});
-    /* party walls, seen over a lower neighbour, beside a gap, from the roofs: plain common brick */
-    const pw={}; for(const q of sideK) if(q!==cornerK) pw[q]=mBrickW; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,top,pw,{tu:1.6,tv:1.5}); }
+  if(L.hand){ eFacadeA(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK,{seed:L.door*7919+Math.round(L.a*13),skip:[...sideK].filter(q=>q!==cornerK).join('')}); lodRec(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK);
+    /* the sides: a windowed corner, gable ends wherever a party wall stands clear */
+    lotSides(L,lx0,lz0,lx1,lz1,gH,top,F,cornerK,sideK,r); }
   else eFacade(lx0,lz0,lx1,lz1,PAVE_Y+gH,top,F,front+cornerK,{ou:(r()*4|0)/4,ov:(r()*3|0)/3,skip:L.corner?'':sideK});
   /* ground floor */
   L.F=F; if(L.pub) (L.hand?groundPubH:groundPub)(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r,P0);
@@ -184,7 +186,7 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
     eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,{[front]:hm},{tu:fw,tv:gH,vb:PAVE_Y,cell:3});
     const rest={}; rest[back]=F.mBase; if(L.corner){ for(const q of sideK) rest[q]=F.mBase; } eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,rest,{tu:F.bays*HUB.BAY,tv:F.floors*HUB.FLOOR}); }
   /* parapet and coping, flat roof, chimney stack on the party wall */
-  if(L.hand){ lotBox(P0,U,out,-.02,fw+.02,-.32,.12,top,top+.36,'#8a8680','fbst'); lotBox(P0,U,out,0,fw,-d,-d+.25,top+.17,top+.3,'#7a766e','fbt'); lotBox(P0,U,out,-.06,.06,-d,-.32,top+.17,top+.32,'#6a5a48','st'); eFlat(lx0,lz0,lx1,lz1,top+.17,mFelt,4,0); }
+  if(L.hand){ lotBox(P0,U,out,-.02,fw+.02,-.32,.12,top,top+.36,'#8a8680','fbst'); lotBox(P0,U,out,0,fw,-d,-d+.25,top,top+.3,'#7a766e','fbt'); lotBox(P0,U,out,0,fw,-d,0,top,top+.2,'#8a8680','s'); lotBox(P0,U,out,-.06,.06,-d,-.32,top+.17,top+.32,'#6a5a48','st'); eFlat(lx0,lz0,lx1,lz1,top+.17,mFelt,4,0); }
   else { const cf={t:mCope}; cf[front]=mCope; eBoxF(lx0-(k==='e'?.15:0),lz0-(k==='s'?.15:0),lx1+(k==='w'?.15:0),lz1+(k==='n'?.15:0),top,top+.18,cf); eFlat(lx0,lz0,lx1,lz1,top+.01,mFelt,4,0); }
   if(!shop&&L.door%2===0){ const cxs=horiz?lx0+.4:(lx0+lx1)/2, czs=horiz?(lz0+lz1)/2:lz0+.4, cw=horiz?.8:1.6, cd=horiz?1.6:.8; eBoxF(cxs-cw/2,czs-cd/2,cxs+cw/2,czs+cd/2,top,top+1.3,{n:mBrickW,s:mBrickW,e:mBrickW,w:mBrickW,t:mCope},{tu:1.6,tv:1.5}); if(L.hand) hsol(cxs-cw/2,czs-cd/2,cxs+cw/2,czs+cd/2,top+1.3);
     for(let i=0;i<(L.door%3===0?2:0);i++){ const px=cxs+(horiz?0:(i-.5)*.6), pz=czs+(horiz?(i-.5)*.6:0); eBoxF(px-.09,pz-.09,px+.09,pz+.09,top+1.3,top+1.7,{n:mPot,s:mPot,e:mPot,w:mPot}); } }
@@ -205,10 +207,35 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
     if(k==='e') { eBoxF(lx0-7,lz1-.12,lx0,lz1+.12,PAVE_Y,PAVE_Y+gw,{n:mBrickW,s:mBrickW,t:mCope},{tu:1.6,tv:1.5}); hsol(lx0-7,lz1-.12,lx0,lz1+.12,PAVE_Y+gw); } }
 }
 
+/* the side walls of a hand-written lot. A corner lot's street side gets windows on every floor (the ground floor too, so nothing inside
+   shows). A party wall is plain brick where its neighbour hides it; wherever it stands clear (over a lower neighbour, beside an alley, a gap
+   or a set-back council block, at the end of a run) it is a gable end in the lot's own brick: a few small sash windows, a chimney breast
+   carried up into a stack, a downpipe, and on the big ones now and then the ghost of a painted advert */
+const GHOSTS=[['PEARCE\'S PICKLES','PICCALILLI · CHUTNEYS · EST. 1888'],['STEPNEY STOUT','BREWED IN THE EAST END'],['MARSHALL\'S MUSTARD','HOT ENGLISH · SINCE 1851'],['BOW BELLS BOOT POLISH','A SHINE FIT FOR A KING'],
+  ['EASTERN TEA COMPANY','FINE TEAS · ALDGATE'],['GLOBE SOAP WORKS','FOR THE WEEKLY WASH'],['H. LEVY · FURNITURE','REMOVALS · STORAGE · CASH OR CREDIT'],['VICTORIA COCOA','GRATEFUL · COMFORTING']];
+let GHOST_N=0;
+function sideFrame(q,lx0,lz0,lx1,lz1){ if(q==='e') return {P0:[lx1,0,lz1],U:NZ,out:[1,0,0],w:lz1-lz0}; if(q==='w') return {P0:[lx0,0,lz0],U:Z_,out:[-1,0,0],w:lz1-lz0};
+  if(q==='n') return {P0:[lx1,0,lz0],U:NX,out:[0,0,-1],w:lx1-lx0}; return {P0:[lx0,0,lz1],U:X_,out:[0,0,1],w:lx1-lx0}; }
+function lotSides(L,lx0,lz0,lx1,lz1,gH,top,F,cornerK,sideK,r){ const B=BRICKS[L.brick]||BRICKS.stock, G=facade(L.brick,'gable',0), others=q=>'nsew'.replace(q,'');
+  if(cornerK) eFacadeA(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,F,'',{seed:L.door*17+3,skip:others(cornerK)});
+  for(const q of sideK){ if(q===cornerK) continue; const nT=(q==='w'||q==='n')?L.dA:L.dB, from=nT>=top-.3?top:Math.max(PAVE_Y,nT);
+    if(from>PAVE_Y+.01){ const one={}; one[q]=mBrickW; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,from,one,{tu:1.6,tv:1.5}); }
+    if(top-from<.4) continue;
+    eFacadeA(lx0,lz0,lx1,lz1,from,top,G,'',{seed:L.door*29+(q.charCodeAt(0)),skip:others(q)});
+    const S=sideFrame(q,lx0,lz0,lx1,lz1), bc=mix(B.base,'#000000',.08);
+    const ghost=top-from>5&&S.w>8.5&&(L.door+GHOST_N)%3===0;
+    if(top-from>2.4&&S.w>6){ const u=ghost?S.w-.85:S.w*(L.door%2?.62:.38); lotBox(S.P0,S.U,S.out,u-.6,u+.6,0,.32,from,top+1.45,bc,'fst'); lotBox(S.P0,S.U,S.out,u-.7,u+.7,-.1,.42,top+1.45,top+1.6,'#8a8680','fbst');
+      for(const du of [-.3,.3]) lotBox(S.P0,S.U,S.out,u+du-.1,u+du+.1,.06,.26,top+1.6,top+2.0,'#a85a3a','fbs'); }
+    lotBox(S.P0,S.U,S.out,S.w-.35,S.w-.27,.02,.1,Math.max(PAVE_Y,from-3),top,'#1e2022','fs');
+    if(ghost){ const g=GHOSTS[GHOST_N++%GHOSTS.length], fade=mix(B.base,'#e8e0cc',.35), ink=mix(B.base,'#1a1612',.45), sw=Math.min(S.w-3,7), uc=(S.w-1.5)/2;
+      eSign(atlasSign(fade,ink,g[0],g[1],{face:'anton',subC:ink}),[S.P0[0]+S.U[0]*uc+S.out[0]*.03,top-1.6,S.P0[2]+S.U[2]*uc+S.out[2]*.03],S.U,sw,Math.min(1.3,sw/5.5)); } } }
+
 /* ---------------- hand-written ground floors ---------------- */
 const BACKK={n:'s',s:'n',w:'e',e:'w'};
 /* the back wall of a hand-written ground floor, windows and all, on the facade atlas */
-function backGF(L,lx0,lz0,lx1,lz1,gH,F){ eFacade(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,F,'',{atlas:true,seed:L.door*53+1,skip:'nsew'.replace(BACKK[L.k],'')}); }
+function backGF(L,lx0,lz0,lx1,lz1,gH,F){ eFacadeA(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,F,'',{seed:L.door*53+1,skip:'nsew'.replace(BACKK[L.k],'')}); }
+/* the stand-in city (48k) gets one whole box per hand-written lot, all four sides, rather than the pieces the detail is built from */
+function lodRec(x0,z0,x1,z1,y0,y1,F,faces){ if(typeof LOD_REC!=='undefined') LOD_REC.fac.push([x0,z0,x1,z1,y0,y1,F,faces,'']); }
 /* a terrace house front: atlas-painted wall, the door in a real recess with reveals, a projecting bay where there is one, sills, a string course; the lit twin at night */
 function houseFrontH(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F,top,r){ const it=L.it, k=L.k, hv=it.hv||'flat', mir=it.mir??(L.door%2===1), dc=L.doorC||DOORC[L.door%DOORC.length], B=BRICKS[L.brick]||BRICKS.stock;
   const cell=houseCell(L.brick,hv,it.stuc,L.door%3), lay=HLAY[hv]||HLAY.flat, sx=fw/5, sy=gH/3.25, [d0,d1,dt,ft]=lay.d, nOut=[-out[0],0,-out[2]];
@@ -314,7 +341,7 @@ function groundWorks(L,lx0,lz0,lx1,lz1,gH,U,out,fw,P0,F){ const it=L.it, wm=L.br
 function buildInfill(L,lx0,lz0,lx1,lz1,BR,d,r){ const it=L.it, k=L.k, sb=it.sb??2.2, st=L.st, top=PAVE_Y+st*2.85;
   const f0=lotFront(k,lx0,lz0,lx1,lz1); if(k==='n') lz0+=sb; else if(k==='s') lz1-=sb; else if(k==='w') lx0+=sb; else lx1-=sb;
   const {U,out,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1), horiz=k==='n'||k==='s', sideK=horiz?'ew':'ns', F=facade(L.brick||'estbrick','estate',L.fv);
-  eFacade(lx0,lz0,lx1,lz1,PAVE_Y,top,F,k,{atlas:true,seed:L.door*31,skip:sideK}); { const pw={}; for(const q of sideK) pw[q]=mBrickW; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,top,pw,{tu:1.6,tv:1.5}); }
+  eFacadeA(lx0,lz0,lx1,lz1,PAVE_Y,top,F,k,{seed:L.door*31,skip:sideK}); lodRec(lx0,lz0,lx1,lz1,PAVE_Y,top,F,k); lotSides(L,lx0,lz0,lx1,lz1,2.85,top,F,'',sideK,r);
   for(let f=1;f<st;f++) lotBox(P0,U,out,0,fw,0,.09,PAVE_Y+f*2.85-.14,PAVE_Y+f*2.85+.08,'#a29e94','fstu');
   lotBox(P0,U,out,-.1,fw+.1,0,.2,top-.1,top+.25,'#a29e94','fst');
   /* the entrance: a lit lobby door, a canopy you can stand on, the name */ const c=it.door??fw*.38;
@@ -330,8 +357,8 @@ function buildInfill(L,lx0,lz0,lx1,lz1,BR,d,r){ const it=L.it, k=L.k, sb=it.sb??
     eFlat(Math.min(...xs),Math.min(...zs),Math.max(...xs),Math.max(...zs),PAVE_Y-.005,mGrass,2,4);
     const px=[Pf[0]+U[0]*(c-.8),Pf[0]+U[0]*(c+.8)-out[0]*sb], pz=[Pf[2]+U[2]*(c-.8),Pf[2]+U[2]*(c+.8)-out[2]*sb]; eFlat(Math.min(...px),Math.min(...pz),Math.max(...px),Math.max(...pz),PAVE_Y+.004,mPath,2,0); }
   /* the roof: felt, coping, a lift motor room and a tank you can climb on */
-  eFlat(lx0,lz0,lx1,lz1,top+.01,mFelt,4,0); hsol(lx0,lz0,lx1,lz1,top+.25); lotBox(P0,U,out,fw*.3,fw*.3+2.6,-d+sb+1.5,-d+sb+4,top+.25,top+2.2,'#8a8680','fbst',top);
-  roofKit(P0,U,out,fw,d-sb,top+.25,'works',r,0); }
+  eFlat(lx0,lz0,lx1,lz1,top+.02,mFelt,4,0); hsol(lx0,lz0,lx1,lz1,top+.02); lotBox(P0,U,out,0,fw,-(d-sb),0,top,top+.25,'#a29e94','sb'); lotBox(P0,U,out,fw*.3,fw*.3+2.6,-d+sb+1.5,-d+sb+4,top,top+2.2,'#8a8680','fbst',top);
+  roofKit(P0,U,out,fw,d-sb,top+.02,'works',r,0); }
 
 /* ---------------- the gaps in a hand-written side ---------------- */
 function buildGap(G,BR,D){ const k=G.k, d=D[k], it=G.it, [lx0,lz0,lx1,lz1]=lotRect(k,G.a,G.b,BR,d), {U,out,fw,P0}=lotFront(k,lx0,lz0,lx1,lz1), r=hr(Math.round(G.a*7+G.b*3)|0), Pi=(u,o,y)=>[P0[0]+U[0]*u+out[0]*o,y,P0[2]+U[2]*u+out[2]*o];
@@ -344,7 +371,7 @@ function buildGap(G,BR,D){ const k=G.k, d=D[k], it=G.it, [lx0,lz0,lx1,lz1]=lotRe
   else if(g==='wall'){ wall(0,fw,1.9); if(fw>3){ const t=Pi(fw/2,-3.5,0); tree(t[0],t[2],.9); } }
   else if(g==='garage'){ const n=Math.max(1,Math.round(fw/3.2)), gw=fw/n, gd=Math.min(6,d-.5), gh=2.5;
     for(let i=0;i<n;i++){ const a=i*gw; eShut(Pi(a+.2,.0,PAVE_Y),U,gw-.4,2.2,i+Math.round(G.a)); lotBox(P0,U,out,a,a+.2,-gd,0,PAVE_Y,PAVE_Y+gh,'#8a7a64','fs'); lotBox(P0,U,out,a+gw-.2,a+gw,-gd,0,PAVE_Y,PAVE_Y+gh,'#8a7a64','fs'); lotBox(P0,U,out,a+.2,a+gw-.2,-.05,0,PAVE_Y+2.2,PAVE_Y+gh,'#8a7a64','f'); }
-    const q=lotBox(P0,U,out,0,fw,-gd,0,PAVE_Y+gh,PAVE_Y+gh+.1,'#2c2d30','fbst'); hsol(q[0],q[1],q[2],q[3],PAVE_Y+gh+.1); eSign(atlasSign('#1c2f5a','#f4f2ea','GARAGES',it.sign||'RESIDENTS ONLY · NO PARKING',{face:'grot',subC:'#c8d4ec'}),Pi(fw/2,.02,PAVE_Y+2.36),U,Math.min(fw-.5,1.6),.22); }
+    lotBox(P0,U,out,0,fw,-gd-.12,-gd,PAVE_Y,PAVE_Y+gh,'#7a6a54','b'); const q=lotBox(P0,U,out,0,fw,-gd-.12,0,PAVE_Y+gh,PAVE_Y+gh+.1,'#2c2d30','fbst'); hsol(q[0],q[1],q[2],q[3],PAVE_Y+gh+.1); eSign(atlasSign('#1c2f5a','#f4f2ea','GARAGES',it.sign||'RESIDENTS ONLY · NO PARKING',{face:'grot',subC:'#c8d4ec'}),Pi(fw/2,.02,PAVE_Y+2.36),U,Math.min(fw-.5,1.6),.22); }
   else if(g==='yard'){ const pc=posterCell(Math.round(G.a)%7&3); eKA(Pi(0,0,PAVE_Y),U,Y_,fw,2.4,pc); eKA(Pi(fw,-.06,PAVE_Y),[-U[0],0,-U[2]],Y_,fw,2.4,pc,0,1,0,1); lotBox(P0,U,out,0,fw,-.06,0,PAVE_Y+2.4,PAVE_Y+2.45,'#5a4a34','t',true);
     lotBox(P0,U,out,fw*.2,fw*.2+3.2,-5.5,-3.6,PAVE_Y,PAVE_Y+1.3,'#e0a81a','fbst',true); lotBox(P0,U,out,fw*.2+.1,fw*.2+3.1,-5.4,-3.7,PAVE_Y+1.3,PAVE_Y+1.36,'#5a4a3a','t'); }
   else if(g==='garden'){ lotBox(P0,U,out,0,fw,-.3,0,PAVE_Y,PAVE_Y+.6,'#7a5a40','fbst',true); { const a=Pi(0,-.15,0), b=Pi(fw,-.15,0); railing(a[0],a[2],b[0],b[2],.7,PAVE_Y+.6,false); }

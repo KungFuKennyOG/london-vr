@@ -74,11 +74,12 @@ function paintWall(g,B,w,h,r){ R(g,B.base,0,0,w,h);
   else { for(let i=0;i<w*h/30;i++) R(g,r()<.5?B.dark:B.light,r()*w|0,r()*h|0,1,1); if(B.paint) for(let y=2;y<h;y+=3) R(g,'rgba(0,0,0,.07)',0,y,w,1); }
   for(let i=0;i<w/6;i++){ const x=r()*w|0; vfill(g,x,0,1+(r()*3|0),h*(.2+r()*.7),[[0,`rgba(10,8,6,${B.soot})`],[1,'rgba(10,8,6,0)']]); } }
 /* window kinds: sash (Victorian), estate (wide), shopflat (over shops), mansion (Boundary-estate red brick) */
-const WIN={seg:{w:1.0,h:1.6,sill:.9,seg:true}, factory:{w:2.0,h:1.7,sill:.8,panes:true}, sash:{w:1.0,h:1.65,sill:.9,lintel:true}, estate:{w:1.7,h:1.3,sill:1.0}, mansion:{w:1.1,h:1.8,sill:.85,lintel:true,arch:true}, tower:{w:1.9,h:1.4,sill:.9}};
+const WIN={gable:{w:.8,h:1.25,sill:1.05,lintel:true,sparse:true}, seg:{w:1.0,h:1.6,sill:.9,seg:true}, factory:{w:2.0,h:1.7,sill:.8,panes:true}, sash:{w:1.0,h:1.65,sill:.9,lintel:true}, estate:{w:1.7,h:1.3,sill:1.0}, mansion:{w:1.1,h:1.8,sill:.85,lintel:true,arch:true}, tower:{w:1.9,h:1.4,sill:.9}};
 const LITC=[['#ffcf8a','#ffb060'],['#ffe2b0','#ffc080'],['#ffd8a0','#ff9a50'],['#9ab8ff','#6a88d0'],['#fff2d8','#e8d0a8'],['#ffb878','#e08040']];
 /* returns {base, lit}: bays x floors tile, BAY wide, FLOOR tall */
 function facadeTex(brick,win,seed,bays=4,floors=3,litP=.32){ const W_=WIN[win],B=BRICKS[brick],bw=HUB.BAY*PXM,fh=HUB.FLOOR*PXM,w=bays*bw,h=floors*fh;
   const r=hr(seed), plan=[]; for(let f=0;f<floors;f++) for(let b=0;b<bays;b++){ const lit=r()<litP; plan.push({f,b,lit,c:LITC[r()*LITC.length|0],cur:r(),fig:lit&&r()<.12,tv:r()<.15,blind:r()<.3}); }
+  if(W_.sparse) for(let i=plan.length-1;i>=0;i--){ const p=plan[i]; if(p.b%2===0||(p.f+p.b)%3===0) plan.splice(i,1); } /* a gable end: a few small windows, staggered */
   const ww=W_.w*PXM,wh=W_.h*PXM;
   const base=P2S(w,h,(g)=>{ paintWall(g,B,w,h,r);
     for(const p of plan){ const x=p.b*bw+(bw-ww)/2, y=h-(p.f*fh+W_.sill*PXM+wh);
@@ -131,7 +132,7 @@ function eFacadeA(x0,z0,x1,z1,y0,y1,F,faces,o){ const rc=faCell(F), du=rc[2]-rc[
 function P2S(w,h,fn){ return texS(w,h,null,g=>fn(g,w,h)); }
 function texS(w,h,base,fn){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d',{willReadFrequently:true}); if(base){ g.fillStyle=base; g.fillRect(0,0,w,h); } if(fn) fn(g,w,h); return {c,glt:null,f:-1}; }
 /* the facade atlas: each brick-and-window facade's 4-bay x 3-floor tile as a cell, and its lit-window layer at half size on a twin page */
-const FA={W:2048,H:648,cw:240,ch:216,cols:8,rows:3,n:0}; /* 24 facades (about 16 in use) */ FA.t=texS(FA.W,FA.H,null,g=>{ R(g,'#5a4a3a',0,0,FA.W,FA.H); }); FA.g=FA.t.c.getContext('2d'); FA.m=M(FA.t,{});
+const FA={W:2048,H:1080,cw:240,ch:216,cols:8,rows:5,n:0}; /* 40 facades: about 16 fronts and a gable end per brick */ FA.t=texS(FA.W,FA.H,null,g=>{ R(g,'#5a4a3a',0,0,FA.W,FA.H); }); FA.g=FA.t.c.getContext('2d'); FA.m=M(FA.t,{});
 const FAL={t:texS(FA.W/2,FA.H/2,null,g=>{ g.clearRect(0,0,FA.W/2,FA.H/2); })}; FAL.g=FAL.t.c.getContext('2d'); FAL.m=nightM(FAL.t,{unlit:true,cut:true});
 function faCell(F){ if(F.fa) return F.fa; if(FA.n>=FA.cols*FA.rows){ console.warn('[london] facade atlas full'); return (F.fa=FA.first.fa); } if(!FA.n) FA.first=F;
   const i=FA.n++, x=(i%FA.cols)*FA.cw, y=Math.floor(i/FA.cols)*FA.ch; FA.g.drawImage(F.base.c,x,y,FA.cw,FA.ch); FAL.g.drawImage(F.lit.c,x/2,y/2,FA.cw/2,FA.ch/2);
