@@ -78,6 +78,8 @@ Read this at the start of every chat in this Project, before building or polishi
 - **Steam or halos as solid blobs:** screen-door cut-outs need a soft alpha falloff and should stay small, or they read as ghosts.
 - **Backlit characters:** cast members silhouetted against lit shopfronts. Every key character needs a front fill at their spot.
 - **Bad freeze framing:** the freeze-frame camera must frame the subject's face at about 1.5 m, unobstructed, with the card not covering the face.
+- **Block people on vehicles:** a moped rider made of boxes. Anyone riding or driving is a rig person, crowd-baked to one draw, or kept out of sight behind tinted glass. *(Kenny, Nov 6: "the guy riding motorcycle is a blocky dude")*
+- **Cars as flat-coloured shapes:** a vehicle needs a painted texture (shut lines, handles, lamps, grille, plates, glass with a streak) on a silhouette with tumblehome and a rounded nose, or it reads as a toy. *(Kenny, Nov 6: "the cars still look like shit")*
 - **Block hands and stiff poses** read badly up close. Check `06_face_close` for hands, props and how arms meet the body.
 - **Too clean** *(from BAYHEM)*: no grime at wall bases, no wear on kerbs and doors, no litter.
 - **Repetition** *(from BAYHEM)*: identical doors, windows or shopfronts in a row. Vary them with seeded colour and detail.

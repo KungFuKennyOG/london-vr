@@ -24,7 +24,7 @@ const G={on:false,xr:false,phase:'meet',stars:0,lostT:0,hasBag:false,t:0,line:nu
 const P={x:11.6,z:FZ-1.7,yaw:0,pitch:-.05,run:false,r:.24};
 const START={x:11.6,z:FZ-1.7,yaw:0};
 const LOCKUP={x:31,z:FZ+.6};
-const BAG_HOME=[-8.4,1.06,KERB_Z+1.05];
+const BAG_HOME=[-8.4,1.13,KERB_Z+1.05];
 
 /* ---------- where you can stand (point-in-rects, shrunk by your radius) and what blocks sight ---------- */
 const WALK=[[-16.3,FZ+.22,36.4,ROAD_Z1+2.75],
@@ -270,8 +270,8 @@ const STEP=.36, EYE=1.65, BODY=1.7, GRAV=17, JUMPV=4.4, REACH_GROUND=2.65, REACH
 const SOL=[]; const SOLH=RectHash(SOL,o=>o.r); const solNear=(x0,z0,x1,z1)=>SOLH.near(x0,z0,x1,z1); const sol=(x0,z0,x1,z1,y1,y0=0)=>{ const o={r:[x0,z0,x1,z1],y0,y1}; SOL.push(o); return o; };
 for(const x of [-9.6,-5,0,5,9.8]) sol(x-.12,KERB_Z-.52,x+.12,KERB_Z-.28,PAVE_Y+.92);              /* bollards */
 sol(-4.86,KERB_Z-.86,-4.34,KERB_Z-.34,PAVE_Y+.95);                                                  /* litter bin */
-sol(-12.5,KERB_Z+.15,-7.9,KERB_Z+1.95,.93); sol(-11.53,KERB_Z+.28,-9.23,KERB_Z+1.82,1.42);          /* Degsy's motor: bonnet/boot, roof */
-sol(-.7,ROAD_Z1-1.95,3.9,ROAD_Z1-.15,.93); sol(.38,ROAD_Z1-1.82,2.68,ROAD_Z1-.28,1.42);             /* the cab */
+sol(-12.43,KERB_Z+.15,-7.97,KERB_Z+1.95,.95); sol(-10.55,KERB_Z+.3,-9.25,KERB_Z+1.8,1.44);          /* Degsy's motor: bonnet/boot, roof */
+sol(-.69,ROAD_Z1-1.95,3.89,ROAD_Z1-.15,.96); sol(-.22,ROAD_Z1-1.75,2.15,ROAD_Z1-.35,1.82);             /* the cab */
 sol(-3.7,ROAD_Z1+.75,-2.7,ROAD_Z1+1.75,PAVE_Y+2.9);                                                 /* phone kiosk */
 sol(4.8,ROAD_Z1+1.45,8.4,ROAD_Z1+2.95,PAVE_Y+2.57,PAVE_Y+2.4);                                      /* bus shelter roof (you can walk under it) */
 sol(4.9,ROAD_Z1+2.8,8.3,ROAD_Z1+2.92,PAVE_Y+2.4); sol(4.8,ROAD_Z1+1.6,4.98,ROAD_Z1+2.85,PAVE_Y+2.0); /* its back glass and advert */
@@ -309,11 +309,9 @@ function eBox(x0,z0,x1,z1,y0,y1,m,o={}){ const w=x1-x0,d=z1-z0,h=y1-y0,cx=(x0+x1
   eBox(-4.2,-11.6,-.8,-11.4,0,PY+1.8,null,{tex:tStock,block:true,sight:true}); eBox(-4.2,-11.4,-4.0,-9.4,0,PY+1.8,null,{tex:tStock,block:true,sight:true}); eBox(-1.0,-11.4,-.8,-9.4,0,PY+1.8,null,{tex:tStock,block:true,sight:true});
   for(const x of [-3.3,-1.8]) eBox(x-.6,-11.3,x+.6,-10.2,0,PY+1.3,col(0x2e3a30),{block:true,sight:true});
   /* the burnt-out Escort and the works van */
-  eBox(-8.4,-17.0,-4.2,-15.3,0,.86,col(0x3a2e26),{block:true}); eBox(-7.2,-16.9,-5.0,-15.4,.86,1.32,col(0x1a1612),{block:true});
-  for(const [x,z] of [[-7.6,-17.05],[-5.0,-17.05],[-7.6,-15.25],[-5.0,-15.25]]) mk(cyl(.3,.3,.18,8),col(0x0e0e0e),EST,x,.3,z,Math.PI/2);
-  eBox(-11.4,-23.4,-6.0,-21.4,0,PY+2.3,col(0xd8d6d0),{block:true,sight:true}); eBox(-12.3,-23.3,-11.4,-21.5,0,PY+1.1,col(0xd8d6d0),{block:true,sight:true});
-  { const tV=hiP2(128,32,(g,w,h)=>{ R(g,'#d8d6d0',0,0,w,h); g.fillStyle='#2a4a8a'; g.font=`bold 11px ${SANS}`; g.fillText('K. BAKSHI · PLUMBING',6,14); g.font=`500 8px ${SANS}`; g.fillText('07700 900 461',6,26); });
-    wallP(4.8,1.2,tV,-8.7,PY+1.4,-21.38,0,{parent:EST,whole:true}); }
+  /* (their bodies come from the vehicle kit, 48b2-vehicles.js: these are their solids) */
+  eBox(-8.28,-17.0,-4.32,-15.3,0,PY+.8,null,{block:true}); eBox(-7.2,-16.9,-5.3,-15.4,PY+.8,PY+1.34,null,{block:true});
+  eBox(-10.4,-23.4,-6.35,-21.4,0,PY+2.39,null,{block:true,sight:true}); eBox(-11.65,-23.3,-10.4,-21.5,0,PY+1.14,null,{block:true,sight:true});
   /* NO BALL GAMES: a patch of grass inside a low wall you can sit on or hop */
   const gx0=0,gx1=7,gz0=-20,gz1=-14; slab(gx1-gx0,gz1-gz0,null,(gx0+gx1)/2,PY+.01,(gz0+gz1)/2,{parent:EST,color:0x2a3a22,cell:2});
   eBox(gx0,gz1-.2,gx1,gz1,0,PY+.55,null,{tex:tStock,block:true}); eBox(gx0,gz0,gx1,gz0+.2,0,PY+.55,null,{tex:tStock,block:true});

@@ -152,35 +152,9 @@ LM.bramley=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facad
   cage(x0+44,z0+50,x0+68,z0+66,1.2,[['n',x0+54,x0+58]]); eFlat(x0+44,z0+50,x0+68,z0+66,PAVE_Y+.01,MM(P2(32,32,(g,w,h)=>{ R(g,'#3a6a8a',0,0,w,h); specks(g,'#4a7a9a',80,6303,w,h); },0,1)),3,6);
   for(let i=0;i<8;i++) tree(x0+40+r()*(W-60),z0+40+r()*(H-55),.9+r()*.5); parkLamp(x0+40,z0+44); parkLamp(x0+80,z1-14);
 };
-/* a parked car (static): body, cabin, wheels, lights */
-const CARC=[0x1a1a1c,0xb8bcc0,0x2a3a5a,0x6a1a1a,0xd8d8d0,0x3a4a3a,0x5a5a5e,0x8a6a2a];
-/* a parked car with a real profile: boot, sloped rear window, roof, raked windscreen, bonnet; glass on the glasshouse;
-   wheels, lamps and plates. Extruded from a side profile (local z along the car, y up), turned by yaw. */
-const CAR_PROF={saloon:[[-2.1,.32],[-2.12,.78],[-1.86,.96],[-1.12,1.4],[.42,1.44],[1.12,.99],[2.02,.84],[2.12,.36]],
-  hatch:[[-1.85,.32],[-1.88,.85],[-1.72,1.36],[.35,1.42],[1.0,.98],[1.82,.82],[1.9,.36]],
-  estate:[[-2.25,.32],[-2.27,.84],[-2.15,1.38],[.4,1.42],[1.12,.99],[2.08,.84],[2.16,.36]]};
-const mCarGlass=col(0x141a20), mCarTyre=col(0x161616), mCarLampF=col(0xd8d4c4), mCarLampR=col(0x8a1414), mCarPlateF=col(0xe8e6de), mCarPlateR=col(0xd8b020);
-function carPark(x,z,i,yaw=0,y0=PAVE_Y){ i=Math.abs(Math.floor(i))||0; const c=col(CARC[i%CARC.length]), kind=['saloon','hatch','estate','hatch','saloon'][i%5], P_=CAR_PROF[kind], W=1.78;
-  const cs=Math.cos(yaw), sn=Math.sin(yaw), Wp=(lx,ly,lz)=>[x+cs*lx+sn*lz, y0+ly, z-sn*lx+cs*lz], Nw=(nx,ny,nz)=>[cs*nx+sn*nz,ny,-sn*nx+cs*nz];
-  const tri=(m,a,b,cc,n)=>{ const B=emitBucket(m,x,z,3), o=B.n; for(const p of [a,b,cc]){ B.P.push(p[0],p[1],p[2]); B.Nm.push(n[0],n[1],n[2]); B.T.push(0,0); B.n++; } B.I.push(o,o+1,o+2); };
-  const quad=(m,a,b,cc,d,n)=>{ tri(m,a,b,cc,n); tri(m,a,cc,d,n); };
-  /* the two sides: a fan from the profile's middle */
-  const cz_=0, cy_=.8;
-  for(const sd of [-1,1]){ const lx=sd*W/2, n=Nw(sd,0,0); for(let k=0;k<P_.length;k++){ const p=P_[k], q=P_[(k+1)%P_.length]; const A=Wp(lx,cy_,cz_), Bq=Wp(lx,p[1],p[0]), Cq=Wp(lx,q[1],q[0]); sd>0?tri(c,A,Bq,Cq,n):tri(c,A,Cq,Bq,n); } }
-  /* round the profile: each edge a strip across the width; the glasshouse edges are glass */
-  const top=P_.length-1;
-  for(let k=0;k<top;k++){ const p=P_[k], q=P_[k+1], dz=q[0]-p[0], dy=q[1]-p[1], l=Math.hypot(dz,dy), n=Nw(0,-dz/l*-1*0+dz/l,-dy/l); /* outward normal of a clockwise-from-rear profile */
-    const nn=Nw(0,dz/l,-dy/l), glass=(p[1]>1.2||q[1]>1.2)&&Math.abs(dy)>.3, m=glass?mCarGlass:c;
-    quad(m,Wp(-W/2,p[1],p[0]),Wp(-W/2,q[1],q[0]),Wp(W/2,q[1],q[0]),Wp(W/2,p[1],p[0]),nn); }
-  /* side windows: a dark band on the glasshouse, a hair proud of each side */
-  const gl=P_.filter(p=>p[1]>1.3), zr=Math.min(...gl.map(p=>p[0])), zf=Math.max(...gl.map(p=>p[0])), yb=.98, yt=Math.min(...gl.map(p=>p[1]))-.06;
-  for(const sd of [-1,1]){ const lx=sd*(W/2+.01), n=Nw(sd,0,0), a=Wp(lx,yb,zr-.25), b=Wp(lx,yb,zf+.45), cc=Wp(lx,yt,zf+.02), d=Wp(lx,yt,zr+.08); sd>0?quad(mCarGlass,a,d,cc,b,n):quad(mCarGlass,a,b,cc,d,n); }
-  /* wheels, lamps, plates */
-  const L0=P_[0][0], L1=P_[P_.length-1][0];
-  for(const [wx,wz] of [[-.8,L1-.75],[.8,L1-.75],[-.8,L0+.75],[.8,L0+.75]]){ const p=Wp(wx,.31,wz); eGeo(cyl(.31,.31,.2,10),mCarTyre,p[0],p[1],p[2],yaw,0,Math.PI/2); }
-  for(const sd of [-1,1]){ const f=Wp(sd*.62,.68,L1+.01), r=Wp(sd*.62,.7,L0-.01); eGeo(box(.34,.12,.04),mCarLampF,f[0],f[1],f[2],yaw); eGeo(box(.3,.12,.04),mCarLampR,r[0],r[1],r[2],yaw); }
-  { const f=Wp(0,.48,L1+.02), r=Wp(0,.5,L0-.02); eGeo(box(.5,.11,.02),mCarPlateF,f[0],f[1],f[2],yaw); eGeo(box(.5,.11,.02),mCarPlateR,r[0],r[1],r[2],yaw); }
-  solR(x,z,W,L1-L0,y0+1.44,yaw); }
+/* a parked car (static, baked into its chunk) from the vehicle kit (48b2-vehicles.js): mostly cars, the odd van or cab.
+   The seed mixes the caller's index with the spot so a row of cars doesn't repeat. Bonnet, roof and boot are standable. */
+function carPark(x,z,i,yaw=0,y0=PAVE_Y){ i=Math.abs(Math.floor(i))||0; const r=hr(i*7919+Math.round(x*13)*31+Math.round(z*7)*17+5); r(); vkPark(x,z,vkPick('park',r),yaw,y0); }
 
 /* THE DECKS: three deck-access slabs, five storeys, with walkways and stair towers you can climb */
 LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const r=hr(6401), H_=z1-z0;
