@@ -8,7 +8,7 @@
 "len": 32,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:w:-233",
@@ -19,7 +19,7 @@
 "len": 22.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:n:-147",
@@ -30,7 +30,7 @@
 "len": 352,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:e:-233",
@@ -41,7 +41,7 @@
 "len": 22.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:n:177",
@@ -52,7 +52,7 @@
 "len": 286,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:w:-233",
@@ -63,7 +63,7 @@
 "len": 22.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:n:355",
@@ -74,7 +74,7 @@
 "len": 29,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:e:-233",
@@ -85,7 +85,7 @@
 "len": 22.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:s:-353",
@@ -96,7 +96,7 @@
 "len": 32,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:-353",
@@ -107,7 +107,7 @@
 "len": 32,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:w:-103",
@@ -118,7 +118,7 @@
 "len": 178.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:s:7",
@@ -129,7 +129,7 @@
 "len": 45,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:e:-115",
@@ -140,7 +140,7 @@
 "len": 166.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:s:73",
@@ -151,7 +151,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "teesdale:n:73",
@@ -162,7 +162,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "pollard:e:-152",
@@ -173,7 +173,7 @@
 "len": 83,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:w:-152",
@@ -184,7 +184,7 @@
 "len": 83,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:s:143",
@@ -195,7 +195,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "teesdale:n:143",
@@ -206,7 +206,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:e:-152",
@@ -217,7 +217,7 @@
 "len": 83,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:-152",
@@ -228,7 +228,7 @@
 "len": 83,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "oldbg:s:355",
@@ -239,7 +239,7 @@
 "len": 29,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:355",
@@ -250,7 +250,7 @@
 "len": 29,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:e:-103",
@@ -261,7 +261,7 @@
 "len": 178.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "columbia:s:-254",
@@ -272,7 +272,7 @@
 "len": 137,
 "depth": 12,
 "frontage": "market",
-"hand": false
+"hand": true
 },
 {
 "key": "derby:n:-254",
@@ -283,7 +283,7 @@
 "len": 137,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:e:-82",
@@ -294,7 +294,7 @@
 "len": 20.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:w:-82",
@@ -305,7 +305,7 @@
 "len": 20.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "columbia:s:-101",
@@ -316,7 +316,7 @@
 "len": 146,
 "depth": 12,
 "frontage": "market",
-"hand": false
+"hand": true
 },
 {
 "key": "derby:n:-101",
@@ -327,7 +327,7 @@
 "len": 146,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:e:-82",
@@ -338,7 +338,7 @@
 "len": 20.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:w:-82",
@@ -349,7 +349,7 @@
 "len": 20.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "teesdale:s:73",
@@ -360,7 +360,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "kirkwall:n:73",
@@ -371,7 +371,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "pollard:e:-71",
@@ -382,7 +382,7 @@
 "len": 16,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:w:-71",
@@ -393,7 +393,7 @@
 "len": 16,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "teesdale:s:143",
@@ -404,7 +404,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "kirkwall:n:143",
@@ -415,7 +415,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:e:-71",
@@ -426,7 +426,7 @@
 "len": 16,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:-71",
@@ -437,7 +437,7 @@
 "len": 16,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "derby:s:-254",
@@ -448,7 +448,7 @@
 "len": 137,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:-254",
@@ -459,7 +459,7 @@
 "len": 137,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:e:-26",
@@ -470,7 +470,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:w:-26",
@@ -481,7 +481,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "derby:s:-140",
@@ -492,7 +492,7 @@
 "len": 68,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:-140",
@@ -503,7 +503,7 @@
 "len": 68,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:e:-26",
@@ -514,7 +514,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:w:-26",
@@ -525,7 +525,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "derby:s:-61",
@@ -536,7 +536,7 @@
 "len": 66,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:-61",
@@ -547,7 +547,7 @@
 "len": 66,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:e:-26",
@@ -558,7 +558,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:w:-26",
@@ -569,7 +569,7 @@
 "len": 24.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "kirkwall:s:73",
@@ -580,7 +580,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:73",
@@ -591,7 +591,7 @@
 "len": 53,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "pollard:e:-22",
@@ -602,7 +602,7 @@
 "len": 17.5,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:w:-22",
@@ -613,7 +613,7 @@
 "len": 17.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "kirkwall:s:143",
@@ -624,7 +624,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:n:143",
@@ -635,7 +635,7 @@
 "len": 63,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:e:-22",
@@ -646,7 +646,7 @@
 "len": 17.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:-22",
@@ -657,7 +657,7 @@
 "len": 17.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:s:-353",
@@ -668,7 +668,7 @@
 "len": 32,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:-353",
@@ -679,7 +679,7 @@
 "len": 32,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:w:64",
@@ -690,7 +690,7 @@
 "len": 75,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:s:-140",
@@ -701,7 +701,7 @@
 "len": 68,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:n:-140",
@@ -712,7 +712,7 @@
 "len": 68,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:e:40",
@@ -723,7 +723,7 @@
 "len": 30.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:w:40",
@@ -734,7 +734,7 @@
 "len": 30.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:s:-61",
@@ -745,7 +745,7 @@
 "len": 66,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:n:-61",
@@ -756,7 +756,7 @@
 "len": 66,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:e:40",
@@ -767,7 +767,7 @@
 "len": 30.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:w:40",
@@ -778,7 +778,7 @@
 "len": 30.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "bgr:s:355",
@@ -789,7 +789,7 @@
 "len": 29,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:355",
@@ -800,7 +800,7 @@
 "len": 29,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:e:64",
@@ -811,7 +811,7 @@
 "len": 75,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:n:7",
@@ -822,7 +822,7 @@
 "len": 45,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:e:41",
@@ -833,7 +833,7 @@
 "len": 41.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:-140",
@@ -844,7 +844,7 @@
 "len": 68,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:-140",
@@ -855,7 +855,7 @@
 "len": 68,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "mape:e:96",
@@ -866,7 +866,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:w:96",
@@ -877,7 +877,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:-61",
@@ -888,7 +888,7 @@
 "len": 66,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:-61",
@@ -899,7 +899,7 @@
 "len": 66,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "gosset:e:96",
@@ -910,7 +910,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:w:96",
@@ -921,7 +921,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:7",
@@ -932,7 +932,7 @@
 "len": 45,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:7",
@@ -943,7 +943,7 @@
 "len": 45,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "wilmot:e:96",
@@ -954,7 +954,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:73",
@@ -965,7 +965,7 @@
 "len": 53,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:73",
@@ -976,7 +976,7 @@
 "len": 53,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "pollard:e:96",
@@ -987,7 +987,7 @@
 "len": 13.5,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:w:96",
@@ -998,7 +998,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:143",
@@ -1009,7 +1009,7 @@
 "len": 63,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:143",
@@ -1020,7 +1020,7 @@
 "len": 63,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "florida:e:96",
@@ -1031,7 +1031,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:96",
@@ -1042,7 +1042,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "hereford:s:253",
@@ -1053,7 +1053,7 @@
 "len": 134,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "cheshire:n:253",
@@ -1064,7 +1064,7 @@
 "len": 134,
 "depth": 12,
 "frontage": "vintage",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:e:96",
@@ -1075,7 +1075,7 @@
 "len": 13.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:w:96",
@@ -1086,7 +1086,7 @@
 "len": 13.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "colts:s:-353",
@@ -1097,7 +1097,7 @@
 "len": 32,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:n:-353",
@@ -1108,7 +1108,7 @@
 "len": 32,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:w:185",
@@ -1119,7 +1119,7 @@
 "len": 28.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "colts:s:-74",
@@ -1130,7 +1130,7 @@
 "len": 497,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:n:-74",
@@ -1141,7 +1141,7 @@
 "len": 497,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:e:185",
@@ -1152,7 +1152,7 @@
 "len": 28.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:185",
@@ -1163,7 +1163,7 @@
 "len": 28.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "colts:s:253",
@@ -1174,7 +1174,7 @@
 "len": 134,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:n:253",
@@ -1185,7 +1185,7 @@
 "len": 134,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:e:185",
@@ -1196,7 +1196,7 @@
 "len": 28.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:w:185",
@@ -1207,7 +1207,7 @@
 "len": 28.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "colts:s:355",
@@ -1218,7 +1218,7 @@
 "len": 29,
 "depth": 10,
 "frontage": "arches",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:n:355",
@@ -1229,7 +1229,7 @@
 "len": 29,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:e:185",
@@ -1240,7 +1240,7 @@
 "len": 28.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:s:-353",
@@ -1251,7 +1251,7 @@
 "len": 32,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:w:230",
@@ -1262,7 +1262,7 @@
 "len": 8.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:s:-74",
@@ -1273,7 +1273,7 @@
 "len": 497,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "vallance:e:230",
@@ -1284,7 +1284,7 @@
 "len": 8.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:w:230",
@@ -1295,7 +1295,7 @@
 "len": 8.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:s:253",
@@ -1306,7 +1306,7 @@
 "len": 134,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "barnet:e:230",
@@ -1317,7 +1317,7 @@
 "len": 8.5,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:w:230",
@@ -1328,7 +1328,7 @@
 "len": 8.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 },
 {
 "key": "buckhurst:s:355",
@@ -1339,7 +1339,7 @@
 "len": 29,
 "depth": 9.5,
 "frontage": "terrace",
-"hand": false
+"hand": true
 },
 {
 "key": "camheath:e:230",
@@ -1350,6 +1350,6 @@
 "len": 8.5,
 "depth": 12,
 "frontage": "shops",
-"hand": false
+"hand": true
 }
 ]
