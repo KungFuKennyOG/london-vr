@@ -188,7 +188,7 @@ function groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const trades=L.f==='
     for(const t of [0,.38,1]) eGeo(box(U[0]?.07:.12,gH-.9,U[2]?.07:.12),mFrame,ox+U[0]*gw*t+out[0]*.02,PAVE_Y+(gH-.9)/2,oz+U[2]*gw*t+out[2]*.02);
     if(r()<.3){ STREET_LIGHT.pl.push([[fx+out[0]*1.2,PAVE_Y+2.4,fz+out[2]*1.2],[.9,.8,.62],6]); } }
   /* fascia: a box proud of the wall with the sign on its face */
-  const used=(USED_NAMES[L.S[0]]=USED_NAMES[L.S[0]]||new Set()); let name=pick(r,T.names.length?T.names:['SHOP']); for(let k=0;k<8&&(name===LAST_NAME||used.has(name));k++) name=pick(r,T.names); LAST_NAME=name; used.add(name); const uv=atlasSign(T.bg,T.fg,name,T.sub,{face:T.face,lit:true,subC:T.fg});
+  const used=(USED_NAMES[L.S[0]]=USED_NAMES[L.S[0]]||new Set()); let name=pick(r,T.names.length?T.names:['SHOP']); for(let k=0;k<8&&(name===LAST_NAME||used.has(name));k++) name=pick(r,T.names); if(!name) name=T.sub.split(' · ')[0]; LAST_NAME=name; used.add(name); const uv=atlasSign(T.bg,T.fg,name,T.sub,{face:T.face,lit:true,subC:T.fg});
   const sy=PAVE_Y+gH-.5;
   eSign(uv,[fx+out[0]*.2,sy,fz+out[2]*.2],U,fw-.3,.72);
   if(r()<.35){ const n=2+(r()*3|0), bm=col(0x121214); for(let i=0;i<n;i++){ const t_=.15+i*.14+r()*.05, bx=fx+U[0]*(fw*.5-.5-t_*2)+out[0]*(.45+r()*.3), bz=fz+U[2]*(fw*.5-.5-t_*2)+out[2]*(.45+r()*.3), s_=.32+r()*.12; eGeo(cyl(s_,s_*.7,s_*1.5,6),bm,bx,PAVE_Y+s_*.7,bz,r()*3); } }

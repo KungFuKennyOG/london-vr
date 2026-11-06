@@ -143,7 +143,7 @@ const TRADES={
   beigel:{bg:'#f6f0e2',fg:'#1a1a1a',face:'grot',names:['BEIGEL SHOP','BEIGEL BAKE','24HR BEIGELS'],sub:'OPEN 24 HOURS · SALT BEEF',room:'#f8f2e2'},
   bookie:{bg:'#183466',fg:'#f6d53a',face:'cond',names:['LUCKY STARS','BETFRED','PADDY\'S','WILLIAM\'S BETS'],sub:'BOOKMAKERS · LIVE RACING',room:'#d8e0ec'},
   hardware:{bg:'#c8a020',fg:'#1a1a1a',face:'cond',names:['EAST END HARDWARE','DIY & KEYS','LOCKSMITH & KEYS'],sub:'KEYS CUT · PAINT · TOOLS',room:'#e8e0d0'},
-  charity:{bg:'#5a2a6a',fg:'#ffffff',face:'grot',names:['CANCER RESEARCH','BRITISH HEART','OXFAM'],sub:'CHARITY SHOP',room:'#ece4f0'},
+  charity:{bg:'#5a2a6a',fg:'#ffffff',face:'grot',names:['EAST END HOSPICE','ST MARY\'S CHARITY SHOP','HELPING HANDS'],sub:'CHARITY SHOP',room:'#ece4f0'},
   flowers:{bg:'#2a4a2a',fg:'#f6e6c0',face:'cond',names:['COLUMBIA FLOWERS','THE FLOWER STALL','PETALS'],sub:'FLOWERS · PLANTS',room:'#e8f0e0'},
   vintage:{bg:'#2a2a2a',fg:'#e8d8b8',face:'cond',names:['ROKIT','BEYOND RETRO','THE VINTAGE STORE','CHESHIRE VINTAGE'],sub:'VINTAGE · RECORDS',room:'#e0d4c0'},
 };
