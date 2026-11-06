@@ -188,5 +188,5 @@ function tree(x,z,s=1,y0=PAVE_Y){ const h=3.2*s, tw=.14*s; eBoxF(x-tw,z-tw,x+tw,
 /* railings: a top rail, posts, bars (one cut texture) */
 const tRailing=P2(32,32,(g,w,h)=>{ g.clearRect(0,0,w,h); R(g,'#121314',0,0,w,3); R(g,'#121314',0,h-4,w,4); for(let x=1;x<w;x+=6) R(g,'#121314',x,0,2,h); for(let x=1;x<w;x+=6){ R(g,'#121314',x-1,0,4,2); } },0,1);
 const mRailing=(()=>{ const m=M(tRailing,{double:true,cut:true}); return m; })();
-function railing(x0,z0,x1,z1,h=1.1,y0=PAVE_Y,solid=true){ const L_=Math.hypot(x1-x0,z1-z0),U=[(x1-x0)/L_,0,(z1-z0)/L_]; eGrid(mRailing,[x0,y0,z0],U,Y_,L_,h,.3,h);
+function railing(x0,z0,x1,z1,h=1.1,y0=PAVE_Y,solid=true){ const L_=Math.hypot(x1-x0,z1-z0),U=[(x1-x0)/L_,0,(z1-z0)/L_]; eGrid(mRailing,[x0,y0,z0],U,Y_,L_,h,.62,h);
   if(solid) hsol(x0-.05,z0-.05,x1+.05,z1+.05,y0+h); }

@@ -105,7 +105,7 @@ function flight(x,z,dir,w,n,y0,rise,go,m){ for(let i=0;i<n;i++){ const y=y0+(i+1
     if(dir==='x'){ x0=x+i*go; x1=x0+go; z0=z-w/2; z1=z+w/2; } else if(dir==='-x'){ x1=x-i*go; x0=x1-go; z0=z-w/2; z1=z+w/2; } else if(dir==='z'){ z0=z+i*go; z1=z0+go; x0=x-w/2; x1=x+w/2; } else { z1=z-i*go; z0=z1-go; x0=x-w/2; x1=x+w/2; }
     eBoxF(x0,z0,x1,z1,y-rise-.02,y,{n:m,s:m,e:m,w:m,t:m},{tu:1,tv:1}); hsol(x0,z0,x1,z1,y,y-rise-.3); } }
 /* upper floors of a tall block that read from across the hub: a fogged lower part and a fog-free upper part */
-function tallBlock(x0,z0,x1,z1,h,F,cut=18){ eFacade(x0,z0,x1,z1,PAVE_Y+3.2,PAVE_Y+cut,F,'nsew');
+function tallBlock(x0,z0,x1,z1,h,F,cut=18){ if(cut>3.3) eFacade(x0,z0,x1,z1,PAVE_Y+3.2,PAVE_Y+cut,F,'nsew');
   F.farB=F.farB||farMat(F.base,{}); F.farL=F.farL||farMat(F.lit,{unlit:true,cut:true}); farBox(x0,z0,x1,z1,PAVE_Y+cut,PAVE_Y+h,F.farB,F.farL); hsol(x0,z0,x1,z1,PAVE_Y+h); }
 const mConcW=MM(P2(64,64,(g,w,h)=>{ paintWall(g,BRICKS.estate,w,h,hr(6201)); },0,1)), mLobby=nightM(P2(64,64,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#e8f0f2'],[1,'#a8b8c0']]); R(g,'#5a6a72',0,h-10,w,10); R(g,'#3a4a52',20,10,24,44); },0,1),{unlit:true},0);
 const mRed=nightM(null,{color:0xff2010,unlit:true,nofog:true},0);
@@ -113,7 +113,7 @@ const mRed=nightM(null,{color:0xff2010,unlit:true,nofog:true},0);
 /* THE BRAMLEY ESTATE: three twenty-storey towers you can see from anywhere, a deck block, garages, a car park, a playground */
 LM.bramley=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facade('estate','tower',0), r=hr(6301);
   const T=[[200,-440,'BRAMLEY HOUSE'],[282,-345,'ASHLEY HOUSE'],[200,-262,'CROMER HOUSE']];
-  for(const [tx,tz,name] of T){ const a=tx-11,b=tz-11,c=tx+11,d=tz+11; eBoxF(a,b,c,d,PAVE_Y,PAVE_Y+3.2,{n:mConcW,s:mConcW,e:mConcW,w:mConcW},{tu:2.5,tv:3.2,cell:3}); tallBlock(a,b,c,d,62,F);
+  for(const [tx,tz,name] of T){ const a=tx-11,b=tz-11,c=tx+11,d=tz+11; eBoxF(a,b,c,d,PAVE_Y,PAVE_Y+3.2,{n:mConcW,s:mConcW,e:mConcW,w:mConcW},{tu:2.5,tv:3.2,cell:3}); tallBlock(a,b,c,d,62,F,3.2);
     eGrid(mLobby,[tx-2.5,PAVE_Y,d+.03],X_,Y_,5,2.6,5,2.6); eBox(tx-3.5,d,tx+3.5,d+2.5,PAVE_Y+2.8,PAVE_Y+3.1,mConcW); councilSign(name,'FLATS 1–118 · TOWER HAMLETS HOMES',[tx,PAVE_Y+3.5,d+.05],X_,3.6,.6);
     STREET_LIGHT.pl.push([[tx,PAVE_Y+2.4,d+2],[1.0,1.15,1.2],7]); eBox(tx-4,tz-4,tx+4,tz+4,PAVE_Y+62,PAVE_Y+65,mConcW); eBox(tx-.2,tz-.2,tx+.2,tz+.2,PAVE_Y+65,PAVE_Y+65.4,mRed);
     for(const [gx,gz] of [[a-4,b+3],[c+4,d-3]]) tree(gx,gz,1.1); }
@@ -153,7 +153,7 @@ LM.decks=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mYard,2,8); const F=facade(
 
 /* ARNOLD CIRCUS: a mound with a bandstand, ringed by red-brick mansion blocks of the Boundary Estate */
 LM.boundary=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2; eFlat(x0,z0,x1,z1,PAVE_Y,mPave,1.2,4);
-  const gr=MM(tGrass); for(const [rr,h] of [[17,1.0],[12.5,2.0],[8,3.0]]){ eGeo(cyl(rr,rr,h,16),[mBrickW,gr,gr],cx,PAVE_Y+h/2,cz); const q=rr*.78; hsol(cx-q,cz-q,cx+q,cz+q,PAVE_Y+h); }
+  const gr=MM(tGrass); for(const [rr,h] of [[17,1.0],[12.5,2.0],[8,3.0]]){ eGeo(cyl(rr,rr,h,16),[gr,gr,gr],cx,PAVE_Y+h/2,cz); const q=rr*.78; hsol(cx-q,cz-q,cx+q,cz+q,PAVE_Y+h); }
   for(const [dx,dz,dir] of [[0,17,'-z'],[0,-17,'z'],[17,0,'-x'],[-17,0,'x']]) { const n=6; flight(cx+dx,cz+dz,dir,2.2,n*3/.5|0,PAVE_Y,.25,.62,mPave); }
   const top=PAVE_Y+3, bm=col(0x1e3a2a); for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; eBox(cx+Math.cos(a)*4.4-.1,cz+Math.sin(a)*4.4-.1,cx+Math.cos(a)*4.4+.1,cz+Math.sin(a)*4.4+.1,top,top+3,bm); }
   eGeo(cyl(5.2,.3,2,8),bm,cx,top+4,cz); eGeo(cyl(5,5,.3,8),col(0x8a7a5a),cx,top+.15,cz); hsol(cx-4.6,cz-4.6,cx+4.6,cz+4.6,top+.3);
@@ -204,9 +204,17 @@ function tubeEntrance(x,z,ax){ const w=3.2,l=7; const x0=x-w/2,x1=x+w/2,z0=z-l/2
   STREET_LIGHT.pl.push([[x,PAVE_Y+2.5,z0-1],[1.1,1.2,1.3],7]); TUBES.push([x,z0-1]); }
 const TUBES=[]; let _mTile=null; function mTile(){ return _mTile||(_mTile=nightM(P2(32,32,(g,w,h)=>{ R(g,'#e8e4d8',0,0,w,h); for(let i=0;i<w;i+=8) R(g,'#c8c4b8',i,0,1,h); for(let i=0;i<h;i+=8) R(g,'#c8c4b8',0,i,w,1); R(g,'#1a2a6a',0,12,w,4); },0,1),{unlit:true},.4)); }
 
+function churchFacade(){ if(LM._ch) return LM._ch; const w=5*PXM, h=12*PXM, B=BRICKS.cream, r=hr(6901), draw=(g,lit)=>{ if(!lit) paintWall(g,B,w,h,r); else g.clearRect(0,0,w,h);
+    const ww=1.6*PXM, wh=6.2*PXM, x=(w-ww)/2, y=h-(1.6*PXM+wh);
+    g.save(); g.beginPath(); g.moveTo(x,y+wh); g.lineTo(x,y+ww/2); g.arc(x+ww/2,y+ww/2,ww/2,Math.PI,0); g.lineTo(x+ww,y+wh); g.closePath();
+    if(lit){ g.clip(); vfill(g,x,y,ww,wh,[[0,'#ffe0a8'],[1,'#e8a050']]); for(let k=1;k<6;k++) R(g,'rgba(60,40,20,.8)',x,y+k*wh/6,ww,2); R(g,'rgba(60,40,20,.8)',x+ww/2-1,y,2,wh); }
+    else { g.fillStyle='#e8e2d2'; g.lineWidth=4; g.strokeStyle='#e8e2d2'; g.stroke(); g.clip(); vfill(g,x,y,ww,wh,[[0,'#1c2430'],[1,'#0c1016']]); }
+    g.restore(); if(!lit){ R(g,'#d8d0bc',0,h-11*PXM,w,6); R(g,'#d8d0bc',0,h-1.4*PXM,w,5); } };
+  const base=P2(w,h,g=>draw(g,false),0,6902), lit=P2(w,h,g=>draw(g,true),0,6903);
+  return LM._ch={base,lit,bays:2,floors:4,mBase:MM(base),mLit:nightM(lit,{unlit:true,cut:true})}; }
 /* ST JOHN ON BETHNAL GREEN: a pale stone church with a tall clock tower and cupola, a churchyard with graves */
 LM.church=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mGrass,2,6); railRect(x0+.5,z0+.5,x1-.5,z1-.5,[['s',(x0+x1)/2-3,(x0+x1)/2+3],['e',z1-14,z1-10]]);
-  const cx=(x0+x1)/2, F=facade('cream','mansion',0), stone=MM(P2(64,64,(g,w,h)=>{ paintWall(g,BRICKS.cream,w,h,hr(6801)); for(let y=0;y<h;y+=12) R(g,'#b8ac90',0,y,w,1); },0,1));
+  const cx=(x0+x1)/2, F=churchFacade(), stone=MM(P2(64,64,(g,w,h)=>{ paintWall(g,BRICKS.cream,w,h,hr(6801)); for(let y=0;y<h;y+=12) R(g,'#b8ac90',0,y,w,1); },0,1));
   eFacade(cx-14,z0+18,cx+14,z1-24,PAVE_Y,PAVE_Y+13,F,'nsew'); eGeo(box(29,.6,z1-z0-41),mCope,cx,PAVE_Y+13.3,(z0+18+z1-24)/2); eFlat(cx-14,z0+18,cx+14,z1-24,PAVE_Y+13.6,mSlate,2,0); hsol(cx-14,z0+18,cx+14,z1-24,PAVE_Y+13.6);
   /* portico */ const pz=z1-24; for(let k=0;k<4;k++) eGeo(cyl(.4,.4,8,8),stone,cx-6+k*4,PAVE_Y+4,pz+3); eBox(cx-8,pz,cx+8,pz+4.4,PAVE_Y+8,PAVE_Y+9.4,stone); hsol(cx-8,pz,cx+8,pz+4.4,PAVE_Y+9.4,PAVE_Y+8); steps(cx,pz+5.2,'-z',14,3,.17,.4,stone);
   /* the tower: square, then a lantern stage, then the cupola */ const tz=pz-4; eBox(cx-4,tz-4,cx+4,tz+4,PAVE_Y+13.6,PAVE_Y+20,stone,{tu:2,tv:2});
