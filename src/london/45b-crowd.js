@@ -165,7 +165,7 @@ for(const [k,o] of [[19,{skin:'w1',hair:['long','#a8804a',13],tc:'#6a2430',lanya
     [21,{skin:'c1',hair:['slick','#141010',13],tc:'#e8e8e4',lc:'#2a2c34'}],[12,{skin:'k1',hair:['buzz','#141010',14],beard:['full','#141010'],tc:'#5a6a3a'}],[13,{skin:'w1',hair:['bleach','#d8c8a8',13],tc:'#5a4a7a'}],
     [16,{skin:'b2',tc:'#3a3a2a'}],[18,{skin:'k2',tc:'#141416',lc:'#141416',stripe:'#c8231c'}],[8,{skin:'b1',hijab:'#2a3a5a',tc:'#1a1a1c'}],[31,{skin:'b3',hair:['long','#2a1c12',13],tc:'#2a4a6a'}],
     [10,{skin:'w1',hair:['buzz','#a8804a',14],beard:['full','#a8804a'],tc:'#2a3a5a'}],[3,{skin:'b1',beard:['full','#d8d4cc'],tc:'#d8d0b8'}],[6,{skin:'b3',hijab:'#4a2a3a',tc:'#2a1a24',lc:'#2a1a24'}],
-    [0,{skin:'w1',tc:'#4a5a3a',trolley:52}],[32,{skin:'k2',hair:['long','#141010',12],tc:'#5a1a2a'}],[30,{skin:'w1',hair:['slick','#a8a49c',13],tc:'#3a3a40'}],[24,{skin:'w2',tc:'#1a2a4a'}]])
+    [0,{skin:'w1',tc:'#4a5a3a',trolley:52}],[25,{skin:'k2',hair:['long','#141010',12],tc:'#2a2a3a',dog:{c:'fawn',s:.95}}],[26,{skin:'w2',beard:['stubble','#4a3020'],tc:'#3a2a1a',dog:{c:'bw',s:1}}],[32,{skin:'k2',hair:['long','#141010',12],tc:'#5a1a2a'}],[30,{skin:'w1',hair:['slick','#a8a49c',13],tc:'#3a3a40'}],[24,{skin:'w2',tc:'#1a2a4a'}]])
   PEOPLE.push(Object.assign({},PEOPLE[k],o));
 const CROWD_N=PEOPLE.length, CROWD=[], CROWD_DRESS=[]; /* painting the clothes is the slow part: done a person at a time, after load (48f2) */
 { const r=rng(4401), pickr=a=>a[r()*a.length|0], t0=performance.now();

@@ -41,20 +41,10 @@ const tPeople=P2(256,256,(g)=>{ R(g,'#000',0,0,256,256);
   cell(60,g=>{ R(g,'#16171a',0,0,32,32); R(g,'#2a2b30',0,0,32,2); }); cell(61,g=>{ R(g,'#1c2a5a',0,0,32,32); for(let i=0;i<32;i+=8) R(g,'#c8c8c0',i,0,1,32); }); /* 60,61 brollies */
   cell(62,g=>R(g,'#c8231c',0,0,32,32)); cell(63,g=>{ R(g,'#c89a6a',0,0,32,32); });                                                    /* 62 lead red, 63 fawn */
 },0,1);
-const mPeople=M(tPeople,{emissive:0x0a0a0a}), mCarLights=nightM(tPeople,{unlit:true},.6);
+const mPeople=M(tPeople,{emissive:0x0a0a0a});
 /* a box whose six faces each sample one atlas cell (fc: [right,left,top,bottom,front,back] cells) */
 function abox(w,h,d,fc,at=[0,0,0]){ const g=box(w,h,d,{at}); for(let fi=0;fi<6;fi++){ const c=fc[fi], cu=(c%8)/8, cv=1-(Math.floor(c/8)+1)/8; for(let k=0;k<4;k++){ const i=(fi*4+k)*2; g.T[i]=cu+(.06+.88*g.T[i])/8; g.T[i+1]=cv+(.06+.88*g.T[i+1])/8; } } return g; }
 const all6=c=>[c,c,c,c,c,c];
-/* a car body from a side profile (local z along, y up), extruded to width w; paint and glass are atlas cells (CAR_PROF lives in 48d) */
-const VPROF={cab:[[-2.2,.34],[-2.24,.86],[-2.06,1.6],[.5,1.68],[1.12,1.04],[2.08,.9],[2.18,.36]]};
-function aprof(P_,w,paint,glass){ const g=new Geo(), uvOf=c=>[(c%8)/8+.5/8,1-(Math.floor(c/8)+.5)/8], up=uvOf(paint), ug=uvOf(glass);
-  const tri=(a,b,c,n,uv)=>{ const o=g.P.length/3; g.v(a,n,uv); g.v(b,n,uv); g.v(c,n,uv); g.I.push(o,o+1,o+2); };
-  for(const sd of [-1,1]){ const x=sd*w/2, n=[sd,0,0], C=[x,.8,0]; for(let k=0;k<P_.length;k++){ const p=P_[k], q=P_[(k+1)%P_.length], B=[x,p[1],p[0]], D=[x,q[1],q[0]]; sd>0?tri(C,B,D,n,up):tri(C,D,B,n,up); } }
-  for(let k=0;k<P_.length-1;k++){ const p=P_[k], q=P_[k+1], dz=q[0]-p[0], dy=q[1]-p[1], l=Math.hypot(dz,dy), n=[0,dz/l,-dy/l], gl_=(p[1]>1.2||q[1]>1.2)&&Math.abs(dy)>.3, uv=gl_?ug:up;
-    const A=[-w/2,p[1],p[0]], B=[w/2,p[1],p[0]], C=[w/2,q[1],q[0]], D=[-w/2,q[1],q[0]]; tri(A,C,B,n,uv); tri(A,D,C,n,uv); }
-  const gl_=P_.filter(p=>p[1]>1.3), zr=Math.min(...gl_.map(p=>p[0])), zf=Math.max(...gl_.map(p=>p[0])), yt=Math.min(...gl_.map(p=>p[1]))-.06;
-  for(const sd of [-1,1]){ const x=sd*(w/2+.01), n=[sd,0,0], a=[x,.98,zr-.25], b=[x,.98,zf+.45], c=[x,yt,zf+.02], d=[x,yt,zr+.08]; if(sd>0){ tri(a,d,c,n,ug); tri(a,c,b,n,ug); } else { tri(a,b,c,n,ug); tri(a,c,d,n,ug); } }
-  return g; }
 function mergeG(list){ const g=new Geo(); for(const q of list){ const b=g.P.length/3; g.P.push(...q.P); g.Nm.push(...q.Nm); g.T.push(...q.T); for(const i of q.I) g.I.push(i+b); } return g; }
 
 const P_x=()=>GAME.P.x, P_z=()=>GAME.P.z;
@@ -68,21 +58,10 @@ function laneXZ(L,s,dir){ if(L.oneway) return L.ax==='x'?[s,L.c-.75]:[L.c-.75,s]
 /* junctions on each street: where another street's centre crosses it */
 for(const L of LANES){ L.j=[]; for(const M2 of LANES){ if(M2.ax===L.ax) continue; if(M2.c>L.a&&M2.c<L.b&&L.c>M2.a&&L.c<M2.b) L.j.push({s:M2.c,to:M2}); } L.j.sort((p,q)=>p.s-q.s); }
 const PVKINDS=[['car',.5],['cab',.18],['van',.12],['bus',.08],['moped',.1],['police',.02]];
-function makeVehicle(kind,seed){ const r=hr(seed), root=N(LIFE.root); root.dyn=true; const paint=kind==='cab'?17:kind==='bus'?47:kind==='police'?46:kind==='van'?[12,15,8][r()*3|0]:[0,1,2,3,4,5,8,9,15,13,7,19][r()*12|0];
-  let parts=[], lights=[], len=4.2, wid=1.8;
-  if(kind==='bus'){ len=10.4; wid=2.5; parts.push(abox(wid,1.9,len,[47,47,47,47,45,48],[0,1.2,0]),abox(wid,1.9,len-.2,[48,48,47,47,45,48],[0,3.1,0]),abox(wid+.02,.9,len-.4,[48,48,47,47,45,48],[0,1.6,-.2]),abox(wid-.1,.1,len-.1,all6(47),[0,4.1,0])); }
-  else if(kind==='moped'){ len=1.8; wid=.6; parts.push(abox(.3,.5,1.6,all6(14),[0,.45,0]),abox(.34,.34,.34,all6([10,11,8][r()*3|0]),[0,1.05,-.45]),abox(.32,.55,.22,all6(43),[0,1.15,-.05]),abox(.2,.2,.2,[20,20,32,20,26,32],[0,1.55,-.05])); }
-  else if(kind==='van'){ len=5.2; wid=2.0; parts.push(abox(wid,1.9,len-1.2,all6(paint),[0,1.35,-.6]),abox(wid,1.2,1.4,[paint,paint,paint,paint,45,paint],[0,.95,len/2-.7]),abox(wid-.04,.6,1.2,[45,45,paint,paint,45,paint],[0,1.75,len/2-.8])); }
-  else { const prof=kind==='cab'?VPROF.cab:kind==='police'?CAR_PROF.estate:[CAR_PROF.saloon,CAR_PROF.hatch,CAR_PROF.estate][r()*3|0]; len=prof[prof.length-1][0]-prof[0][0]; parts.push(aprof(prof,wid,paint,45),abox(wid*.62,.12,.03,all6(46),[0,.52,len/2+.01]),abox(wid*.62,.12,.03,all6(44),[0,.6,-len/2-.01]),abox(wid*.7,.18,.04,all6(17),[0,.72,len/2+.01]));
-    if(kind==='cab'){ parts.push(abox(.42,.14,.18,all6(44),[0,1.75,.3])); }
-    if(kind==='police'){ parts.push(abox(wid+.02,.22,len-.6,all6(50),[0,.7,0]),abox(.9,.14,.25,all6(49),[0,1.49,0])); } }
-  for(const [wx,wz] of kind==='moped'?[[0,.6],[0,-.6]]:[[-wid/2+.02,len/2-.8],[wid/2-.02,len/2-.8],[-wid/2+.02,-len/2+.8],[wid/2-.02,-len/2+.8]]) parts.push(abox(.24,.62,.62,all6(17),[wx,.31,wz]),abox(.26,.26,.26,all6(15),[wx,.31,wz]));
-  const body=mk(mergeG(parts),mPeople,root);
-  /* lamps: two white at the front, two red at the back (one for a moped) */
-  const fr=len/2+.02, bk=-len/2-.02, hl=kind==='moped'?[[0,.8,fr]]:[[-wid/2+.3,.65,fr],[wid/2-.3,.65,fr]], tl=kind==='moped'?[[0,.7,bk]]:[[-wid/2+.25,.75,bk],[wid/2-.25,.75,bk]];
-  for(const [x,y,z] of hl) lights.push(abox(.28,.14,.04,all6(46),[x,y,z])); for(const [x,y,z] of tl) lights.push(abox(.24,.14,.04,all6(47),[x,y,z]));
-  const lm=mk(mergeG(lights),mCarLights,root);
-  return {kind,root,body,len,wid,lane:null,s:0,dir:1,v:0,vmax:kind==='bus'?7.5:kind==='moped'?9.5:8.5+r()*2.5,turn:null,alive:false,x:0,z:0,yaw:0,honk:0}; }
+/* the models come from the vehicle kit (48b2-vehicles.js): body and parts on one atlas (one draw), lamps on the night mesh (one draw) */
+function makeVehicle(kind,seed){ const r=hr(seed), root=N(LIFE.root); root.dyn=true; const V=vkPick(kind,r), G=vkGeo(V);
+  const body=mk(G.g,VK.m,root), lm=mk(G.lg,VK.mL,root); /* kids[1] is the lamps: the police car flashes them */
+  return {kind,root,body,len:G.len,wid:G.wid,lane:null,s:0,dir:1,v:0,vmax:kind==='bus'?7.5:kind==='moped'?9.5:8.5+r()*2.5,turn:null,alive:false,x:0,z:0,yaw:0,honk:0}; }
 const CAR_N=14, CAR_POOL=[]; for(let i=0;i<CAR_N;i++){ let u=(i*.6180339)%1, kind='car'; for(const [k,p] of PVKINDS){ if(u<p){ kind=k; break; } u-=p; } const v=makeVehicle(i===3?'bus':i===7?'police':kind,9600+i*17); v.root.vis=false; CAR_POOL.push(v); }
 function spawnCar(v,px,pz){ for(let tries=0;tries<30;tries++){ const L=LANES[Math.random()*LANES.length|0], s=L.a+Math.random()*(L.b-L.a), dir=L.oneway||(Math.random()<.5?1:-1), [x,z]=laneXZ(L,s,dir), d=Math.hypot(x-px,z-pz);
     if(d<40||d>95) continue; if(CAR_POOL.some(o=>o.alive&&Math.hypot(o.x-x,o.z-z)<14)) continue; v.lane=L; v.s=s; v.dir=dir; v.v=v.vmax*.8; v.alive=true; v.root.vis=true; v.x=x; v.z=z; v.turn=null; return true; } return false; }
@@ -110,7 +89,7 @@ function carTick(v,dt,px,pz){ if(Math.hypot(v.x-px,v.z-pz)>110){ v.alive=false; 
     if(!nj&&dj<2){ if(L.oneway){ v.alive=false; v.root.vis=false; return; } v.dir*=-1; v.s+=v.dir*2; } /* dead end: three-point it */
     v.v+=clamp(want-v.v,-9*dt,3*dt); v.s+=v.dir*v.v*dt; const [x,z]=laneXZ(L,v.s,v.dir); v.x=x; v.z=z; v.yaw=L.ax==='x'?(v.dir>0?Math.PI/2:-Math.PI/2):(v.dir>0?0:Math.PI); }
   v.honk=Math.max(0,v.honk-dt); v.root.p=[v.x,0,v.z]; v.root.r=[0,v.yaw,0];
-  if(v.kind==='police') v.root.kids[1].vis=GAME.G.stars>0?Math.sin(LIFE.t*14)>0:true; }
+  vkLit(v); }
 
 /* ---------------- the tick ---------------- */
 let lifeInit=false;
