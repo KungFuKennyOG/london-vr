@@ -136,6 +136,7 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
 7. **Headset checks pending:** fps at the heaviest view, scale at 1:1, and comfort. `london.html` has no WebXR entry yet.
 
 ## Score history
+- **Nov 6, review 6 (fresh agent, real Bethnal Green + headset-distance close-ups): 5.7/10** (provisional vs BAYHEM L3 6.2). Best: Bethnal Green Road by day (~6.5). Weakest: up-close architecture 4.0, up-close VR quality 3.5, skyline & distance 3.5. Full review: `docs/review-nov6.md`.
 | Pass | Date | Score | Reviewer notes (short) |
 |---|---|---|---|
 | 0 | Nov 5, 2026 | 4.3 (provisional, vs BAYHEM L3 = 6.2) | Identity only "just" its own, crushed and purple dark, silhouettes, freeze card clipped, PS1 pixelation, mitten hands. Liked: the signature reds, British detail, the cast archetypes, the Ritchie copy. |
