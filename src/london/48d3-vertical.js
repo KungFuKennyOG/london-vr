@@ -84,7 +84,7 @@ function buildVertical(){ const t0=performance.now(), v0=EMIT.verts, LB=n=>LANDM
       for(const [tx,tz] of [[x0+18,z0+18],[x1-22,(z0+z1)/2-6],[x0+18,z1-30]]) hsol(tx-3.5,tz+11,tx+3.5,tz+13.5,PAVE_Y+3.1,PAVE_Y+2.8); } }
   /* ARNOLD CIRCUS: chimney stacks along each mansion block's ridge (silhouette and handholds) */
   { const B=LB('boundary'); if(B){ const [x0,z0,x1,z1]=B, cx=(x0+x1)/2, cz=(z0+z1)/2;
-      for(let k=0;k<8;k++){ const a=k/8*Math.PI*2+Math.PI/8, R_=Math.min(x1-x0,z1-z0)/2-6, bx=cx+Math.cos(a)*R_*((x1-x0)/(z1-z0)>1.2?1.35:1), bz=cz+Math.sin(a)*R_, yaw=Math.atan2(Math.cos(a),Math.sin(a))+Math.PI, H=PAVE_Y+15.5;
+      for(let k=0;k<ARNOLD.n;k++){ const [bx,bz,yaw]=arnoldBlock(cx,cz,k), H=PAVE_Y+15.5;
         for(const lx of [-7.5,0,7.5]){ const c=Math.cos(yaw),s_=Math.sin(yaw), px=bx+c*lx, pz=bz-s_*lx; eBoxR(px,pz,2.4,.9,H,H+1.7,yaw,{f:mBrickW,b:mBrickW,l:mBrickW,r:mBrickW,t:mDark},{tu:1.6,tv:1.5}); solR(px,pz,2.4,.9,H+1.7,yaw,H); }
       } } }
   console.log('[london] vertical: verts',EMIT.verts-v0,'ms',Math.round(performance.now()-t0)); }

@@ -3492,16 +3492,25 @@ LM.boundary=([x0,z0,x1,z1])=>{ const cx=(x0+x1)/2, cz=(z0+z1)/2; eFlat(x0,z0,x1,
   for(const [dx,dz,dir] of [[0,12.5,'-z'],[0,-12.5,'z'],[12.5,0,'-x'],[-12.5,0,'x']]) flight(cx+dx,cz+dz,dir,2.2,12,PAVE_Y,.25,.5,mPave);
   const top=PAVE_Y+3, bm=col(0x1e3a2a); for(let k=0;k<8;k++){ const a=k/8*Math.PI*2; eBox(cx+Math.cos(a)*4.4-.1,cz+Math.sin(a)*4.4-.1,cx+Math.cos(a)*4.4+.1,cz+Math.sin(a)*4.4+.1,top,top+3,bm); }
   eGeo(cyl(5.2,.3,2,8),bm,cx,top+4,cz); eGeo(cyl(5,5,.3,8),col(0x8a7a5a),cx,top+.15,cz); hsol(cx-4.6,cz-4.6,cx+4.6,cz+4.6,top+.3);
-  for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; tree(cx+Math.cos(a)*16,cz+Math.sin(a)*16,1.1); }
+  /* the circus: a ring road round the mound, plane trees on the outer pavement */
+  { const B=emitBucket(mTarmac,cx,cz,0), N_=28, r0=14, r1=19.5; for(let k=0;k<N_;k++){ const a0=k/N_*Math.PI*2, a1=(k+1)/N_*Math.PI*2, o=B.n, P_=[[r0,a0],[r1,a0],[r1,a1],[r0,a1]];
+      for(const [rr,aa] of P_){ B.P.push(cx+Math.cos(aa)*rr,PAVE_Y+.012,cz+Math.sin(aa)*rr); B.Nm.push(0,1,0); B.T.push(Math.cos(aa)*rr/6,Math.sin(aa)*rr/6); B.n++; } B.I.push(o,o+2,o+1,o,o+3,o+2); EMIT.verts+=4; } }
+  for(let k=0;k<12;k++){ const a=k/12*Math.PI*2+.13; tree(cx+Math.cos(a)*20.9,cz+Math.sin(a)*20.9,1.0); }
+  /* the rest of the Boundary Estate: mansion blocks filling the ends, a radiating street between each pair */
+  { const Fm=facade('red','mansion',0), gap=4.5, ex=ARNOLD.R+ARNOLD.d/2+3.5; for(const [a,b] of [[x0+2,cx-ex],[cx+ex,x1-2]]){ if(b-a<10) continue;
+      for(const [c_,d_] of [[z0+2,cz-gap],[cz+gap,z1-2]]){ eFacade(a,c_,b,d_,PAVE_Y,PAVE_Y+15.5,Fm,'nsew'); eFlat(a,c_,b,d_,PAVE_Y+15.5,mSlate,2,8); eBox(a-.15,c_-.15,b+.15,d_+.15,PAVE_Y+15.5,PAVE_Y+16,mCope); hsol(a,c_,b,d_,PAVE_Y+16);
+        for(let x=a+3;x<b-2;x+=7) for(const z of [c_+2,d_-3]){ eBox(x,z,x+1.6,z+.8,PAVE_Y+16,PAVE_Y+17.6,mBrickW,{tu:1.6,tv:1.5}); hsol(x,z,x+1.6,z+.8,PAVE_Y+17.6,PAVE_Y+16); } } } }
   const F=facade('red','mansion',0), F2=facade('red','mansion',1);
-  for(let k=0;k<8;k++){ const a=k/8*Math.PI*2+Math.PI/8, R_=Math.min(x1-x0,z1-z0)/2-6, bx=cx+Math.cos(a)*R_*((x1-x0)/(z1-z0)>1.2?1.35:1), bz=cz+Math.sin(a)*R_, yaw=Math.atan2(Math.cos(a),Math.sin(a))+Math.PI, FF=k%2?F:F2, H=PAVE_Y+15, w=20, d=10;
+  for(let k=0;k<ARNOLD.n;k++){ const [bx,bz,yaw]=arnoldBlock(cx,cz,k), FF=k%2?F:F2, H=PAVE_Y+15, w=ARNOLD.w, d=ARNOLD.d;
     eBoxR(bx,bz,w,d,PAVE_Y,H,yaw,{f:FF.mBase,b:FF.mBase,l:FF.mBase,r:FF.mBase,t:mFelt},{tu:FF.bays*HUB.BAY,tv:FF.floors*HUB.FLOOR,cell:3});
     eBoxR(bx,bz,w+.06,d+.06,PAVE_Y,H,yaw,{f:FF.mLit,b:FF.mLit},{tu:FF.bays*HUB.BAY,tv:FF.floors*HUB.FLOOR}); eBoxR(bx,bz,w+.3,d+.3,H,H+.5,yaw,{f:mCope,b:mCope,l:mCope,r:mCope,t:mCope});
     solR(bx,bz,w,d,H+.5,yaw); }
-  for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2)*19,cz+Math.sin(k/6*Math.PI*2)*19);
+  for(let k=0;k<6;k++) parkLamp(cx+Math.cos(k/6*Math.PI*2+.3)*21,cz+Math.sin(k/6*Math.PI*2+.3)*21);
   STREET_LIGHT.pl.push([[cx,top+2.4,cz],[1.6,1.2,.8],12]); BANDSTAND.push([cx,top,cz]);
 };
 const BANDSTAND=[], CHURCH_TOWER=[];
+/* the Boundary Estate's ring of mansion blocks round Arnold Circus, straight across the ring road */
+const ARNOLD={n:7,R:29,w:17,d:11}; /* seven blocks, seven radiating streets, as built */ function arnoldBlock(cx,cz,k){ const a=k/ARNOLD.n*Math.PI*2+Math.PI/ARNOLD.n; return [cx+Math.cos(a)*ARNOLD.R,cz+Math.sin(a)*ARNOLD.R,Math.atan2(Math.cos(a),Math.sin(a))+Math.PI]; }
 
 /* THE SCHOOL: a tall Victorian board school, its playground in a cage */
 WIN.school={w:1.6,h:2.3,sill:.6,lintel:true};
@@ -3831,7 +3840,7 @@ function buildVertical(){ const t0=performance.now(), v0=EMIT.verts, LB=n=>LANDM
       for(const [tx,tz] of [[x0+18,z0+18],[x1-22,(z0+z1)/2-6],[x0+18,z1-30]]) hsol(tx-3.5,tz+11,tx+3.5,tz+13.5,PAVE_Y+3.1,PAVE_Y+2.8); } }
   /* ARNOLD CIRCUS: chimney stacks along each mansion block's ridge (silhouette and handholds) */
   { const B=LB('boundary'); if(B){ const [x0,z0,x1,z1]=B, cx=(x0+x1)/2, cz=(z0+z1)/2;
-      for(let k=0;k<8;k++){ const a=k/8*Math.PI*2+Math.PI/8, R_=Math.min(x1-x0,z1-z0)/2-6, bx=cx+Math.cos(a)*R_*((x1-x0)/(z1-z0)>1.2?1.35:1), bz=cz+Math.sin(a)*R_, yaw=Math.atan2(Math.cos(a),Math.sin(a))+Math.PI, H=PAVE_Y+15.5;
+      for(let k=0;k<ARNOLD.n;k++){ const [bx,bz,yaw]=arnoldBlock(cx,cz,k), H=PAVE_Y+15.5;
         for(const lx of [-7.5,0,7.5]){ const c=Math.cos(yaw),s_=Math.sin(yaw), px=bx+c*lx, pz=bz-s_*lx; eBoxR(px,pz,2.4,.9,H,H+1.7,yaw,{f:mBrickW,b:mBrickW,l:mBrickW,r:mBrickW,t:mDark},{tu:1.6,tv:1.5}); solR(px,pz,2.4,.9,H+1.7,yaw,H); }
       } } }
   console.log('[london] vertical: verts',EMIT.verts-v0,'ms',Math.round(performance.now()-t0)); }
