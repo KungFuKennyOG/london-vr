@@ -1487,7 +1487,21 @@ const EMIT={buckets:new Map(),mid:new Map(),verts:0};
 function emitBucket(m,x,z,nv){ EMIT.by=EMIT.by||new Map(); EMIT.by.set(m,(EMIT.by.get(m)||0)+nv); if(!EMIT.mid.has(m)) EMIT.mid.set(m,EMIT.mid.size); const cx=Math.floor(x/CHUNK),cz=Math.floor(z/CHUNK),k=EMIT.mid.get(m)+'|'+cx+'|'+cz;
   let list=EMIT.buckets.get(k); if(!list){ list=[]; EMIT.buckets.set(k,list); }
   let b=list[list.length-1]; if(!b||b.n+nv>65000){ b={m,n:0,P:[],Nm:[],T:[],I:[]}; list.push(b); } EMIT.verts+=nv; return b; }
-function emitFlush(){ let n=0; for(const [k,list] of EMIT.buckets) for(const B of list){ if(!B.I.length) continue; const g=new Geo(); g.P=new Float32Array(B.P); g.Nm=new Float32Array(B.Nm); g.T=new Float32Array(B.T); g.I=new Uint16Array(B.I); const node=mk(g,B.m,BAKED); geoBounds(g);
+/* plain colours (col() materials: unlit off, no texture, no glow, never changed at run time) are merged at flush into one palette
+   texture per chunk, so a chunk's bins, poles, frames and car bodies cost one draw instead of one each */
+const PAL={tex:null,cols:[],idx:new Map(),m:[null,null]};
+function palOK(m){ return !m.tex&&!m.unlit&&!m.cut&&!m.nofog&&!m.far&&!(m.emis[0]||m.emis[1]||m.emis[2])&&m.color.every(v=>v>=0&&v<=1)&&!(typeof NIGHT_MATS!=='undefined'&&NIGHT_MATS.some(e=>e[0]===m))&&!(typeof FARM!=='undefined'&&FARM.some(e=>e[0]===m)); }
+function palMerge(){ if(!PAL.tex){ PAL.tex=tex(32,32,'#ffffff'); PAL.tex.nomip=true; PAL.m=[M(PAL.tex,{}),M(PAL.tex,{double:true})]; }
+  const out=new Map();
+  for(const [k,list] of [...EMIT.buckets]){ const m=list[0]&&list[0].m; if(!m||!palOK(m)) continue; const ck=k.slice(k.indexOf('|')+1), key=m.color.map(v=>Math.round(v*255)).join(',');
+    let pi=PAL.idx.get(key); if(pi===undefined){ if(PAL.cols.length>=1024) continue; pi=PAL.cols.length; PAL.cols.push(m.color); PAL.idx.set(key,pi); }
+    const u=((pi%32)+.5)/32, v=1-(Math.floor(pi/32)+.5)/32, ok=(m.dbl?1:0)+'|'+ck;
+    for(const B of list){ let L_=out.get(ok); if(!L_){ L_=[]; out.set(ok,L_); } let D=L_[L_.length-1]; if(!D||D.n+B.n>65000){ D={m:PAL.m[m.dbl?1:0],n:0,P:[],Nm:[],T:[],I:[]}; L_.push(D); }
+      const o=D.n; for(let i=0;i<B.P.length;i++) D.P.push(B.P[i]); for(let i=0;i<B.Nm.length;i++) D.Nm.push(B.Nm[i]); for(let i=0;i<B.n;i++) D.T.push(u,v); for(let i=0;i<B.I.length;i++) D.I.push(B.I[i]+o); D.n+=B.n; }
+    EMIT.buckets.delete(k); }
+  for(const [k,L_] of out) EMIT.buckets.set('pal'+k,L_);
+  const g=PAL.tex.c.getContext('2d'); PAL.cols.forEach((c,i)=>{ g.fillStyle=`rgb(${Math.round(c[0]*255)},${Math.round(c[1]*255)},${Math.round(c[2]*255)})`; g.fillRect(i%32,Math.floor(i/32),1,1); }); PAL.tex.f=-1; }
+function emitFlush(){ palMerge(); let n=0; for(const [k,list] of EMIT.buckets) for(const B of list){ if(!B.I.length) continue; const g=new Geo(); g.P=new Float32Array(B.P); g.Nm=new Float32Array(B.Nm); g.T=new Float32Array(B.T); g.I=new Uint16Array(B.I); const node=mk(g,B.m,BAKED); geoBounds(g);
     const c=g.bs.c, ck=Math.floor(c[0]/CHUNK)*4096+Math.floor(c[2]/CHUNK); (BIDX.get(ck)||BIDX.set(ck,[]).get(ck)).push(node); n++; }
   EMIT.buckets.clear(); return n; }
 /* a node's mesh, in world space, into the buckets */
@@ -1515,7 +1529,7 @@ function lightsNear(src,eye){ const all=src.pl, sc=[];
 const PERF={draws:0,tris:0};
 function eyeOfView(v){ return [-(v[0]*v[12]+v[1]*v[13]+v[2]*v[14]), -(v[4]*v[12]+v[5]*v[13]+v[6]*v[14]), -(v[8]*v[12]+v[9]*v[13]+v[10]*v[14])]; }
 function renderLDN(root,eye,target,w,h,snapRes){
-  m4.persp(proj,50*Math.PI/180,w/h,0.05,120); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
+  m4.persp(proj,50*Math.PI/180,w/h,0.05,200); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
   drawWorldLDN(root,w,h,eye); }
 function drawWorldLDN(root,w,h,eye){ updateWorld(root,null);
   gl.viewport(0,0,w,h); gl.clearColor(L.fog[0],L.fog[1],L.fog[2],1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -1525,10 +1539,14 @@ function drawWorldLDN(root,w,h,eye){ updateWorld(root,null);
   gl.uniform3fv(u.uAmb,L.amb); gl.uniform3fv(u.uDirDir,L.dirDir); gl.uniform3fv(u.uDirCol,L.dirCol);
   gl.uniform3fv(u.uPLPos,L.plPos); gl.uniform3fv(u.uPLCol,L.plCol); gl.uniform1fv(u.uPLDist,L.plDist);
   gl.uniform3fv(u.uFogCol,L.fog); gl.uniform1f(u.uFogNear,L.fogNear); gl.uniform1f(u.uFogFar,L.fogFar); gl.uniform1i(u.map,0); if(u.uSkyFade) gl.uniform1f(u.uSkyFade,0);
-  const e=eye||eyeOfView(view); setCull(e,L.fogFar+4); drawTree(root); drawBaked(e); cullOn=false; gl.bindVertexArray(null); }
+  const e=eye||eyeOfView(view); setCull(e,Math.min(L.fogFar+4,(typeof LOD!=='undefined'&&LOD.idx.size?LOD.near+24:1e9))); drawTree(root); if(window.__dcMark) window.__dcMark(); drawBaked(e); /* moving things go with the detail (plus a margin); the stand-ins carry the distance */ cullOn=false; gl.bindVertexArray(null); }
 /* only the chunks around the eye are even looked at; each is then frustum- and fog-culled like anything else */
-function drawBaked(e){ const R_=Math.ceil((L.fogFar+CHUNK)/CHUNK), cx=Math.floor(e[0]/CHUNK), cz=Math.floor(e[2]/CHUNK); PERF.draws=0;
-  for(let i=cx-R_;i<=cx+R_;i++) for(let j=cz-R_;j<=cz+R_;j++){ const list=BIDX.get(i*4096+j); if(!list) continue; for(const n of list){ drawTree(n); } } }
+/* detail inside LOD.near (by the chunk's nearest point to the eye), the stand-ins (48k) out to the haze, and the ground map */
+function drawBaked(e){ const far=L.fogFar+4, R_=Math.ceil((far+CHUNK)/CHUNK), cx=Math.floor(e[0]/CHUNK), cz=Math.floor(e[2]/CHUNK), near=(typeof LOD!=='undefined'&&LOD.idx.size)?LOD.near:1e9; PERF.draws=0;
+  const pass=(detail)=>{ cullFar=detail?Math.min(far,near+8):far;
+  for(let i=cx-R_;i<=cx+R_;i++) for(let j=cz-R_;j<=cz+R_;j++){ const dx=Math.max(0,Math.abs(e[0]-(i+.5)*CHUNK)-CHUNK/2), dz=Math.max(0,Math.abs(e[2]-(j+.5)*CHUNK)-CHUNK/2), d=Math.hypot(dx,dz); if(d>far) continue;
+    if((d<near)!==detail) continue; const list=(detail?BIDX:LOD.idx).get(i*4096+j); if(!list) continue; for(const n of list){ drawTree(n); } } };
+  pass(true); if(near<1e9){ pass(false); if(LOD.map) drawTree(LOD.map); } cullFar=far; }
 
 /* =====================================================================================================
    THE CAST of Bethnal Green Road, on the Stairwell rig: you, the crew you want in with, the people who live
@@ -2548,7 +2566,7 @@ function worldFromLocal(){ const m=m4.make(); m4.compose(m,XR.origin,[0,XR.yaw,0
 function poseMat(pose){ const m=new Float32Array(16); m.set(pose.transform.matrix); const o=m4.make(); m4.mul(o,worldFromLocal(),m); return o; }
 async function enterVR(){
   try{ const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']}); await gl.makeXRCompatible();
-    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:120});
+    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:200});
     let space; try{ space=await session.requestReferenceSpace('local-floor'); XR.floorY=0; }catch(_){ space=await session.requestReferenceSpace('local'); XR.floorY=1.62; }
     XR.session=session; XR.space=space; start(true); XR.yaw=START.yaw+Math.PI; XR.origin=[P.x,floorY(P.x,P.z)+XR.floorY,P.z]; XR.last=0;
     $g('gStart').hidden=true;
@@ -3061,40 +3079,77 @@ function buildHub(){ const t0=performance.now();
   console.log('[london] hub: blocks',blocks.length,'built',nb,'verts',EMIT.verts,'solids',GAME.SOL.length,'lights',STREET_LIGHT.pl.length,'ms',Math.round(HUBX.ms)); }
 /* built at the end of 48d, once the landmarks are defined */
 
+/* LOD records: every facade box, tree and lamp the hub builds is noted here as it's emitted, so 48k can build the cheap
+   stand-ins drawn past the detail radius. Wraps the kit's emitters; arguments pass straight through. */
+const LOD_REC={fac:[],trees:[],lamps:[]};
+{ const _eF=eFacade, _tr=tree, _lp=lamp;
+  eFacade=function(x0,z0,x1,z1,y0,y1,F,faces,o){ LOD_REC.fac.push([x0,z0,x1,z1,y0,y1,F,faces||'',(o&&o.skip)||'']); return _eF.apply(this,arguments); };
+  tree=function(x,z,s,y0){ LOD_REC.trees.push([x,z,s??1,y0??PAVE_Y]); return _tr.apply(this,arguments); };
+  lamp=function(x,z,dx,dz,o){ const h=(o&&o.h)||7, a=1.25; LOD_REC.lamps.push([x+dx*a,PAVE_Y+h-.4,z+dz*a]); return _lp.apply(this,arguments); }; }
+
 /* ==========================================================================================================
    SKY AND LANDMARKS. The sky is a box and a skyline ring that ride with the eye (they're "at infinity"): the City's
    towers to the west, Canary Wharf to the south-east, cranes, and the endless low roofline of the East End with its
    lit windows. The hand-built blocks (estates, park, school, Tube, church...) are filled in buildLandmarks().
    ========================================================================================================== */
 const SKY=N(world); SKY.dyn=true;
-const tSkyline=P2(2048,256,(g,w,h)=>{ g.clearRect(0,0,w,h); const r=hr(8801); const dark='#2a2e38';
-  const tower=(x,tw,th,lit=.25,top=null)=>{ g.fillStyle=dark; g.fillRect(x,h-th,tw,th);
-    if(top==='spire'){ g.beginPath(); g.moveTo(x,h-th); g.lineTo(x+tw/2,h-th-th*.25); g.lineTo(x+tw,h-th); g.fill(); }
-    if(top==='pyramid'){ g.beginPath(); g.moveTo(x,h-th); g.lineTo(x+tw/2,h-th-tw*.5); g.lineTo(x+tw,h-th); g.fill(); R(g,'#ff2a1a',x+tw/2-1,h-th-tw*.5-3,3,3); }
-    if(top==='curve'){ g.beginPath(); g.ellipse(x+tw/2,h-th,tw/2,tw*.9,0,Math.PI,0); g.fill(); }
-    for(let y=h-th+3;y<h-2;y+=4) for(let xx=x+2;xx<x+tw-2;xx+=3) if(r()<lit) R(g,r()<.85?'#ffd9a0':'#bcd4ff',xx,y,2,2); };
-  /* the endless low roofline all the way round */
-  let x=0; while(x<w){ const bw=10+r()*30, bh=10+r()*18; g.fillStyle=dark; g.fillRect(x,h-bh,bw+1,bh); if(r()<.4) g.fillRect(x+bw*.3,h-bh-4,3,4);
-    for(let y=h-bh+3;y<h-2;y+=5) for(let xx=x+2;xx<x+bw-2;xx+=4) if(r()<.12) R(g,'#ffcf8a',xx,y,2,2); x+=bw; }
-  /* compass on the ring: u=0 east, .25 south, .5 west, .75 north */
-  const U=u=>u*w;
-  /* the City, west: a tight cluster of glass towers */
-  for(const [u,tw,th,top] of [[.47,22,120,null],[.485,18,150,'curve'],[.5,26,170,null],[.515,14,135,'spire'],[.525,20,110,null],[.54,16,95,null],[.455,12,80,null],[.505,10,185,'spire']]) tower(U(u),tw,th,.3,top);
-  /* Canary Wharf, south-east: three tall blocks, one with the pyramid and its light */
-  for(const [u,tw,th,top] of [[.115,20,140,null],[.13,22,175,'pyramid'],[.148,18,150,null],[.165,12,95,null]]) tower(U(u),tw,th,.22,top);
-  /* council towers dotted about, and cranes */
-  for(const u of [.31,.36,.66,.7,.82,.9,.97]) tower(U(u),12,60+r()*30,.3);
-  g.strokeStyle='#30343c'; g.lineWidth=2; for(const u of [.2,.44,.6,.78]){ const cx=U(u); g.beginPath(); g.moveTo(cx,h); g.lineTo(cx,h-150); g.moveTo(cx-40,h-145); g.lineTo(cx+70,h-145); g.stroke(); R(g,'#ff2a1a',cx-1,h-153,3,3); }
-},0,1);
+/* THE REAL SKYLINE from Bethnal Green, painted twice from the same seed: night (dark, scattered office lights, red aircraft
+   lights) and day (haze: the further, the paler). Every landmark sits at its real compass bearing and its real angular size
+   for its distance (x1.25 so it reads in the headset). The ring is 86 m out, 46 m tall on a 256 px texture, 4096 px round:
+   u = 0 east, .25 south, .5 west, .75 north (u = (bearing-90)/360). */
+const SKYL=[ /* [name, bearing deg, distance km, height m, width m, shape] */
+  ['principal',255.7,1.74,165,26,'slab'],['barbican1',254.4,2.75,123,24,'barbican'],['barbican2',255.8,2.73,123,24,'barbican'],['barbican3',257.2,2.70,123,24,'barbican'],
+  ['bt',264.5,5.8,177,16,'bt'],['stpauls',244.7,3.30,111,70,'stpauls'],
+  ['tower42',237.3,2.33,183,34,'slab'],['heron',237.4,2.10,202,32,'mast'],['bishopsgate22',235.2,2.31,278,60,'slab'],['gherkin',232.3,2.17,180,56,'gherkin'],
+  ['leadenhall',232.8,2.33,225,52,'wedge'],['scalpel',229.8,2.31,190,42,'scalpel'],['walkie',228.9,2.59,160,56,'walkie'],['shard',221.3,3.26,310,62,'shard'],
+  ['rlh1',195.5,1.0,75,40,'hospital'],['rlh2',199,1.05,68,36,'hospital'],
+  ['cw_hsbc',132.2,3.6,200,46,'slab'],['cw_one',133.8,3.47,235,50,'canada'],['cw_citi',135.2,3.55,200,46,'slab'],['cw_nf',129.5,3.3,220,34,'slab'],['cw_opd',137.5,3.4,205,40,'slab'],['cw_lo',127,3.6,150,40,'slab'],
+  ['stadium',63.4,3.02,60,260,'stadium'],['orbit',66,3.2,114,24,'orbit'],['strat1',70.5,3.1,130,30,'slab'],['strat2',72.5,3.2,110,28,'slab']];
+function paintSkyline(day){ return P2(4096,256,(g,w,h)=>{ g.clearRect(0,0,w,h); const r=hr(8801), K=1.25, RING=86, VPX=46/256, HPX=2*Math.PI*RING/w, base=h-18;
+  const U=b=>((((b-90)/360)%1)+1)%1*w, hpx=(H,d)=>RING*H/(d*1000)/VPX*K, wpx=(W,d)=>Math.max(3,RING*W/(d*1000)/HPX*K);
+  const hz=d=>{ const k=Math.min(1,d/6); return day?`rgb(${Math.round(92+k*70)},${Math.round(101+k*68)},${Math.round(112+k*64)})`:`rgb(${Math.round(24+k*14)},${Math.round(27+k*14)},${Math.round(34+k*14)})`; };
+  const lights=(x,y0,ww,hh,p)=>{ if(day) return; for(let y=y0+3;y<base-2;y+=3) for(let xx=x+1;xx<x+ww-1;xx+=2) if(r()<p) R(g,r()<.7?'#f4ecd8':'#cfe0ff',xx,y,1,1); };
+  const red=(x,y)=>{ if(!day) R(g,'#ff2a1a',x-1,y-2,3,2); };
+  const glint=(x,y,ww,hh)=>{ if(day){ g.fillStyle='rgba(235,240,246,.22)'; g.fillRect(x+ww*.6,y,Math.max(1,ww*.15),hh); } };
+  /* the low roofline of East London all the way round, broken, with chimneys and the odd council tower */
+  let x=0; while(x<w){ const bw=14+r()*40, bh=6+r()*9; g.fillStyle=day?'#8e949a':'#22262e'; g.fillRect(x,base-bh,bw+1,bh+18); if(r()<.35) g.fillRect(x+bw*.3,base-bh-3,2,3);
+    if(!day) for(let y=base-bh+2;y<base;y+=3) for(let xx=x+1;xx<x+bw-1;xx+=3) if(r()<.06) R(g,'#ffcf8a',xx,y,1,1); x+=bw; }
+  for(let i=0;i<14;i++){ const b=r()*360; if(SKYL.some(L=>Math.abs(L[1]-b)<6)) continue; const d=.8+r()*1.6, hh=hpx(60+r()*30,d), ww=wpx(22,d), x0=U(b); g.fillStyle=hz(d); g.fillRect(x0,base-hh,ww,hh+18); lights(x0,base-hh,ww,hh,.25); }
+  /* tower cranes over the building sites */
+  g.strokeStyle=day?'#7a8088':'#2c3038'; g.lineWidth=1.5; for(const b of [215,248,72,160,300,20]){ const d=1.5+r()*1.5, cx=U(b), ch=hpx(80,d), jib=wpx(60,d); g.beginPath(); g.moveTo(cx,base); g.lineTo(cx,base-ch); g.moveTo(cx-jib*.3,base-ch+2); g.lineTo(cx+jib,base-ch+2); g.stroke(); red(cx,base-ch); }
+  /* the landmarks, far ones first */
+  for(const [n,b,d,H,W,sh] of SKYL.slice().sort((p,q)=>q[2]-p[2])){ const hh=hpx(H,d), ww=wpx(W,d), x0=U(b)-ww/2, top=base-hh; g.fillStyle=hz(d); g.beginPath();
+    if(sh==='slab'||sh==='mast'||sh==='hospital'||sh==='canada'){ g.rect(x0,top,ww,hh+18); g.fill(); lights(x0,top,ww,hh,sh==='hospital'?.35:.22); glint(x0,top,ww,hh);
+      if(sh==='hospital'&&day){ g.fillStyle='rgba(90,140,190,.35)'; g.fillRect(x0,top,ww,hh); }
+      if(sh==='mast'){ g.fillRect(x0+ww*.7,top-hh*.18,1.5,hh*.18); red(x0+ww*.7,top-hh*.18); } else red(x0+ww/2,top);
+      if(sh==='canada'){ g.fillStyle=hz(d); g.beginPath(); g.moveTo(x0,top); g.lineTo(x0+ww/2,top-ww*.45); g.lineTo(x0+ww,top); g.fill(); if(!day){ R(g,'#fff4e0',x0+ww/2-1,top-ww*.45-3,3,3); } } }
+    else if(sh==='barbican'){ g.moveTo(x0,base+18); g.lineTo(x0,top+3); for(let k=0;k<=4;k++) g.lineTo(x0+ww*k/4,top+(k%2?0:3)); g.lineTo(x0+ww,base+18); g.fill(); lights(x0,top,ww,hh,.3); }
+    else if(sh==='bt'){ g.rect(x0+ww*.25,top+hh*.15,ww*.5,hh*.85+18); g.fill(); g.fillRect(x0,top+hh*.08,ww,hh*.18); g.fillRect(x0+ww*.4,top,ww*.2,hh*.1); red(x0+ww/2,top); }
+    else if(sh==='stpauls'){ g.rect(x0,base-hh*.45,ww,hh*.45+18); g.fill(); g.fillRect(x0+ww*.38,base-hh*.62,ww*.24,hh*.2); g.beginPath(); g.ellipse(x0+ww/2,base-hh*.62,ww*.15,hh*.2,0,Math.PI,0); g.fill(); g.fillRect(x0+ww*.48,base-hh,ww*.04,hh*.2);
+      g.fillRect(x0+ww*.05,base-hh*.62,ww*.08,hh*.2); g.fillRect(x0+ww*.87,base-hh*.62,ww*.08,hh*.2); if(!day){ g.fillStyle='rgba(255,236,190,.35)'; g.beginPath(); g.ellipse(x0+ww/2,base-hh*.62,ww*.15,hh*.2,0,Math.PI,0); g.fill(); } }
+    else if(sh==='gherkin'){ g.moveTo(x0+ww*.12,base+18); g.bezierCurveTo(x0-ww*.05,top+hh*.45,x0+ww*.08,top+hh*.02,x0+ww/2,top); g.bezierCurveTo(x0+ww*.92,top+hh*.02,x0+ww*1.05,top+hh*.45,x0+ww*.88,base+18); g.fill();
+      g.strokeStyle=day?'rgba(60,70,80,.35)':'rgba(120,160,200,.3)'; g.lineWidth=1; for(let k=1;k<6;k++){ g.beginPath(); g.moveTo(x0+ww*.15,top+hh*k/6); g.lineTo(x0+ww*.85,top+hh*(k-.6)/6); g.stroke(); } red(x0+ww/2,top); }
+    else if(sh==='wedge'){ g.moveTo(x0,base+18); g.lineTo(x0,top+hh*.06); g.lineTo(x0+ww*.25,top); g.lineTo(x0+ww,top+hh*.72); g.lineTo(x0+ww,base+18); g.fill(); lights(x0,top+hh*.3,ww*.5,hh,.18); glint(x0,top,ww*.5,hh); red(x0+ww*.25,top); }
+    else if(sh==='scalpel'){ g.moveTo(x0,base+18); g.lineTo(x0,top+hh*.12); g.lineTo(x0+ww*.45,top); g.lineTo(x0+ww,top+hh*.4); g.lineTo(x0+ww,base+18); g.fill(); glint(x0,top,ww*.4,hh); red(x0+ww*.45,top); }
+    else if(sh==='walkie'){ g.moveTo(x0+ww*.15,base+18); g.quadraticCurveTo(x0+ww*.05,top+hh*.4,x0-ww*.05,top+hh*.08); g.lineTo(x0+ww*.1,top); g.lineTo(x0+ww*1.05,top+hh*.02); g.quadraticCurveTo(x0+ww*.95,top+hh*.5,x0+ww*.85,base+18); g.fill(); lights(x0,top,ww,hh,.2); if(!day){ g.fillStyle='rgba(180,230,190,.25)'; g.fillRect(x0,top,ww,hh*.06); } }
+    else if(sh==='shard'){ g.moveTo(x0,base+18); g.lineTo(x0+ww*.42,top+hh*.04); g.lineTo(x0+ww*.46,top-2); g.lineTo(x0+ww*.52,top+hh*.03); g.lineTo(x0+ww*.56,top); g.lineTo(x0+ww,base+18); g.fill(); glint(x0+ww*.3,top+hh*.1,ww*.4,hh*.9);
+      if(!day){ g.fillStyle='rgba(240,244,255,.55)'; g.fillRect(x0+ww*.42,top,ww*.14,hh*.08); lights(x0+ww*.2,top+hh*.2,ww*.6,hh,.12); } }
+    else if(sh==='stadium'){ g.moveTo(x0,base+18); g.lineTo(x0+ww*.04,top+hh*.25); g.lineTo(x0+ww*.96,top+hh*.25); g.lineTo(x0+ww,base+18); g.fill(); g.strokeStyle=hz(d); g.lineWidth=1; for(let k=0;k<12;k++){ g.beginPath(); g.moveTo(x0+ww*(k+.5)/12,top+hh*.25); g.lineTo(x0+ww*(k+.5)/12,top); g.stroke(); }
+      if(!day){ g.fillStyle='rgba(240,236,220,.16)'; g.fillRect(x0-4,top-hh*1.4,ww+8,hh*1.4); for(let k=0;k<6;k++) R(g,'#f4f0e0',x0+ww*(k+.5)/6-1,top-1,2,2); } }
+    else if(sh==='orbit'){ g.strokeStyle=day?'#9a4a3c':'#5a2420'; g.lineWidth=Math.max(1.5,ww*.18); g.beginPath(); for(let k=0;k<=24;k++){ const t=k/24, y=base-t*hh, xx=x0+ww/2+Math.sin(t*9)*ww*.35*(1-t*.3); k?g.lineTo(xx,y):g.moveTo(xx,y); } g.stroke(); red(x0+ww/2,top); } }
+  /* below the horizon the ring fades out (dithered), so it melts into the haze instead of standing as a wall */
+  { const id=g.getImageData(0,base-2,w,h-base+2), D=id.data, rows=h-base+2; for(let y=0;y<rows;y++){ const k=Math.max(0,1-y/9); for(let x=0;x<w;x++) D[(y*w+x)*4+3]*=k; } g.putImageData(id,0,base-2); }
+},0,1); }
+const tSkyline=paintSkyline(false), tSkylineDay=paintSkyline(true); tSkylineDay.nomip=false; tSkyline.smooth=true; tSkylineDay.smooth=true;
 tSkyline.nomip=false;
-{ const R_=86, N_=32, H_=44, gR=new Geo(); for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*R_, z=Math.sin(a)*R_; gR.v([x,-2,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,0]); gR.v([x,H_,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,1]); }
+{ const R_=150, N_=48, SC=R_/86, H_=44*SC, gR=new Geo(); for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*R_, z=Math.sin(a)*R_; gR.v([x,-2*SC,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,0]); gR.v([x,H_,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,1]); }
   for(let i=0;i<N_;i++){ const a=i*2; gR.I.push(a,a+2,a+3,a,a+3,a+1); } gR.noDist=true;
-  mk(gR,MM(tSkyline,{unlit:true,cut:true,double:true,nofog:true}),SKY,0,0,0);
+  { const m=M(tSkyline,{unlit:true,cut:true,double:true,nofog:true}); m.cut=2; mk(gR,m,SKY,0,0,0); }
   const gS=new Geo(); /* the sky: an open box of gradient, sodium-lit cloud low down */
-  for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+8), z=Math.sin(a)*(R_+8); gS.v([x,-4,z],[0,0,1],[0,1]); gS.v([x,90,z],[0,0,1],[0,0]); }
+  for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+12), z=Math.sin(a)*(R_+12); gS.v([x,-4*SC,z],[0,0,1],[0,1]); gS.v([x,90*SC,z],[0,0,1],[0,0]); }
   for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); } gS.noDist=true;
   const skyM=MM(tSky,{unlit:true,double:true,nofog:true}); SKY.skyM=skyM; mk(gS,skyM,SKY,0,0,0); }
-function skyTick(eye){ SKY.p=[eye[0],0,eye[2]]; }
+function skyTick(eye){ SKY.p=[eye[0],Math.max(0,eye[1]-1.6),eye[2]]; } /* the ring rides at eye height: the horizon stays the horizon from a roof */
 
 /* ---------------- landmark helpers ---------------- */
 /* a box turned by yaw about its centre, faces tiled like eBoxF; F keys: f (front, local +z), b, l, r, t */
@@ -3768,31 +3823,31 @@ function lifeBlocks(x,z,r){ for(const v of CAR_POOL){ if(!v.alive) continue; con
 const TOD={h:22.5, rate:1/60, fast:false, day:0, night:1};
 /* [hour, ambient, sun colour, fog colour, fog far, sky, life density] */
 const TODK=[
-  [0,  [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],42,'night',.5],
-  [4.5,[.26,.28,.29],[.10,.11,.14],[.048,.054,.058],42,'night',.3],
-  [5.6,[.34,.32,.34],[.55,.38,.32],[.22,.2,.22],48,'dawn',.30],
-  [7,  [.47,.47,.5],[1.0,.82,.62],[.52,.53,.55],56,'day',.8],
-  [12, [.52,.53,.55],[1.05,1.0,.9],[.6,.62,.63],60,'day',.95],
-  [17, [.5,.5,.52],[1.05,.86,.66],[.55,.55,.56],58,'day',1.0],
-  [19, [.4,.36,.37],[.85,.5,.34],[.22,.18,.19],50,'dusk',.85],
-  [20.3,[.29,.3,.3],[.18,.16,.18],[.075,.072,.075],44,'night',.8],
-  [24, [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],42,'night',.6]];
+  [0,  [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],95,'night',.5],
+  [4.5,[.26,.28,.29],[.10,.11,.14],[.048,.054,.058],95,'night',.3],
+  [5.6,[.34,.32,.34],[.55,.38,.32],[.22,.2,.22],105,'dawn',.30],
+  [7,  [.47,.47,.5],[1.0,.82,.62],[.52,.53,.55],130,'day',.8],
+  [12, [.52,.53,.55],[1.05,1.0,.9],[.6,.62,.63],140,'day',.95],
+  [17, [.5,.5,.52],[1.05,.86,.66],[.55,.55,.56],135,'day',1.0],
+  [19, [.4,.36,.37],[.85,.5,.34],[.22,.18,.19],115,'dusk',.85],
+  [20.3,[.29,.3,.3],[.18,.16,.18],[.075,.072,.075],100,'night',.8],
+  [24, [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],95,'night',.6]];
 const todL3=(a,b,k)=>[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k];
 /* skies: night (the old sodium-lit cloud), dawn, day, dusk */
 const SKYT={night:tSky,
   dawn:P2(4,64,(g,w,h)=>vfill(g,0,0,w,h,[[0,'#2a3048'],[.55,'#7a6a7a'],[.85,'#d8987a'],[1,'#f0c090']]),0,1),
-  day:P2(64,64,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#9aa2aa'],[.55,'#b8bcc0'],[1,'#a8aca8']]); const r=hr(8811); for(let i=0;i<14;i++){ g.fillStyle=`rgba(${r()<.5?'230,232,234':'150,156,162'},${.15+r()*.2})`; g.fillRect(0,(r()*44)|0,w,2+(r()*5|0)); } },0,1),
+  day:P2(4,128,(g,w,h)=>vfill(g,0,0,w,h,[[0,'#8e969e'],[.35,'#a8aeb4'],[.75,'#c4c8ca'],[1,'#ccd0d0']]),0,1),
   dusk:P2(4,64,(g,w,h)=>vfill(g,0,0,w,h,[[0,'#1a1a30'],[.5,'#5a3a4a'],[.8,'#c86a40'],[1,'#e8a060']]),0,1)};
 let skylineM=null;
 function todTick(dt){ TOD.h=(TOD.h+dt*TOD.rate*(TOD.fast?40:1))%24; const h=TOD.h;
   let i=0; while(i<TODK.length-2&&TODK[i+1][0]<=h) i++; const A=TODK[i],B=TODK[i+1],k=clamp((h-A[0])/(B[0]-A[0]),0,1), e=k*k*(3-2*k);
   const amb=todL3(A[1],B[1],e), sun=todL3(A[2],B[2],e), fog=todL3(A[3],B[3],e), far=A[4]+(B[4]-A[4])*e;
   /* daylight 0..1, from the ambient */ TOD.day=clamp((amb[0]-.27)/.22,0,1); TOD.night=1-TOD.day; LOOK.day=TOD.day;
-  const sa=(h-6)/12*Math.PI; STREET_LIGHT.amb=amb; STREET_LIGHT.dirCol=sun; STREET_LIGHT.dir=[Math.cos(sa)*.85,.5+.35*Math.max(0,Math.sin(sa)),.55]; STREET_LIGHT.fog=fog; STREET_LIGHT.fogFar=far; STREET_LIGHT.fogNear=far*(.3+.3*TOD.day);
+  const sa=(h-6)/12*Math.PI; STREET_LIGHT.amb=amb; STREET_LIGHT.dirCol=sun; STREET_LIGHT.dir=[Math.cos(sa)*.85,.5+.35*Math.max(0,Math.sin(sa)),.55]; STREET_LIGHT.fog=fog; const ey=(typeof GAME!=='undefined'&&GAME.P)?GAME.P.y:0, hk=1+Math.min(1.25,Math.max(0,ey-.6)/12); STREET_LIGHT.fogFar=Math.min(145,far*hk); /* the haze thins as you climb: a roof buys a view */ STREET_LIGHT.fogNear=Math.min(145,far*hk)*(.3+.3*TOD.day);
   STREET_LIGHT.lampK=Math.max(.06,TOD.night);
   for(const [m,c,dim] of NIGHT_MATS){ const f=1-dim*TOD.day*.88; m.color=[c[0]*f,c[1]*f,c[2]*f]; }
   /* sky: pick the nearest look, and dim or lift it */ const sk=e<.5?A[5]:B[5]; if(SKY.skyM.tex!==SKYT[sk]) SKY.skyM.tex=SKYT[sk];
-  if(!skylineM) skylineM=SKY.kids[0].mesh.mats[0]; const sl=.35+TOD.day*1.4; skylineM.color=[sl*.9,sl*.95,sl];
+  if(!skylineM) skylineM=SKY.kids[0].mesh.mats[0]; const dayS=TOD.day>.5; if(skylineM.tex!==(dayS?tSkylineDay:tSkyline)) skylineM.tex=dayS?tSkylineDay:tSkyline; const sl=dayS?.75+TOD.day*.3:.35+TOD.day*1.4; skylineM.color=[sl*.97,sl*.99,sl];
   LIFE.density=A[6]+(B[6]-A[6])*e;
   /* rain comes in at night */ const wet=h>21.5||h<4.5; if(state.rain!==wet){ state.rain=wet; RAIN.vis=wet; }
   if(typeof dayHideTick==='function'&&BAKED.kids.length) dayHideTick(); if(GAME.G.on) phoneDirtyT(); }
@@ -4028,6 +4083,56 @@ function kiosk(x,z){ const w=.95,h=2.5; eBoxF(x-w/2,z-w/2,x+w/2,z+w/2,PAVE_Y,PAV
 let DAYNODES=null; function dayHideTick(){ if(!DAYNODES) DAYNODES=BAKED.kids.filter(n=>n.mesh&&DAYHIDE.includes(n.mesh.mats[0])); const v=TOD.night>.35; for(const n of DAYNODES) n.vis=v; mBeaconH.emis=(Math.floor(LIFE.t/.75)%2)?[1.25,.62,.12]:[.25,.12,.04]; }
 buildNav();
 
+/* ==========================================================================================================
+   DRAW DISTANCE: full detail out to LOD.near; past it, out to the haze, every building is a stand-in box wearing its own
+   facade (shrunk into one atlas, so the whole distant city is two materials), with its lit windows at night, the trees
+   as single cards, the lamps as glows, and the ground as one painted map of the hub. Chunked like the detail, so the
+   frustum culls it; drawBaked() picks detail or stand-in per chunk by its nearest distance to the eye.
+   ========================================================================================================== */
+const LOD={near:46, idx:new Map(), root:N(null), map:null, verts:0};
+const LCELL=64, LATW=1024, LCOLS=LATW/LCELL;
+function buildLOD(){ const t0=performance.now(), Fs=[...new Set(LOD_REC.fac.map(r=>r[6]))];
+  /* the atlases: cell 0 roof felt, 1 a ground floor (dark shopfronts / lit shop glow), 2.. one per facade */
+  const cellUV=i=>{ const cx=(i%LCOLS)*LCELL, cy=Math.floor(i/LCOLS)*LCELL, e=1.5; return [(cx+e)/LATW,1-(cy+LCELL-e)/LATW,(cx+LCELL-e)/LATW,1-(cy+e)/LATW]; };
+  const cellOf=new Map(); Fs.forEach((F,i)=>cellOf.set(F,2+i)); const TREEC=2+Fs.length;
+  const base=P2(LATW,LATW,(g,w,h)=>{ R(g,'#2c2d30',0,0,w,h); R(g,'#2a2a2c',LCELL,0,LCELL,LCELL); for(let k=0;k<4;k++){ R(g,'#141518',LCELL+4+k*15,LCELL*.25,11,LCELL*.75); }
+    Fs.forEach((F,i)=>{ const c=2+i; if(F.base&&F.base.c) g.drawImage(F.base.c,(c%LCOLS)*LCELL,Math.floor(c/LCOLS)*LCELL,LCELL,LCELL); });
+    { const c=TREEC, x=(c%LCOLS)*LCELL, y=Math.floor(c/LCOLS)*LCELL; g.clearRect(x,y,LCELL,LCELL); g.drawImage(tTree.c,x,y,LCELL,LCELL); R(g,'#3a3228',((c+1)%LCOLS)*LCELL,Math.floor((c+1)/LCOLS)*LCELL,LCELL,LCELL); } },0,1);
+  const lit=P2(LATW,LATW,(g,w,h)=>{ g.clearRect(0,0,w,h); for(let k=0;k<4;k++){ R(g,k%2?'#ffd8a0':'#f4f0e4',LCELL+4+k*15,LCELL*.35,11,LCELL*.45); }
+    Fs.forEach((F,i)=>{ const c=2+i; if(F.lit&&F.lit.c) g.drawImage(F.lit.c,(c%LCOLS)*LCELL,Math.floor(c/LCOLS)*LCELL,LCELL,LCELL); });
+    if(tGlowS&&tGlowS.c){ const c=TREEC+2; g.drawImage(tGlowS.c,(c%LCOLS)*LCELL,Math.floor(c/LCOLS)*LCELL,LCELL,LCELL); } },0,1);
+  const mB=M(base,{cut:true,double:true}), mL=nightM(lit,{unlit:true,cut:true,double:true}); LOD.mB=mB; LOD.mL=mL;
+  /* emit into a private bucket set, then flush into the LOD index */
+  const saved=EMIT.buckets; EMIT.buckets=new Map(); const v0=EMIT.verts;
+  const quadSeg=(m,o,U,w,h,uv,cw,ch,y0)=>{ /* tile a face with cell-sized pieces: cw x ch metres per cell */
+    for(let s=0;s<w-.01;s+=cw) for(let t=0;t<h-.01;t+=ch){ const sw=Math.min(cw,w-s), th=Math.min(ch,h-t), p=[o[0]+U[0]*s,o[1]+t,o[2]+U[2]*s];
+      eGrid(m,p,U,Y_,sw,th,cw/(uv[2]-uv[0]),ch/(uv[3]-uv[1]),uv[0],uv[1]); } };
+  for(const [x0,z0,x1,z1,y0,y1,F,faces,skip] of LOD_REC.fac){ const c=cellOf.get(F), uv=cellUV(c), cw=(F.bays||4)*HUB.BAY, ch=(F.floors||3)*HUB.FLOOR, g1=cellUV(1);
+    const sides={s:[[x0,0,z1],X_,x1-x0],n:[[x1,0,z0],NX,x1-x0],e:[[x1,0,z1],NZ,z1-z0],w:[[x0,0,z0],Z_,z1-z0]};
+    for(const k of 'nsew'){ if(skip.includes(k)) continue; const [o,U,w]=sides[k], street=faces.includes(k);
+      quadSeg(mB,[o[0],y0,o[2]],U,w,y1-y0,uv,cw,ch); const nx=-U[2]*.03, nz=U[0]*.03; if(street) quadSeg(mL,[o[0]+nx,y0,o[2]+nz],U,w,y1-y0,uv,cw,ch);
+      if(y0>.5){ quadSeg(mB,[o[0],0,o[2]],U,w,y0,g1,10,y0); if(street&&((Math.round(x0*7+z0*3)&3)!==0)) quadSeg(mL,[o[0]+nx,0,o[2]+nz],U,w,y0,g1,10,y0); } }
+    const r0=cellUV(0); eGrid(mB,[x0,y1,z1],X_,NZ,x1-x0,z1-z0,(x1-x0)/(r0[2]-r0[0]),(z1-z0)/(r0[3]-r0[1]),r0[0],r0[1]); }
+  /* trees: one card each, turned to face along x (crossed pairs cost twice; one reads fine at range) */
+  { const tu=cellUV(TREEC), bu=cellUV(TREEC+1), card=(o,U,w,h,uv)=>eGrid(mB,o,U,Y_,w,h,w/(uv[2]-uv[0]),h/(uv[3]-uv[1]),uv[0],uv[1]);
+    for(const [x,z,s,y0] of LOD_REC.trees){ const cw=6*s, cy=y0+3.2*s-1.2*s; card([x-cw/2,cy,z],X_,cw,cw,tu); card([x,cy,z-cw/2],Z_,cw,cw,tu); card([x-.15*s,y0,z],X_,.3*s,cy-y0+.5,bu); card([x,y0,z-.15*s],Z_,.3*s,cy-y0+.5,bu); } }
+  /* lamps: the glow card, which is what you see of a lamp from 100 m at night */
+  { const gu=cellUV(TREEC+2); for(const [x,y,z] of LOD_REC.lamps){ eGrid(mL,[x-.7,y-.7,z],X_,Y_,1.4,1.4,1.4/(gu[2]-gu[0]),1.4/(gu[3]-gu[1]),gu[0],gu[1]); eGrid(mL,[x,y-.7,z-.7],Z_,Y_,1.4,1.4,1.4/(gu[2]-gu[0]),1.4/(gu[3]-gu[1]),gu[0],gu[1]); } }
+  LOD.verts=EMIT.verts-v0; let n=0;
+  for(const [k,list] of EMIT.buckets) for(const B of list){ if(!B.I.length) continue; const g=new Geo(); g.P=new Float32Array(B.P); g.Nm=new Float32Array(B.Nm); g.T=new Float32Array(B.T); g.I=new Uint16Array(B.I);
+    const node=mk(g,B.m,LOD.root); geoBounds(g); const c=g.bs.c, ck=Math.floor(c[0]/CHUNK)*4096+Math.floor(c[2]/CHUNK); (LOD.idx.get(ck)||LOD.idx.set(ck,[]).get(ck)).push(node); n++; }
+  EMIT.buckets=saved; EMIT.verts=v0;
+  /* the ground: one painted top-down map of the whole hub (and the street continuations), under everything */
+  { const X0=HUB.x0-60, Z0=HUB.z0-60, W=HUB.x1-HUB.x0+120, H=HUB.z1-HUB.z0+120, S=1024/W;
+    const t=P2(1024,Math.ceil(H*S),(g,w,h)=>{ R(g,'#3a3a36',0,0,w,h); const fr=(r,c)=>R(g,c,(r[0]-X0)*S,(r[1]-Z0)*S,(r[2]-r[0])*S,(r[3]-r[1])*S);
+      for(const r of PAVES) fr(r,'#6a6862'); for(const r of ROADS) fr(r,'#2a2a2c');
+      for(const L_ of LANDMARK_BLOCKS){ const [nm,a,b,c,d]=L_; if(['weavers','gardens','church'].includes(nm)) fr([a,b,c,d],'#2e4226'); }
+      for(const X of (typeof EDGE_EXITS!=='undefined'?EDGE_EXITS:[])){ const F=EDGEF[X.side]; fr(F.R(0,EDGE_D+7,X.a,X.b),'#2a2a2c'); } },0,1);
+    const g=new Geo(); const y=-.03; g.v([X0,y,Z0+H],[0,1,0],[0,0]); g.v([X0+W,y,Z0+H],[0,1,0],[1,0]); g.v([X0+W,y,Z0],[0,1,0],[1,1]); g.v([X0,y,Z0],[0,1,0],[0,1]); g.I.push(0,1,2,0,2,3); g.noDist=true; geoBounds(g);
+    LOD.map=mk(g,M(t,{}),LOD.root); }
+  console.log('[london] lod: facades',LOD_REC.fac.length,'kinds',Fs.length,'trees',LOD_REC.trees.length,'lamps',LOD_REC.lamps.length,'verts',LOD.verts,'nodes',n,'ms',Math.round(performance.now()-t0)); }
+buildLOD();
+
 /* =====================================================================================================
    VIEW, CAST, FREEZE-FRAMES, LOOP. One view of the street. The cast stands where they'd be at 02:14, or in a
    line-up along the kerb. Pick someone and you walk up to them and the world freezes, with their name card beside them.
@@ -4149,7 +4254,7 @@ if(window.__CAPTURE) document.body.classList.add('capture');
 place(); renderCard(); updateClock(); setGoal(HOME,true); setLights(lightsNear(STREET_LIGHT,eyePos()));
 const BAKE=bakeStatic(STREET); console.log('[london] baked',BAKE.meshes,'meshes into',BAKE.chunks,'chunks');
 const ld=document.getElementById('loading'); if(ld) ld.hidden=true;
-window.__london={state,CAST,setGoal,freezeOn,unfreeze,place,poseAll,step,cam,goal,setClock:v=>{wclock=v;},GAME,BAKE,PERF,EMIT,BIDX,hub:()=>HUBX,LIFE:()=>({cars:CAR_POOL,peds:PED_POOL}),setHour:h=>{ TOD.h=h; },TOD,leg2:()=>leg2Start(),JOBS,FRONTAGES,SOL:GAME.SOL,TRADES:Object.keys(TRADES)};
+window.__london={state,CAST,setGoal,freezeOn,unfreeze,place,poseAll,step,cam,goal,setClock:v=>{wclock=v;},GAME,BAKE,PERF,EMIT,BIDX,hub:()=>HUBX,LIFE:()=>({cars:CAR_POOL,peds:PED_POOL}),setHour:h=>{ TOD.h=h; },TOD,leg2:()=>leg2Start(),JOBS,FRONTAGES,LOD,BIDX,SOL:GAME.SOL,TRADES:Object.keys(TRADES)};
 /* the job: start screen buttons */
 { const pb=document.getElementById('gPlay'),vb=document.getElementById('gVR'),again=document.getElementById('gAgain'),look=document.getElementById('gLook');
   if(pb) pb.addEventListener('click',()=>{ document.getElementById('gStart').hidden=true; GAME.start(false); cv.requestPointerLock?.(); cv.focus(); });

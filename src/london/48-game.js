@@ -483,7 +483,7 @@ function worldFromLocal(){ const m=m4.make(); m4.compose(m,XR.origin,[0,XR.yaw,0
 function poseMat(pose){ const m=new Float32Array(16); m.set(pose.transform.matrix); const o=m4.make(); m4.mul(o,worldFromLocal(),m); return o; }
 async function enterVR(){
   try{ const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']}); await gl.makeXRCompatible();
-    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:120});
+    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:200});
     let space; try{ space=await session.requestReferenceSpace('local-floor'); XR.floorY=0; }catch(_){ space=await session.requestReferenceSpace('local'); XR.floorY=1.62; }
     XR.session=session; XR.space=space; start(true); XR.yaw=START.yaw+Math.PI; XR.origin=[P.x,floorY(P.x,P.z)+XR.floorY,P.z]; XR.last=0;
     $g('gStart').hidden=true;

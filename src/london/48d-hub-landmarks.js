@@ -4,34 +4,63 @@
    lit windows. The hand-built blocks (estates, park, school, Tube, church...) are filled in buildLandmarks().
    ========================================================================================================== */
 const SKY=N(world); SKY.dyn=true;
-const tSkyline=P2(2048,256,(g,w,h)=>{ g.clearRect(0,0,w,h); const r=hr(8801); const dark='#2a2e38';
-  const tower=(x,tw,th,lit=.25,top=null)=>{ g.fillStyle=dark; g.fillRect(x,h-th,tw,th);
-    if(top==='spire'){ g.beginPath(); g.moveTo(x,h-th); g.lineTo(x+tw/2,h-th-th*.25); g.lineTo(x+tw,h-th); g.fill(); }
-    if(top==='pyramid'){ g.beginPath(); g.moveTo(x,h-th); g.lineTo(x+tw/2,h-th-tw*.5); g.lineTo(x+tw,h-th); g.fill(); R(g,'#ff2a1a',x+tw/2-1,h-th-tw*.5-3,3,3); }
-    if(top==='curve'){ g.beginPath(); g.ellipse(x+tw/2,h-th,tw/2,tw*.9,0,Math.PI,0); g.fill(); }
-    for(let y=h-th+3;y<h-2;y+=4) for(let xx=x+2;xx<x+tw-2;xx+=3) if(r()<lit) R(g,r()<.85?'#ffd9a0':'#bcd4ff',xx,y,2,2); };
-  /* the endless low roofline all the way round */
-  let x=0; while(x<w){ const bw=10+r()*30, bh=10+r()*18; g.fillStyle=dark; g.fillRect(x,h-bh,bw+1,bh); if(r()<.4) g.fillRect(x+bw*.3,h-bh-4,3,4);
-    for(let y=h-bh+3;y<h-2;y+=5) for(let xx=x+2;xx<x+bw-2;xx+=4) if(r()<.12) R(g,'#ffcf8a',xx,y,2,2); x+=bw; }
-  /* compass on the ring: u=0 east, .25 south, .5 west, .75 north */
-  const U=u=>u*w;
-  /* the City, west: a tight cluster of glass towers */
-  for(const [u,tw,th,top] of [[.47,22,120,null],[.485,18,150,'curve'],[.5,26,170,null],[.515,14,135,'spire'],[.525,20,110,null],[.54,16,95,null],[.455,12,80,null],[.505,10,185,'spire']]) tower(U(u),tw,th,.3,top);
-  /* Canary Wharf, south-east: three tall blocks, one with the pyramid and its light */
-  for(const [u,tw,th,top] of [[.115,20,140,null],[.13,22,175,'pyramid'],[.148,18,150,null],[.165,12,95,null]]) tower(U(u),tw,th,.22,top);
-  /* council towers dotted about, and cranes */
-  for(const u of [.31,.36,.66,.7,.82,.9,.97]) tower(U(u),12,60+r()*30,.3);
-  g.strokeStyle='#30343c'; g.lineWidth=2; for(const u of [.2,.44,.6,.78]){ const cx=U(u); g.beginPath(); g.moveTo(cx,h); g.lineTo(cx,h-150); g.moveTo(cx-40,h-145); g.lineTo(cx+70,h-145); g.stroke(); R(g,'#ff2a1a',cx-1,h-153,3,3); }
-},0,1);
+/* THE REAL SKYLINE from Bethnal Green, painted twice from the same seed: night (dark, scattered office lights, red aircraft
+   lights) and day (haze: the further, the paler). Every landmark sits at its real compass bearing and its real angular size
+   for its distance (x1.25 so it reads in the headset). The ring is 86 m out, 46 m tall on a 256 px texture, 4096 px round:
+   u = 0 east, .25 south, .5 west, .75 north (u = (bearing-90)/360). */
+const SKYL=[ /* [name, bearing deg, distance km, height m, width m, shape] */
+  ['principal',255.7,1.74,165,26,'slab'],['barbican1',254.4,2.75,123,24,'barbican'],['barbican2',255.8,2.73,123,24,'barbican'],['barbican3',257.2,2.70,123,24,'barbican'],
+  ['bt',264.5,5.8,177,16,'bt'],['stpauls',244.7,3.30,111,70,'stpauls'],
+  ['tower42',237.3,2.33,183,34,'slab'],['heron',237.4,2.10,202,32,'mast'],['bishopsgate22',235.2,2.31,278,60,'slab'],['gherkin',232.3,2.17,180,56,'gherkin'],
+  ['leadenhall',232.8,2.33,225,52,'wedge'],['scalpel',229.8,2.31,190,42,'scalpel'],['walkie',228.9,2.59,160,56,'walkie'],['shard',221.3,3.26,310,62,'shard'],
+  ['rlh1',195.5,1.0,75,40,'hospital'],['rlh2',199,1.05,68,36,'hospital'],
+  ['cw_hsbc',132.2,3.6,200,46,'slab'],['cw_one',133.8,3.47,235,50,'canada'],['cw_citi',135.2,3.55,200,46,'slab'],['cw_nf',129.5,3.3,220,34,'slab'],['cw_opd',137.5,3.4,205,40,'slab'],['cw_lo',127,3.6,150,40,'slab'],
+  ['stadium',63.4,3.02,60,260,'stadium'],['orbit',66,3.2,114,24,'orbit'],['strat1',70.5,3.1,130,30,'slab'],['strat2',72.5,3.2,110,28,'slab']];
+function paintSkyline(day){ return P2(4096,256,(g,w,h)=>{ g.clearRect(0,0,w,h); const r=hr(8801), K=1.25, RING=86, VPX=46/256, HPX=2*Math.PI*RING/w, base=h-18;
+  const U=b=>((((b-90)/360)%1)+1)%1*w, hpx=(H,d)=>RING*H/(d*1000)/VPX*K, wpx=(W,d)=>Math.max(3,RING*W/(d*1000)/HPX*K);
+  const hz=d=>{ const k=Math.min(1,d/6); return day?`rgb(${Math.round(92+k*70)},${Math.round(101+k*68)},${Math.round(112+k*64)})`:`rgb(${Math.round(24+k*14)},${Math.round(27+k*14)},${Math.round(34+k*14)})`; };
+  const lights=(x,y0,ww,hh,p)=>{ if(day) return; for(let y=y0+3;y<base-2;y+=3) for(let xx=x+1;xx<x+ww-1;xx+=2) if(r()<p) R(g,r()<.7?'#f4ecd8':'#cfe0ff',xx,y,1,1); };
+  const red=(x,y)=>{ if(!day) R(g,'#ff2a1a',x-1,y-2,3,2); };
+  const glint=(x,y,ww,hh)=>{ if(day){ g.fillStyle='rgba(235,240,246,.22)'; g.fillRect(x+ww*.6,y,Math.max(1,ww*.15),hh); } };
+  /* the low roofline of East London all the way round, broken, with chimneys and the odd council tower */
+  let x=0; while(x<w){ const bw=14+r()*40, bh=6+r()*9; g.fillStyle=day?'#8e949a':'#22262e'; g.fillRect(x,base-bh,bw+1,bh+18); if(r()<.35) g.fillRect(x+bw*.3,base-bh-3,2,3);
+    if(!day) for(let y=base-bh+2;y<base;y+=3) for(let xx=x+1;xx<x+bw-1;xx+=3) if(r()<.06) R(g,'#ffcf8a',xx,y,1,1); x+=bw; }
+  for(let i=0;i<14;i++){ const b=r()*360; if(SKYL.some(L=>Math.abs(L[1]-b)<6)) continue; const d=.8+r()*1.6, hh=hpx(60+r()*30,d), ww=wpx(22,d), x0=U(b); g.fillStyle=hz(d); g.fillRect(x0,base-hh,ww,hh+18); lights(x0,base-hh,ww,hh,.25); }
+  /* tower cranes over the building sites */
+  g.strokeStyle=day?'#7a8088':'#2c3038'; g.lineWidth=1.5; for(const b of [215,248,72,160,300,20]){ const d=1.5+r()*1.5, cx=U(b), ch=hpx(80,d), jib=wpx(60,d); g.beginPath(); g.moveTo(cx,base); g.lineTo(cx,base-ch); g.moveTo(cx-jib*.3,base-ch+2); g.lineTo(cx+jib,base-ch+2); g.stroke(); red(cx,base-ch); }
+  /* the landmarks, far ones first */
+  for(const [n,b,d,H,W,sh] of SKYL.slice().sort((p,q)=>q[2]-p[2])){ const hh=hpx(H,d), ww=wpx(W,d), x0=U(b)-ww/2, top=base-hh; g.fillStyle=hz(d); g.beginPath();
+    if(sh==='slab'||sh==='mast'||sh==='hospital'||sh==='canada'){ g.rect(x0,top,ww,hh+18); g.fill(); lights(x0,top,ww,hh,sh==='hospital'?.35:.22); glint(x0,top,ww,hh);
+      if(sh==='hospital'&&day){ g.fillStyle='rgba(90,140,190,.35)'; g.fillRect(x0,top,ww,hh); }
+      if(sh==='mast'){ g.fillRect(x0+ww*.7,top-hh*.18,1.5,hh*.18); red(x0+ww*.7,top-hh*.18); } else red(x0+ww/2,top);
+      if(sh==='canada'){ g.fillStyle=hz(d); g.beginPath(); g.moveTo(x0,top); g.lineTo(x0+ww/2,top-ww*.45); g.lineTo(x0+ww,top); g.fill(); if(!day){ R(g,'#fff4e0',x0+ww/2-1,top-ww*.45-3,3,3); } } }
+    else if(sh==='barbican'){ g.moveTo(x0,base+18); g.lineTo(x0,top+3); for(let k=0;k<=4;k++) g.lineTo(x0+ww*k/4,top+(k%2?0:3)); g.lineTo(x0+ww,base+18); g.fill(); lights(x0,top,ww,hh,.3); }
+    else if(sh==='bt'){ g.rect(x0+ww*.25,top+hh*.15,ww*.5,hh*.85+18); g.fill(); g.fillRect(x0,top+hh*.08,ww,hh*.18); g.fillRect(x0+ww*.4,top,ww*.2,hh*.1); red(x0+ww/2,top); }
+    else if(sh==='stpauls'){ g.rect(x0,base-hh*.45,ww,hh*.45+18); g.fill(); g.fillRect(x0+ww*.38,base-hh*.62,ww*.24,hh*.2); g.beginPath(); g.ellipse(x0+ww/2,base-hh*.62,ww*.15,hh*.2,0,Math.PI,0); g.fill(); g.fillRect(x0+ww*.48,base-hh,ww*.04,hh*.2);
+      g.fillRect(x0+ww*.05,base-hh*.62,ww*.08,hh*.2); g.fillRect(x0+ww*.87,base-hh*.62,ww*.08,hh*.2); if(!day){ g.fillStyle='rgba(255,236,190,.35)'; g.beginPath(); g.ellipse(x0+ww/2,base-hh*.62,ww*.15,hh*.2,0,Math.PI,0); g.fill(); } }
+    else if(sh==='gherkin'){ g.moveTo(x0+ww*.12,base+18); g.bezierCurveTo(x0-ww*.05,top+hh*.45,x0+ww*.08,top+hh*.02,x0+ww/2,top); g.bezierCurveTo(x0+ww*.92,top+hh*.02,x0+ww*1.05,top+hh*.45,x0+ww*.88,base+18); g.fill();
+      g.strokeStyle=day?'rgba(60,70,80,.35)':'rgba(120,160,200,.3)'; g.lineWidth=1; for(let k=1;k<6;k++){ g.beginPath(); g.moveTo(x0+ww*.15,top+hh*k/6); g.lineTo(x0+ww*.85,top+hh*(k-.6)/6); g.stroke(); } red(x0+ww/2,top); }
+    else if(sh==='wedge'){ g.moveTo(x0,base+18); g.lineTo(x0,top+hh*.06); g.lineTo(x0+ww*.25,top); g.lineTo(x0+ww,top+hh*.72); g.lineTo(x0+ww,base+18); g.fill(); lights(x0,top+hh*.3,ww*.5,hh,.18); glint(x0,top,ww*.5,hh); red(x0+ww*.25,top); }
+    else if(sh==='scalpel'){ g.moveTo(x0,base+18); g.lineTo(x0,top+hh*.12); g.lineTo(x0+ww*.45,top); g.lineTo(x0+ww,top+hh*.4); g.lineTo(x0+ww,base+18); g.fill(); glint(x0,top,ww*.4,hh); red(x0+ww*.45,top); }
+    else if(sh==='walkie'){ g.moveTo(x0+ww*.15,base+18); g.quadraticCurveTo(x0+ww*.05,top+hh*.4,x0-ww*.05,top+hh*.08); g.lineTo(x0+ww*.1,top); g.lineTo(x0+ww*1.05,top+hh*.02); g.quadraticCurveTo(x0+ww*.95,top+hh*.5,x0+ww*.85,base+18); g.fill(); lights(x0,top,ww,hh,.2); if(!day){ g.fillStyle='rgba(180,230,190,.25)'; g.fillRect(x0,top,ww,hh*.06); } }
+    else if(sh==='shard'){ g.moveTo(x0,base+18); g.lineTo(x0+ww*.42,top+hh*.04); g.lineTo(x0+ww*.46,top-2); g.lineTo(x0+ww*.52,top+hh*.03); g.lineTo(x0+ww*.56,top); g.lineTo(x0+ww,base+18); g.fill(); glint(x0+ww*.3,top+hh*.1,ww*.4,hh*.9);
+      if(!day){ g.fillStyle='rgba(240,244,255,.55)'; g.fillRect(x0+ww*.42,top,ww*.14,hh*.08); lights(x0+ww*.2,top+hh*.2,ww*.6,hh,.12); } }
+    else if(sh==='stadium'){ g.moveTo(x0,base+18); g.lineTo(x0+ww*.04,top+hh*.25); g.lineTo(x0+ww*.96,top+hh*.25); g.lineTo(x0+ww,base+18); g.fill(); g.strokeStyle=hz(d); g.lineWidth=1; for(let k=0;k<12;k++){ g.beginPath(); g.moveTo(x0+ww*(k+.5)/12,top+hh*.25); g.lineTo(x0+ww*(k+.5)/12,top); g.stroke(); }
+      if(!day){ g.fillStyle='rgba(240,236,220,.16)'; g.fillRect(x0-4,top-hh*1.4,ww+8,hh*1.4); for(let k=0;k<6;k++) R(g,'#f4f0e0',x0+ww*(k+.5)/6-1,top-1,2,2); } }
+    else if(sh==='orbit'){ g.strokeStyle=day?'#9a4a3c':'#5a2420'; g.lineWidth=Math.max(1.5,ww*.18); g.beginPath(); for(let k=0;k<=24;k++){ const t=k/24, y=base-t*hh, xx=x0+ww/2+Math.sin(t*9)*ww*.35*(1-t*.3); k?g.lineTo(xx,y):g.moveTo(xx,y); } g.stroke(); red(x0+ww/2,top); } }
+  /* below the horizon the ring fades out (dithered), so it melts into the haze instead of standing as a wall */
+  { const id=g.getImageData(0,base-2,w,h-base+2), D=id.data, rows=h-base+2; for(let y=0;y<rows;y++){ const k=Math.max(0,1-y/9); for(let x=0;x<w;x++) D[(y*w+x)*4+3]*=k; } g.putImageData(id,0,base-2); }
+},0,1); }
+const tSkyline=paintSkyline(false), tSkylineDay=paintSkyline(true); tSkylineDay.nomip=false; tSkyline.smooth=true; tSkylineDay.smooth=true;
 tSkyline.nomip=false;
-{ const R_=86, N_=32, H_=44, gR=new Geo(); for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*R_, z=Math.sin(a)*R_; gR.v([x,-2,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,0]); gR.v([x,H_,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,1]); }
+{ const R_=150, N_=48, SC=R_/86, H_=44*SC, gR=new Geo(); for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*R_, z=Math.sin(a)*R_; gR.v([x,-2*SC,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,0]); gR.v([x,H_,z],[-Math.cos(a),0,-Math.sin(a)],[i/N_,1]); }
   for(let i=0;i<N_;i++){ const a=i*2; gR.I.push(a,a+2,a+3,a,a+3,a+1); } gR.noDist=true;
-  mk(gR,MM(tSkyline,{unlit:true,cut:true,double:true,nofog:true}),SKY,0,0,0);
+  { const m=M(tSkyline,{unlit:true,cut:true,double:true,nofog:true}); m.cut=2; mk(gR,m,SKY,0,0,0); }
   const gS=new Geo(); /* the sky: an open box of gradient, sodium-lit cloud low down */
-  for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+8), z=Math.sin(a)*(R_+8); gS.v([x,-4,z],[0,0,1],[0,1]); gS.v([x,90,z],[0,0,1],[0,0]); }
+  for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+12), z=Math.sin(a)*(R_+12); gS.v([x,-4*SC,z],[0,0,1],[0,1]); gS.v([x,90*SC,z],[0,0,1],[0,0]); }
   for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); } gS.noDist=true;
   const skyM=MM(tSky,{unlit:true,double:true,nofog:true}); SKY.skyM=skyM; mk(gS,skyM,SKY,0,0,0); }
-function skyTick(eye){ SKY.p=[eye[0],0,eye[2]]; }
+function skyTick(eye){ SKY.p=[eye[0],Math.max(0,eye[1]-1.6),eye[2]]; } /* the ring rides at eye height: the horizon stays the horizon from a roof */
 
 /* ---------------- landmark helpers ---------------- */
 /* a box turned by yaw about its centre, faces tiled like eBoxF; F keys: f (front, local +z), b, l, r, t */

@@ -135,6 +135,8 @@ Read this and `QUALITY.md` at the start of every chat in this Project. To start 
 ## Parked for later (Kenny's notes, to work on)
 - **Combat feel differs from Stairwell** (Kenny, Nov 5): London characters should **not die as quickly as Stairwell's**, and should **behave differently in general** when fighting or hurt (more knock-downs, staggering, getting back up, fleeing, pleading). Tune it when melee comes in.
 
+- **A stadium** (Kenny, Nov 5): the real London Stadium and Orbit sit in the skyline at their true bearing (ENE, ~3 km), mostly seen from up high. A playable, fictional club's ground could come in another hub (Peckham fits): a matchday job with crowds, touts, away fans and police horses.
+
 ## Next steps
 1. Show Kenny the pass 2 frames and the artifact; fold in his reaction and the fresh review.
 2. Fix the review's top issues, re-capture, and review again.
