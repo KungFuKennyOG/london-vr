@@ -47,10 +47,7 @@ function flatten(n,m){ /* all meshes under n into one mesh on n (one draw), in n
 function kitTrolley(parent,c){ const n=N(parent); n.dyn=true; const parts=[abox(.36,.5,.26,all6(c),[0,.42,.05]),abox(.37,.06,.27,all6(56),[0,.69,.05]),abox(.025,.98,.025,all6(56),[-.16,.49,-.1]),abox(.025,.98,.025,all6(56),[.16,.49,-.1]),
     abox(.34,.035,.035,all6(56),[0,.97,-.1]),abox(.3,.025,.2,all6(57),[0,.14,.04]),abox(.06,.16,.16,all6(56),[-.2,.08,-.06]),abox(.06,.16,.16,all6(56),[.2,.08,-.06])];
   mk(mergeG(parts),mPeople,n); return n; }
-function kitDog(parent,c,sc){ const n=N(parent); n.dyn=true; const body=N(n); const d=mergeG([abox(.2,.2,.42,all6(c),[0,.34,0]),abox(.23,.22,.18,[c,c,c,55,55,c],[0,.36,.15]),abox(.17,.15,.15,all6(c),[0,.46,.3]),abox(.1,.08,.1,[c,c,c,c,56,c],[0,.42,.4]),
-    abox(.05,.06,.02,all6(c),[-.06,.55,.28]),abox(.05,.06,.02,all6(c),[.06,.55,.28]),abox(.03,.03,.16,all6(c),[0,.42,-.26])]); mk(d,mPeople,body);
-  const legs=[]; for(const [x,z] of [[-.07,.16],[.07,.16],[-.07,-.15],[.07,-.15]]){ const L=N(body,x,.26,z); mk(abox(.055,.26,.06,all6(c),[0,-.13,0]),mPeople,L); legs.push(L); }
-  n.s=[sc,sc,sc]; const lead=N(parent); lead.dyn=true; mk(abox(.012,.012,1,all6(62),[0,0,.5]),mPeople,lead); return {n,body,legs,lead}; }
+/* (dogs: 48f3-dog.js) */
 function kitBrolly(J,cell){ const n=N(J.spine); n.keep=true; n.dyn=true; mk(lathe([[0,.5,.5],[.1,.43,.43],[.17,.26,.26],[.2,.05,.05],[.21,0,0]],8,{capB:false}),mPeople,n,.1,.74,.22); mk(abox(.014,.5,.014,all6(57),[0,.25,0]),mPeople,n,.1,.3,.22);
   const g=n.kids[0].mesh.geo; for(let i=0;i<g.T.length;i+=2){ const cu=(cell%8)/8, cv=1-(Math.floor(cell/8)+1)/8; g.T[i]=cu+(.1+.8*(g.T[i]%1))/8; g.T[i+1]=cv+(.1+.8*(g.T[i+1]%1))/8; }
   flatten(n,mPeople); n.vis=false; return n; }
@@ -319,12 +316,6 @@ function crowdPed(p,dt,h){ const far=Math.hypot(p.x-CW.px,p.z-CW.pz); p.far=far;
   else p.E.G=null;
   skinUpdate(C); }
 function nearestFriend(p){ let b=null,bd=3; for(const o of PED_POOL){ if(o===p||!o.alive||o.home!==p.home) continue; const d=Math.hypot(o.x-p.x,o.z-p.z); if(d<bd){ bd=d; b=o; } } return b?[b.x,b.z]:null; }
-function dogTick(p,dt,moving){ const D=p.dog; D.ph=(D.ph||0)+dt*(moving?p.speed*7.5:0); const sw=moving?Math.sin(D.ph)*.55:0;
-  D.legs[0].r[0]=sw; D.legs[3].r[0]=sw; D.legs[1].r[0]=-sw; D.legs[2].r[0]=-sw;
-  const sniff=p.sniff>0; if(sniff) p.sniff-=dt; const wob=Math.sin(LIFE.t*1.7+p.ph)*.08;
-  D.n.p=[.62+wob,0,sniff?.95:.55+Math.abs(sw)*.03]; D.n.r=[0,sniff?.6:wob*.8,0]; D.body.r=[sniff?.32:0,0,0]; D.body.p=[0,sniff?-.04:Math.abs(Math.sin(D.ph))*.015,0];
-  /* the lead: from the left hand (about) to the collar */ const hx=.27, hy=p.hipY*.86, hz=.32, cx=D.n.p[0]+Math.sin(D.n.r[1])*.3*D.n.s[0], cy=.44*D.n.s[0]-(sniff?.12:0), cz=D.n.p[2]+Math.cos(D.n.r[1])*.3*D.n.s[0];
-  const dx=cx-hx, dy=cy-hy, dz=cz-hz, l=Math.hypot(dx,dy,dz); D.lead.p=[hx,hy,hz]; D.lead.r=[Math.atan2(-dy,dz),Math.asin(clamp(dx/l,-1,1)),0]; D.lead.s=[1,1,l]; }
 /* ---------------- the tick ---------------- */
 let crowdBuilt=0;
 function crowdTick(dt,eye){ if(!CS.ready) crowdSpots(); if(!doorsReady) doorsInit();
