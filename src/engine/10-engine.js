@@ -85,7 +85,7 @@ function mergeBoxes(list){ const g=new Geo();
   g.groups=[{start:0,count:g.I.length,mi:0}]; return g; }
 
 /* ================= textures ================= */
-function tex(w,h,base,fn){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); if(base){ g.fillStyle=base; g.fillRect(0,0,w,h); } if(fn) fn(g,w,h); return {c,glt:null,f:-1}; }
+function tex(w,h,base,fn){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d',{willReadFrequently:true}); /* software canvases: painting hundreds of pages is far faster than round-tripping a GPU canvas */ if(base){ g.fillStyle=base; g.fillRect(0,0,w,h); } if(fn) fn(g,w,h); return {c,glt:null,f:-1}; }
 function R(g,col,x,y,w,h){ g.fillStyle=col; g.fillRect(x,y,w,h); }
 function grain(g,amt,seed=1){ const w=g.canvas.width,h=g.canvas.height,d=g.getImageData(0,0,w,h),r=rng(seed); for(let i=0;i<d.data.length;i+=4){ if(!d.data[i+3]) continue; const n=(r()-.5)*amt; d.data[i]+=n; d.data[i+1]+=n; d.data[i+2]+=n; } g.putImageData(d,0,0); }
 function specks(g,col,n,seed,w,h,x0=0,y0=0){ const r=rng(seed); for(let i=0;i<n;i++) R(g,col,x0+(r()*w|0),y0+(r()*h|0),1,1); }
