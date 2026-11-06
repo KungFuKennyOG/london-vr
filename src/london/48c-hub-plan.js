@@ -38,10 +38,10 @@ const VIADUCTS=[[-800,146,800,158,'x',7.4],[29.05,-470,33.4,146,'z',7.4]];
 const ZONES=[
   [-800,-520,-620,500,{brick:['soot','stock','red'],st:[2,3],win:'sash'}],
   [-620,-520,-330,-200,{brick:['red'],st:[4,5],win:'mansion'}],
-  [-620,-200,-330,500,{brick:['stock','soot','stucco'],st:[2,3],win:'sash'}],
-  [-330,-520,-22,500,{brick:['stock','grey','soot'],st:[2,3],win:'sash'}],
-  [34,-520,330,500,{brick:['stock','red','stucco'],st:[2,3],win:'sash'}],
-  [330,-520,800,500,{brick:['stock','cream','red','soot'],st:[2,3],win:'sash'}],
+  [-620,-200,-330,500,{brick:['stock','soot','stucco','red','brown'],st:[2,3],win:'sash'}],
+  [-330,-520,-22,500,{brick:['stock','soot','red','stock','grey','brown'],st:[2,3],win:'sash'}],
+  [34,-520,330,500,{brick:['stock','red','stucco','brown','soot'],st:[2,3],win:'sash'}],
+  [330,-520,800,500,{brick:['stock','cream','red','soot','brown','stucco'],st:[2,3],win:'sash'}],
 ];
 /* hand-built blocks: the generator leaves these to 48d-hub-landmarks.js. [name, x0,z0,x1,z1] (inside the block rect) */
 const LANDMARK_BLOCKS=[
@@ -107,9 +107,9 @@ function houseFront(brick,seed){ const k=brick+'|'+(seed%6); if(HOUSEF.has(k)) r
   const t=P2(w,h,(g)=>{ paintWall(g,B,w,h,r); const dc=DOORC[seed%DOORC.length];
     /* door with fanlight and steps */ R(g,'#d8d2c2',10,h-62,30,62); R(g,dc,13,h-54,24,52); R(g,'#ffd890',13,h-62,24,7); R(g,'#c8a040',30,h-30,3,3); R(g,'#8a8478',8,h-4,34,4);
     /* bay window */ R(g,'#d8d2c2',54,h-64,58,48); vfill(g,57,h-61,52,40,[[0,'#1c2430'],[1,'#0c1016']]); R(g,'#e6e2d8',57+17,h-61,2,40); R(g,'#e6e2d8',57+34,h-61,2,40); R(g,'#b8b2a0',52,h-16,62,4);
-    R(g,mix(B.base,'#000',.2),52,h-12,62,12); },0,seed);
+    R(g,mix(B.base,'#000',.2),52,h-12,62,12); vfill(g,0,h-18,w,18,[[0,'rgba(20,16,12,0)'],[1,'rgba(20,16,12,.45)']]); },0,seed);
   const m={mBase:MM(t)}; HOUSEF.set(k,m); return m; }
-const pick=(r,a)=>a[r()*a.length|0]; const mPot=col(0x8a5a3a);
+const pick=(r,a)=>a[r()*a.length|0]; const mPot=col(0x8a5a3a), mBush=col(0x2a4a22), mPipe=col(0x1e2022), mDish=col(0xc8c8c4), BINC=[col(0x1a1a1c),col(0x2a4a2a),col(0x2a3a6a),col(0x5a3a2a)];
 
 function buildBlock(B,bi){ const [x0,z0,x1,z1]=B.r, r=hr(5000+bi*7919), cx=(x0+x1)/2, cz=(z0+z1)/2;
   const Z=(ZONES.find(q=>cx>=q[0]&&cx<q[2]&&cz>=q[1]&&cz<q[3])||ZONES[0])[4];
@@ -152,7 +152,14 @@ function buildLot(L,BR,D,r,Z){ const [x0,z0,x1,z1]=BR, k=L.k, d=D[k], horiz=k===
   if(L.pub) groundPub(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r);
   else if(shop){ L.F=F; groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r); }
   else { const hf=houseFront(L.brick,L.door), hm=hf.mBase, back={n:'s',s:'n',w:'e',e:'w'}[front];
-    { const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), sx=fx-U[0]*fw/2+U[0]*1.05, sz=fz-U[2]*fw/2+U[2]*1.05; HOUSE_DOORS.push({x:sx+out[0]*.7,z:sz+out[2]*.7,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(L.k==='n'||L.k==='w'?1:0)}); }
+    { const st=L.S[8]||'', no=(HOUSE_NO[st]=(HOUSE_NO[st]||0)+1), sx=fx-U[0]*fw/2+U[0]*1.05, sz=fz-U[2]*fw/2+U[2]*1.05; HOUSE_DOORS.push({x:sx+out[0]*.7,z:sz+out[2]*.7,yaw:Math.atan2(-out[0],-out[2]),street:st,no:no*2-(L.k==='n'||L.k==='w'?1:0)});
+      /* the front: a stone step, the drainpipe on the party wall, a wheelie bin, now and then a dish or a pot */
+      const at=(u,o)=>[fx-U[0]*fw/2+U[0]*u+out[0]*o, fz-U[2]*fw/2+U[2]*u+out[2]*o];
+      { const [a0,b0]=at(.45,0), [a1,b1]=at(1.65,.38); const sf={t:mCope}; sf[front]=mCope; eBoxF(Math.min(a0,a1),Math.min(b0,b1),Math.max(a0,a1),Math.max(b0,b1),PAVE_Y,PAVE_Y+.16,sf); }
+      if(L.door%2){ const [px,pz]=at(.06,.06), pf={}; pf[front]=mPipe; eBoxF(px-.05,pz-.05,px+.05,pz+.05,PAVE_Y,top,pf); }
+      if(r()<.45){ const [bx,bz]=at(fw-.5,.42), bm=BINC[(L.door*3)%BINC.length]; eBoxF(bx-.3,bz-.3,bx+.3,bz+.3,PAVE_Y,PAVE_Y+1.07,{n:bm,s:bm,e:bm,w:bm,t:bm}); hsol(bx-.3,bz-.3,bx+.3,bz+.3,PAVE_Y+1.07); }
+      if(r()<.18){ const [dx,dz]=at(fw*.7,.12); eGeo(cyl(.32,.32,.05,8),mDish,dx,PAVE_Y+gH+1.6,dz,Math.atan2(out[0],out[2]),Math.PI/2); }
+      if(r()<.2){ const [qx,qz]=at(1.85,.25); eBoxF(qx-.16,qz-.16,qx+.16,qz+.16,PAVE_Y,PAVE_Y+.32,{n:mPot,s:mPot,e:mPot,w:mPot}); eBoxF(qx-.22,qz-.22,qx+.22,qz+.22,PAVE_Y+.32,PAVE_Y+.7,{n:mBush,s:mBush,e:mBush,w:mBush,t:mBush}); } }
     eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,{[front]:hm},{tu:fw,tv:gH,vb:PAVE_Y,cell:3});
     const rest={}; rest[back]=F.mBase; if(L.corner){ for(const q of (horiz?'ew':'ns')) rest[q]=F.mBase; } eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,rest,{tu:F.bays*HUB.BAY,tv:F.floors*HUB.FLOOR}); }
   /* parapet and coping, flat roof, chimney stack on the party wall */
@@ -178,10 +185,13 @@ function groundShop(L,lx0,lz0,lx1,lz1,gH,fx,fz,U,out,fw,r){ const trades=L.f==='
   /* the walls of the ground floor (sides and back plain) */
   const sideM=L.F?L.F.mBase:mDark, fk=out[2]<-.5?'n':out[2]>.5?'s':out[0]<-.5?'w':'e', GF={n:sideM,s:sideM,e:sideM,w:sideM,t:null}; GF[fk]=null; eBoxF(lx0,lz0,lx1,lz1,PAVE_Y,PAVE_Y+gH,GF,{tu:2,tv:2});
   /* the reveal: side walls and ceiling of the recess, so the glass sits in a real opening */
-  { const gwh=(fw-.6)/2, bx=fx-U[0]*gwh, bz=fz-U[2]*gwh, ex=fx+U[0]*gwh, ez=fz+U[2]*gwh, ix=-out[0]*.4, iz=-out[2]*.4;
-    eGrid(mDark,[bx+ix,PAVE_Y,bz+iz],[out[0],0,out[2]],Y_,.4,gH,1,1); eGrid(mDark,[ex,PAVE_Y,ez],[-out[0],0,-out[2]],Y_,.4,gH,1,1);
-    eGrid(mDark,[bx+ix,PAVE_Y+gH-.6,bz+iz],U,[out[0],0,out[2]],fw-.6,.4,1,1); eGrid(mDark,[bx,PAVE_Y+.5,bz],U,[-out[0],0,-out[2]],fw-.6,.4,1,1); }
-  const inset=.35, gw=fw-.6, gh=gH-1.15, ox=fx+out[0]*.03-U[0]*gw/2, oz=fz+out[2]*.03-U[2]*gw/2;
+  const DEEP=1.0, wallM=shut?mDark:(T.mWall||(T.mWall=nightM(null,{color:parseInt(mix(T.room,'#000000',.12).slice(1),16),unlit:true},0)));
+  { const gwh=(fw-.6)/2, bx=fx-U[0]*gwh, bz=fz-U[2]*gwh, ex=fx+U[0]*gwh, ez=fz+U[2]*gwh, ix=-out[0]*DEEP, iz=-out[2]*DEEP;
+    eGrid(wallM,[bx+ix,PAVE_Y,bz+iz],[out[0],0,out[2]],Y_,DEEP,gH,1,1); eGrid(wallM,[ex,PAVE_Y,ez],[-out[0],0,-out[2]],Y_,DEEP,gH,1,1);
+    eGrid(wallM,[bx+ix,PAVE_Y+gH-.6,bz+iz],U,[out[0],0,out[2]],fw-.6,DEEP,1,1); eGrid(mDark,[bx,PAVE_Y+.5,bz],U,[-out[0],0,-out[2]],fw-.6,DEEP,1,1);
+    if(!shut){ const cm=col(0x2a2420), c0=.25+r()*.2, cx0=bx+U[0]*(fw-.6)*c0-out[0]*(DEEP-.45), cz0=bz+U[2]*(fw-.6)*c0-out[2]*(DEEP-.45), cl=(fw-.6)*.45;
+      eGrid(cm,[cx0,PAVE_Y+.5,cz0],U,Y_,cl,.95,1,1); eGrid(col(0x6a625a),[cx0,PAVE_Y+1.45,cz0],U,[-out[0],0,-out[2]],cl,.4,1,1); } }
+  const inset=DEEP, gw=fw-.6, gh=gH-1.15, ox=fx+out[0]*.03-U[0]*gw/2, oz=fz+out[2]*.03-U[2]*gw/2;
   if(shut){ eGrid(SHUT[L.door%6],[ox,PAVE_Y+.05,oz],U,Y_,gw,gh+.55,gw,gh+.55); }
   else { eGrid(T.mRoom,[ox-out[0]*inset+U[0]*.0,PAVE_Y+.5,oz-out[2]*inset],U,Y_,gw,gh,gw,gh);
     eGrid(mDark,[ox,PAVE_Y,oz],U,Y_,gw,.5,gw,.5);

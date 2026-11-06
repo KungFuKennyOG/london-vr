@@ -105,10 +105,10 @@ function makeVehicle(kind,seed){ const r=hr(seed), root=N(LIFE.root); root.dyn=t
   if(kind==='bus'){ len=10.4; wid=2.5; parts.push(abox(wid,1.9,len,[47,47,47,47,45,48],[0,1.2,0]),abox(wid,1.9,len-.2,[48,48,47,47,45,48],[0,3.1,0]),abox(wid+.02,.9,len-.4,[48,48,47,47,45,48],[0,1.6,-.2]),abox(wid-.1,.1,len-.1,all6(47),[0,4.1,0])); }
   else if(kind==='moped'){ len=1.8; wid=.6; parts.push(abox(.3,.5,1.6,all6(14),[0,.45,0]),abox(.34,.34,.34,all6([10,11,8][r()*3|0]),[0,1.05,-.45]),abox(.32,.55,.22,all6(43),[0,1.15,-.05]),abox(.2,.2,.2,[20,20,32,20,26,32],[0,1.55,-.05])); }
   else if(kind==='van'){ len=5.2; wid=2.0; parts.push(abox(wid,1.9,len-1.2,all6(paint),[0,1.35,-.6]),abox(wid,1.2,1.4,[paint,paint,paint,paint,45,paint],[0,.95,len/2-.7]),abox(wid-.04,.6,1.2,[45,45,paint,paint,45,paint],[0,1.75,len/2-.8])); }
-  else { parts.push(abox(wid,.7,len,all6(paint),[0,.62,0]),abox(wid-.16,.55,2.2,[45,45,paint,paint,45,45],[0,1.25,-.15]));
+  else { parts.push(abox(wid,.62,len,all6(paint),[0,.7,0]),abox(wid-.2,.5,len*.62,all6(paint),[0,.62,0]),abox(wid-.16,.55,2.2,[45,45,paint,paint,45,45],[0,1.28,-.15]),abox(wid*.62,.12,.03,all6(46),[0,.52,len/2+.01]),abox(wid*.62,.12,.03,all6(44),[0,.6,-len/2-.01]),abox(wid*.7,.18,.04,all6(17),[0,.72,len/2+.01]));
     if(kind==='cab'){ parts.push(abox(.42,.14,.18,all6(44),[0,1.6,.3])); }
     if(kind==='police'){ parts.push(abox(wid+.02,.22,len-.6,all6(50),[0,.7,0]),abox(.9,.14,.25,all6(49),[0,1.6,0])); } }
-  for(const [wx,wz] of kind==='moped'?[[0,.6],[0,-.6]]:[[-wid/2+.1,len/2-.8],[wid/2-.1,len/2-.8],[-wid/2+.1,-len/2+.8],[wid/2-.1,-len/2+.8]]) parts.push(abox(.24,.6,.6,all6(17),[wx,.3,wz]));
+  for(const [wx,wz] of kind==='moped'?[[0,.6],[0,-.6]]:[[-wid/2+.02,len/2-.8],[wid/2-.02,len/2-.8],[-wid/2+.02,-len/2+.8],[wid/2-.02,-len/2+.8]]) parts.push(abox(.24,.62,.62,all6(17),[wx,.31,wz]),abox(.26,.26,.26,all6(15),[wx,.31,wz]));
   const body=mk(mergeG(parts),mPeople,root);
   /* lamps: two white at the front, two red at the back (one for a moped) */
   const fr=len/2+.02, bk=-len/2-.02, hl=kind==='moped'?[[0,.8,fr]]:[[-wid/2+.3,.65,fr],[wid/2-.3,.65,fr]], tl=kind==='moped'?[[0,.7,bk]]:[[-wid/2+.25,.75,bk],[wid/2-.25,.75,bk]];
@@ -154,4 +154,4 @@ function lifeTick(dt,eye){ if(!LIFE.on||!HUBX) return; LIFE.t+=dt; const px=GAME
   if(aliveCars<wantCars) for(const v of CAR_POOL) if(!v.alive){ spawnCar(v,px,pz); break; } }
 /* people and vehicles push you back rather than letting you walk through them */
 function lifeBlocks(x,z,r){ for(const v of CAR_POOL){ if(!v.alive) continue; const dx=x-v.x, dz=z-v.z, c=Math.cos(v.yaw), s=Math.sin(v.yaw), lx=dx*c-dz*s, lz=dx*s+dz*c; if(Math.abs(lx)<v.wid/2+r&&Math.abs(lz)<v.len/2+r) return true; }
-  for(const p of PED_POOL){ if(p.alive&&Math.hypot(x-p.x,z-p.z)<r+.22) return true; } return false; }
+  return false; } /* people step aside rather than wall you in */

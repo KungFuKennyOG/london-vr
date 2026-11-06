@@ -84,11 +84,11 @@ const tConc=P2(128,128,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#6c685f'],[1,'#58544b']])
 const tPaveW=P2(128,128,(g,w,h)=>{ R(g,'#141310',0,0,w,h); const r=rng(1409);
   for(let y=0;y<2;y++) for(let x=0;x<2;x++){ vfill(g,x*64+2,y*64+2,60,60,[[0,mix('#4e4c46','#3c3b36',r())],[1,mix('#44423c','#34332e',r())]]); }
   specks(g,'#2a2924',300,1410,w,h); specks(g,'#5c5a52',140,1411,w,h);
-  for(let i=0;i<9;i++) ell(g,r()*w,r()*h,1.6,1.3,'rgba(30,30,30,.7)');
-  for(let i=0;i<3;i++){ const cx=r()*w,cy=r()*h,rx=8+r()*14,ry=4+r()*6; ell(g,cx,cy,rx,ry,'rgba(10,12,16,.62)'); ell(g,cx-rx*.3,cy-ry*.3,rx*.3,1,'rgba(170,170,185,.22)'); }
+  for(let i=0;i<5;i++) ell(g,r()*w,r()*h,1.1,.9,'rgba(30,30,30,.45)');
+  for(let i=0;i<4;i++){ const sx=(r()*2|0)*64+4+r()*30, sy=(r()*2|0)*64+4+r()*30; R(g,'rgba(0,0,0,.12)',sx,sy,24+r()*20,20+r()*16); } /* odd stained slabs, not puddles: puddles repeat */
   R(g,'rgba(255,255,255,.04)',0,2,w,1); },6,1412);
 const tTarmac=P2(128,128,(g,w,h)=>{ R(g,'#1c1c1e',0,0,w,h); specks(g,'#2e2e32',900,1413,w,h); specks(g,'#0e0e10',700,1414,w,h); specks(g,'#45454a',120,1415,w,h); const r=rng(1416);
-  for(let i=0;i<3;i++){ const cx=r()*w,cy=r()*h; ell(g,cx,cy,14+r()*16,5+r()*5,'rgba(8,10,14,.6)'); ell(g,cx-6,cy-2,6,1,'rgba(150,150,170,.18)'); }
+  for(let i=0;i<2;i++){ const cx=r()*w,cy=r()*h; ell(g,cx,cy,14+r()*16,5+r()*5,'rgba(8,10,14,.32)'); ell(g,cx-6,cy-2,6,1,'rgba(150,150,170,.12)'); }
   g.strokeStyle='rgba(6,6,6,.7)'; g.lineWidth=1; for(let i=0;i<5;i++){ g.beginPath(); let x=r()*w,y=r()*h; g.moveTo(x,y); for(let k=0;k<6;k++){ x+=r()*10-5; y+=r()*10-5; g.lineTo(x,y); } g.stroke(); } },6,1417);
 const tKerb=P2(64,16,(g,w,h)=>{ vfill(g,0,0,w,h,[[0,'#8e8a80'],[.3,'#7a766c'],[1,'#56534c']]); specks(g,'#5e5a52',60,1418,w,h); R(g,'#2a2824',w-1,0,1,h); },6,1419);
 const tYellow=P2(16,4,g=>{ R(g,'#d6aa22',0,0,16,4); specks(g,'#8a6a10',6,1420,16,4); },0,1);

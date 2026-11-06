@@ -55,6 +55,7 @@ const BRICKS={
   grey:{base:'#8a8c88',dark:'#6e706c',light:'#9c9e9a',mortar:null,soot:.3},
   estate:{base:'#9a968a',dark:'#7e7a70',light:'#b0aca0',mortar:null,soot:.25,panel:true},
   estbrick:{base:'#6a4a34',dark:'#4e3626',light:'#7c5a40',mortar:'#3a2a20',soot:.2},
+  brown:{base:'#5e4632',dark:'#46342a',light:'#705842',mortar:'#3a2c22',soot:.3},
   cream:{base:'#b8b4a8',dark:'#98948a',light:'#c8c4b8',mortar:null,soot:.32},
 };
 function paintWall(g,B,w,h,r){ R(g,B.base,0,0,w,h);

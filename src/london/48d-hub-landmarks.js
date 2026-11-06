@@ -225,7 +225,7 @@ LM.church=([x0,z0,x1,z1])=>{ eFlat(x0,z0,x1,z1,PAVE_Y,mGrass,2,6); railRect(x0+.
   const cup=new Geo(); { const t=cyl(1.6,.15,3.2,8); cup.P=t.P; cup.Nm=t.Nm; cup.T=t.T; cup.I=t.I; cup.groups=t.groups; } cup.noDist=true; mk(cup,sB,FAR,cx,PAVE_Y+32.6,tz); hsol(cx-4,tz-4,cx+4,tz+4,PAVE_Y+31);
   const r=hr(6803); for(let i=0;i<40;i++){ const gx=x0+4+r()*(x1-x0-8), gz=z0+4+r()*(z1-z0-8); if(Math.abs(gx-cx)<18&&gz>z0+14) continue; eBox(gx-.35,gz-.08,gx+.35,gz+.08,PAVE_Y,PAVE_Y+.7+r()*.5,stone); }
   for(let i=0;i<10;i++) tree(x0+6+r()*(x1-x0-12),z0+5+r()*12,1.2); parkLamp(x0+8,z1-12); parkLamp(x1-8,z1-12);
-  tubeEntrance(x1-6,z1-6,'z');
+  tubeEntrance(x1-6,z1-6,'z'); STREET_LIGHT.pl.push([[cx,PAVE_Y+1,z1-12],[1.4,1.3,1.1],22]);
 };
 
 /* THE PETROL STATION: a lit canopy, pumps, a kiosk */

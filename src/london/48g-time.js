@@ -9,9 +9,9 @@ const TODK=[
   [0,  [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],42,'night',.5],
   [4.5,[.26,.28,.29],[.10,.11,.14],[.048,.054,.058],42,'night',.3],
   [5.6,[.34,.32,.34],[.55,.38,.32],[.22,.2,.22],48,'dawn',.30],
-  [7,  [.56,.56,.58],[.85,.74,.6],[.52,.53,.55],56,'day',.8],
-  [12, [.66,.67,.68],[.9,.88,.84],[.6,.62,.63],60,'day',.95],
-  [17, [.6,.6,.61],[.9,.8,.66],[.55,.55,.56],58,'day',1.0],
+  [7,  [.47,.47,.5],[1.0,.82,.62],[.52,.53,.55],56,'day',.8],
+  [12, [.52,.53,.55],[1.05,1.0,.9],[.6,.62,.63],60,'day',.95],
+  [17, [.5,.5,.52],[1.05,.86,.66],[.55,.55,.56],58,'day',1.0],
   [19, [.4,.36,.37],[.85,.5,.34],[.22,.18,.19],50,'dusk',.85],
   [20.3,[.29,.3,.3],[.18,.16,.18],[.075,.072,.075],44,'night',.8],
   [24, [.27,.29,.29],[.10,.11,.14],[.05,.058,.055],42,'night',.6]];
@@ -25,8 +25,8 @@ let skylineM=null;
 function todTick(dt){ TOD.h=(TOD.h+dt*TOD.rate*(TOD.fast?40:1))%24; const h=TOD.h;
   let i=0; while(i<TODK.length-2&&TODK[i+1][0]<=h) i++; const A=TODK[i],B=TODK[i+1],k=clamp((h-A[0])/(B[0]-A[0]),0,1), e=k*k*(3-2*k);
   const amb=todL3(A[1],B[1],e), sun=todL3(A[2],B[2],e), fog=todL3(A[3],B[3],e), far=A[4]+(B[4]-A[4])*e;
-  /* daylight 0..1, from the ambient */ TOD.day=clamp((amb[0]-.25)/.45,0,1); TOD.night=1-TOD.day; LOOK.day=TOD.day;
-  const sa=(h-6)/12*Math.PI; STREET_LIGHT.amb=amb; STREET_LIGHT.dirCol=sun; STREET_LIGHT.dir=[Math.cos(sa)*.6,Math.max(.15,Math.sin(sa)),.45]; STREET_LIGHT.fog=fog; STREET_LIGHT.fogFar=far; STREET_LIGHT.fogNear=far*(.3+.3*TOD.day);
+  /* daylight 0..1, from the ambient */ TOD.day=clamp((amb[0]-.27)/.22,0,1); TOD.night=1-TOD.day; LOOK.day=TOD.day;
+  const sa=(h-6)/12*Math.PI; STREET_LIGHT.amb=amb; STREET_LIGHT.dirCol=sun; STREET_LIGHT.dir=[Math.cos(sa)*.85,.5+.35*Math.max(0,Math.sin(sa)),.55]; STREET_LIGHT.fog=fog; STREET_LIGHT.fogFar=far; STREET_LIGHT.fogNear=far*(.3+.3*TOD.day);
   STREET_LIGHT.lampK=Math.max(.06,TOD.night);
   for(const [m,c,dim] of NIGHT_MATS){ const f=1-dim*TOD.day*.88; m.color=[c[0]*f,c[1]*f,c[2]*f]; }
   /* sky: pick the nearest look, and dim or lift it */ const sk=e<.5?A[5]:B[5]; if(SKY.skyM.tex!==SKYT[sk]) SKY.skyM.tex=SKYT[sk];
