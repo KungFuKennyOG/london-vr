@@ -109,7 +109,7 @@ for(let c=0;c<3;c++) mk(box(2.8,3.0,19.6),[trainM,trainM,col(0x4a4a4c),col(0x101
 /* ---------- the tick ---------- */
 function face(n,eye){ n.r=[0,Math.atan2(eye[0]-n.p[0],eye[2]-n.p[2]),0]; }
 const sc=(c,k)=>[((c>>16)&255)/255*k,((c>>8)&255)/255*k,(c&255)/255*k];
-return { tick(t,eye){
+return { cars:{degsy:degsyCar,cab}, tick(t,eye){
   const bOn=(Math.floor(t/.75)%2)===0; beaconM.emis=bOn?beaconOn:beaconOff;
   for(const s of beaconStreaks){ s.m.color=sc(s.base,bOn?1:.0); }
   const hz=(Math.floor(t/.55)%2)===0; for(const m of degsyCar.ind) m.emis=hz?[1.6,.8,.15]:[0,0,0];
