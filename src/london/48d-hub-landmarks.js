@@ -58,7 +58,10 @@ tSkyline.nomip=false;
   { const m=M(tSkyline,{unlit:true,cut:true,double:true,nofog:true}); m.cut=2; mk(gR,m,SKY,0,0,0); }
   const gS=new Geo(); /* the sky: an open box of gradient, sodium-lit cloud low down */
   for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+12), z=Math.sin(a)*(R_+12); gS.v([x,-4*SC,z],[0,0,1],[0,1]); gS.v([x,90*SC,z],[0,0,1],[0,0]); }
-  for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); } gS.noDist=true;
+  for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); }
+  /* the lid: a shallow cone from the top edge to a point overhead, in the top colour, so looking straight up isn't a hole */
+  { const ap=gS.P.length/3; gS.v([0,90*SC*1.12,0],[0,-1,0],[0,0]); for(let i=0;i<N_;i++){ gS.I.push(i*2+1,(i+1)*2+1,ap); } }
+  gS.noDist=true;
   const skyM=MM(tSky,{unlit:true,double:true,nofog:true}); SKY.skyM=skyM; mk(gS,skyM,SKY,0,0,0); }
 function skyTick(eye){ SKY.p=[eye[0],Math.max(0,eye[1]-1.6),eye[2]]; } /* the ring rides at eye height: the horizon stays the horizon from a roof */
 

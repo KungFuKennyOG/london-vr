@@ -54,7 +54,7 @@ function lightsNear(src,eye){ const all=src.pl, sc=[];
 const PERF={draws:0,tris:0};
 function eyeOfView(v){ return [-(v[0]*v[12]+v[1]*v[13]+v[2]*v[14]), -(v[4]*v[12]+v[5]*v[13]+v[6]*v[14]), -(v[8]*v[12]+v[9]*v[13]+v[10]*v[14])]; }
 function renderLDN(root,eye,target,w,h,snapRes){
-  m4.persp(proj,50*Math.PI/180,w/h,0.05,200); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
+  m4.persp(proj,50*Math.PI/180,w/h,0.05,280); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
   drawWorldLDN(root,w,h,eye); }
 function drawWorldLDN(root,w,h,eye){ updateWorld(root,null);
   gl.viewport(0,0,w,h); gl.clearColor(L.fog[0],L.fog[1],L.fog[2],1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);

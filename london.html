@@ -1534,7 +1534,7 @@ function lightsNear(src,eye){ const all=src.pl, sc=[];
 const PERF={draws:0,tris:0};
 function eyeOfView(v){ return [-(v[0]*v[12]+v[1]*v[13]+v[2]*v[14]), -(v[4]*v[12]+v[5]*v[13]+v[6]*v[14]), -(v[8]*v[12]+v[9]*v[13]+v[10]*v[14])]; }
 function renderLDN(root,eye,target,w,h,snapRes){
-  m4.persp(proj,50*Math.PI/180,w/h,0.05,200); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
+  m4.persp(proj,50*Math.PI/180,w/h,0.05,280); proj[8]=-viewShift[0]; proj[9]=-viewShift[1]; m4.lookAt(view,eye,target,[0,1,0]);
   drawWorldLDN(root,w,h,eye); }
 function drawWorldLDN(root,w,h,eye){ updateWorld(root,null);
   gl.viewport(0,0,w,h); gl.clearColor(L.fog[0],L.fog[1],L.fog[2],1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -2770,7 +2770,7 @@ function worldFromLocal(){ const m=m4.make(); m4.compose(m,XR.origin,[0,XR.yaw,0
 function poseMat(pose){ const m=new Float32Array(16); m.set(pose.transform.matrix); const o=m4.make(); m4.mul(o,worldFromLocal(),m); return o; }
 async function enterVR(){
   try{ const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']}); await gl.makeXRCompatible();
-    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:200});
+    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl,{antialias:false,depth:false}),depthNear:.04,depthFar:280});
     let space; try{ space=await session.requestReferenceSpace('local-floor'); XR.floorY=0; }catch(_){ space=await session.requestReferenceSpace('local'); XR.floorY=1.62; }
     XR.session=session; XR.space=space; start(true); XR.yaw=START.yaw+Math.PI; XR.origin=[P.x,floorY(P.x,P.z)+XR.floorY,P.z]; XR.last=0;
     $g('gStart').hidden=true;
@@ -4153,7 +4153,10 @@ tSkyline.nomip=false;
   { const m=M(tSkyline,{unlit:true,cut:true,double:true,nofog:true}); m.cut=2; mk(gR,m,SKY,0,0,0); }
   const gS=new Geo(); /* the sky: an open box of gradient, sodium-lit cloud low down */
   for(let i=0;i<=N_;i++){ const a=i/N_*Math.PI*2, x=Math.cos(a)*(R_+12), z=Math.sin(a)*(R_+12); gS.v([x,-4*SC,z],[0,0,1],[0,1]); gS.v([x,90*SC,z],[0,0,1],[0,0]); }
-  for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); } gS.noDist=true;
+  for(let i=0;i<N_;i++){ const a=i*2; gS.I.push(a,a+2,a+3,a,a+3,a+1); }
+  /* the lid: a shallow cone from the top edge to a point overhead, in the top colour, so looking straight up isn't a hole */
+  { const ap=gS.P.length/3; gS.v([0,90*SC*1.12,0],[0,-1,0],[0,0]); for(let i=0;i<N_;i++){ gS.I.push(i*2+1,(i+1)*2+1,ap); } }
+  gS.noDist=true;
   const skyM=MM(tSky,{unlit:true,double:true,nofog:true}); SKY.skyM=skyM; mk(gS,skyM,SKY,0,0,0); }
 function skyTick(eye){ SKY.p=[eye[0],Math.max(0,eye[1]-1.6),eye[2]]; } /* the ring rides at eye height: the horizon stays the horizon from a roof */
 
